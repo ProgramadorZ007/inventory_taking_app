@@ -40,7 +40,7 @@ public class Producto {
     private String idVariedad;
     private String variedad;
     private Integer estado;
-
+    // Prueba de master/origin
     /*
     Constructor para el PRIMER PASO (Escaneo inicial)
     =====================================================

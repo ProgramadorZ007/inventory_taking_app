@@ -29,6 +29,9 @@ public class SincronizarPendientesUseCase {
             String fechaActual = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(new Date());
             String payload = "{idProducto: " + inv.getIdProducto() + ", cantidad: " + inv.getCantidad() + "}";
 
+            // ¡LA CORRECCIÓN!: Definimos la referencia usando el ID local de SQLite
+            String referencia = "LocalID: " + inv.getIdInventario();
+
             try {
                 // Intentamos enviarlo de nuevo
                 inventarioRepository.enviarInventarioRemote(inv);
@@ -40,7 +43,8 @@ public class SincronizarPendientesUseCase {
                 long timeTaken = System.currentTimeMillis() - startTime;
                 LogIntegracion logExito = new LogIntegracion(
                         "/api/almacen/inventarios (Reintento)", "POST", 200, payload, "OK", null,
-                        timeTaken, fechaActual, username
+                        timeTaken, fechaActual, username,
+                        referencia // <-- Se inyecta aquí
                 );
                 logRepository.saveLogLocal(logExito);
 
@@ -51,7 +55,8 @@ public class SincronizarPendientesUseCase {
                 long timeTaken = System.currentTimeMillis() - startTime;
                 LogIntegracion logError = new LogIntegracion(
                         "/api/almacen/inventarios (Reintento)", "POST", 500, payload, null, e.getMessage(),
-                        timeTaken, fechaActual, username
+                        timeTaken, fechaActual, username,
+                        referencia // <-- Se inyecta aquí
                 );
                 logRepository.saveLogLocal(logError);
             }

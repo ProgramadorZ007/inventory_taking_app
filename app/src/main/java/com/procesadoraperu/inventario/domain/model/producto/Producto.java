@@ -25,7 +25,7 @@ public class Producto {
     */
     private BigDecimal stock;
     private BigDecimal disponible;
-
+    // Este comentario es para ver lo cambios de git
     /*
     3. ATRIBUTOS DEL SEGUNDO PASO (Mutables / Lazy Loading)
     Se obtienen del catálogo maestro (/api/nisira/productos)

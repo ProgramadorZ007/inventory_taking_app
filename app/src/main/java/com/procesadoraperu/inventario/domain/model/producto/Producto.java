@@ -9,28 +9,32 @@ public class Producto {
     Se obtienen al escanear con /api/nisira/producto-stock
     ======================================================
     */
-    private final String idEmpresa;     // NUEVO: Para usarlo al guardar el inventario
+    private final String idEmpresa;
     private final String idProducto;
     private final String descripcion;
     private final String idMedida;
     private final String idGrupo;
-    private final String grupo;         // Ajustado según nueva API
-    private final String idSubGrupo;    // Ajustado según nueva API
-    private final String subGrupo;      // Ajustado según nueva API
-    private final String ultFecha;      // NUEVO: Última fecha de movimiento
+    private final String grupo;
+    private final String idSubGrupo;
+    private final String subGrupo;
+    private final String ultFecha;
 
     /*
     2. ATRIBUTOS DE STOCK (Dinámicos)
     =================================
     */
     private BigDecimal stock;
-    private BigDecimal disponible;      // NUEVO: Stock real disponible para usar
+    private BigDecimal disponible;
 
     /*
     3. ATRIBUTOS DEL SEGUNDO PASO (Mutables / Lazy Loading)
-    Se obtienen al consultar detalles adicionales si es necesario
+    Se obtienen del catálogo maestro (/api/nisira/productos)
     =======================================================
     */
+    private String nombreComercial; // ¡AGREGADO!
+    private String idUbicacion;     // ¡AGREGADO!
+    private String tipoproducto;    // ¡AGREGADO!
+    private String propiedad;       // ¡AGREGADO!
     private String idCultivo;
     private String cultivo;
     private String idVariedad;
@@ -39,7 +43,6 @@ public class Producto {
 
     /*
     Constructor para el PRIMER PASO (Escaneo inicial)
-    Actualizado con el nuevo JSON de Nisira
     =====================================================
     */
     public Producto(String idEmpresa, String idProducto, String descripcion, String idMedida,
@@ -58,7 +61,11 @@ public class Producto {
         this.disponible = disponible != null ? disponible : BigDecimal.ZERO;
         this.ultFecha = ultFecha;
 
-        // Inicializados en null hasta enriquecerlos
+        // Inicializados en null hasta enriquecerlos con el catálogo
+        this.nombreComercial = null;
+        this.idUbicacion = null;
+        this.tipoproducto = null;
+        this.propiedad = null;
         this.idCultivo = null;
         this.cultivo = null;
         this.idVariedad = null;
@@ -70,7 +77,16 @@ public class Producto {
     MÉTODOS DE NEGOCIO
     ==================
     */
-    public void enriquecerDatosAgro(String idCultivo, String cultivo, String idVariedad, String variedad, Integer estado) {
+
+    // MÉTODO ACTUALIZADO: Ahora recibe todos los datos extra del catálogo
+    public void enriquecerDetallesCatalogo(String nombreComercial, String idUbicacion,
+                                           String tipoproducto, String propiedad,
+                                           String idCultivo, String cultivo,
+                                           String idVariedad, String variedad, Integer estado) {
+        this.nombreComercial = nombreComercial;
+        this.idUbicacion = idUbicacion;
+        this.tipoproducto = tipoproducto;
+        this.propiedad = propiedad;
         this.idCultivo = idCultivo;
         this.cultivo = cultivo;
         this.idVariedad = idVariedad;
@@ -92,8 +108,8 @@ public class Producto {
     }
 
     /*
-    GETTERS (Incluyendo los nuevos)
-    ===============================
+    GETTERS
+    =======
     */
     public String getIdEmpresa() { return idEmpresa; }
     public String getIdProducto() { return idProducto; }
@@ -106,6 +122,12 @@ public class Producto {
     public BigDecimal getStock() { return stock; }
     public BigDecimal getDisponible() { return disponible; }
     public String getUltFecha() { return ultFecha; }
+
+    // GETTERS NUEVOS
+    public String getNombreComercial() { return nombreComercial; }
+    public String getIdUbicacion() { return idUbicacion; }
+    public String getTipoproducto() { return tipoproducto; }
+    public String getPropiedad() { return propiedad; }
 
     public String getIdCultivo() { return idCultivo; }
     public String getCultivo() { return cultivo; }

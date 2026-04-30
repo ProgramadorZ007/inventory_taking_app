@@ -23,8 +23,11 @@ public class RegistrarInventarioUseCase {
         long startTime = System.currentTimeMillis(); // ⏱️ Inicia el cronómetro
         String fechaActual = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(new Date());
 
-        // Simulación básica del payload para el log (puedes usar Gson aquí si prefieres un JSON real)
+        // Simulación básica del payload para el log
         String payload = "{idProducto: " + inventario.getIdProducto() + ", cantidad: " + inventario.getCantidad() + "}";
+
+        // ¡LA CORRECCIÓN!: Definimos la referencia para saber qué registro generó este log
+        String referencia = "Prod: " + inventario.getIdProducto();
 
         try {
             // 1. Intentamos enviar a la API
@@ -37,7 +40,8 @@ public class RegistrarInventarioUseCase {
             long timeTaken = System.currentTimeMillis() - startTime;
             LogIntegracion logExito = new LogIntegracion(
                     "/api/almacen/inventarios", "POST", 200, payload, "OK", null,
-                    timeTaken, fechaActual, inventario.getUsuarioCreacion()
+                    timeTaken, fechaActual, inventario.getUsuarioCreacion(),
+                    referencia // <-- Se inyecta aquí
             );
             logRepository.saveLogLocal(logExito);
 
@@ -52,7 +56,8 @@ public class RegistrarInventarioUseCase {
             long timeTaken = System.currentTimeMillis() - startTime;
             LogIntegracion logError = new LogIntegracion(
                     "/api/almacen/inventarios", "POST", 500, payload, null, e.getMessage(),
-                    timeTaken, fechaActual, inventario.getUsuarioCreacion()
+                    timeTaken, fechaActual, inventario.getUsuarioCreacion(),
+                    referencia // <-- Se inyecta aquí
             );
             logRepository.saveLogLocal(logError);
         }

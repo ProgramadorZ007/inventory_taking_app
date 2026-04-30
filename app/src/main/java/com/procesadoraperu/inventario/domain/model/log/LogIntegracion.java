@@ -10,11 +10,13 @@ public class LogIntegracion {
     private final String detalleError;
     private final long tiempoRespuestaMs;
     private final String fechaRegistro;
-    private final String username; // Quién provocó esta petición
+    private final String username;
+    private final String referenciaId; // NUEVO: Para saber qué registro provocó el log
 
     public LogIntegracion(String endpoint, String metodoHttp, int codigoHttp,
                           String payloadEnvio, String respuestaErp, String detalleError,
-                          long tiempoRespuestaMs, String fechaRegistro, String username) {
+                          long tiempoRespuestaMs, String fechaRegistro, String username,
+                          String referenciaId) {
         this.endpoint = endpoint;
         this.metodoHttp = metodoHttp;
         this.codigoHttp = codigoHttp;
@@ -24,16 +26,9 @@ public class LogIntegracion {
         this.tiempoRespuestaMs = tiempoRespuestaMs;
         this.fechaRegistro = fechaRegistro;
         this.username = username;
+        this.referenciaId = referenciaId;
     }
 
-    // SOLO GETTERS
-    public String getEndpoint() { return endpoint; }
-    public String getMetodoHttp() { return metodoHttp; }
-    public int getCodigoHttp() { return codigoHttp; }
-    public String getPayloadEnvio() { return payloadEnvio; }
-    public String getRespuestaErp() { return respuestaErp; }
-    public String getDetalleError() { return detalleError; }
-    public long getTiempoRespuestaMs() { return tiempoRespuestaMs; }
-    public String getFechaRegistro() { return fechaRegistro; }
-    public String getUsername() { return username; }
+    // ... (Mantienes tus getters actuales y agregas el nuevo)
+    public String getReferenciaId() { return referenciaId; }
 }

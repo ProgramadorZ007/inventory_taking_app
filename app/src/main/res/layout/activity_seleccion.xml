@@ -11,33 +11,35 @@
         android:layout_height="wrap_content"
         android:background="@color/pp_green"
         android:padding="20dp"
-        android:orientation="vertical">
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
 
         <TextView
-            android:id="@+id/tvWelcomeUser"
+            android:id="@+id/tvTituloSeleccion"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Bienvenido"
+            android:text="Seleccionar Opción"
             android:textColor="@color/pp_white"
             android:textSize="20sp"
             android:textStyle="bold"/>
-
-        <TextView
-            android:id="@+id/tvCurrentLocation"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Cargando ubicación..."
-            android:textColor="#CCFFFFFF"
-            android:textSize="14sp"
-            android:layout_marginTop="4dp"/>
     </LinearLayout>
 
-    <TextView
+    <EditText
+        android:id="@+id/etBuscar"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="¿Qué desea hacer hoy?"
-        android:padding="20dp"
-        android:textStyle="bold"
-        android:textColor="@color/pp_text_dark"/>
+        android:layout_height="50dp"
+        android:layout_margin="16dp"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:background="@android:color/white"
+        android:hint="Buscar..."
+        android:elevation="2dp"
+        android:inputType="text"/>
 
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerViewOpciones"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:clipToPadding="false"
+        android:padding="8dp"/>
 </LinearLayout>

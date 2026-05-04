@@ -2,6 +2,7 @@ package com.procesadoraperu.inventario.domain.usecase.inventario;
 
 import com.procesadoraperu.inventario.domain.model.inventario.Inventario;
 import com.procesadoraperu.inventario.domain.model.log.LogIntegracion;
+import com.procesadoraperu.inventario.domain.provider.IAuditClientInfoProvider; // IMPORT NUEVO
 import com.procesadoraperu.inventario.domain.repository.inventario.IInventarioRepository;
 import com.procesadoraperu.inventario.domain.repository.log.ILogRepository;
 
@@ -12,21 +13,39 @@ import java.util.Locale;
 public class RegistrarInventarioUseCase {
 
     private final IInventarioRepository inventarioRepository;
-    private final ILogRepository logRepository; // NUEVO: Repositorio de Logs
+    private final ILogRepository logRepository;
+    private final IAuditClientInfoProvider auditProvider; // NUEVO: Interfaz de auditoría
 
-    public RegistrarInventarioUseCase(IInventarioRepository inventarioRepository, ILogRepository logRepository) {
+    // Inyectamos la interfaz en el constructor
+    public RegistrarInventarioUseCase(IInventarioRepository inventarioRepository,
+                                      ILogRepository logRepository,
+                                      IAuditClientInfoProvider auditProvider) {
         this.inventarioRepository = inventarioRepository;
         this.logRepository = logRepository;
+        this.auditProvider = auditProvider;
     }
 
     public void execute(Inventario inventario) {
+        // 1. Primero pedimos la información de auditoría (GPS, IP, dispositivo, etc.)
+        auditProvider.getAuditInfo(auditInfo -> {
+
+            // 2. Cuando el proveedor responda, le asignamos la info al inventario
+            inventario.setAuditClientInfo(auditInfo);
+
+            // 3. Ejecutamos la lógica de red y base de datos
+            ejecutarGuardadoYLog(inventario);
+        });
+    }
+
+    // Separamos la lógica en un método privado para mantener el código limpio
+    private void ejecutarGuardadoYLog(Inventario inventario) {
         long startTime = System.currentTimeMillis(); // ⏱️ Inicia el cronómetro
         String fechaActual = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(new Date());
 
         // Simulación básica del payload para el log
         String payload = "{idProducto: " + inventario.getIdProducto() + ", cantidad: " + inventario.getCantidad() + "}";
 
-        // ¡LA CORRECCIÓN!: Definimos la referencia para saber qué registro generó este log
+        // Definimos la referencia para saber qué registro generó este log
         String referencia = "Prod: " + inventario.getIdProducto();
 
         try {
@@ -48,6 +67,7 @@ public class RegistrarInventarioUseCase {
         } catch (Exception e) {
             // 2. Falló el envío (No hay internet o servidor caído)
             inventario.setEstadoSincronizacion("PENDIENTE");
+
             // Usamos la fecha actual como fecha de registro local para ordenar los pendientes
             inventario.setFechaRegistroLocal(fechaActual);
             inventarioRepository.saveInventarioLocal(inventario);

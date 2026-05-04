@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
+    android:background="@color/pp_gray"
     android:padding="32dp"
     android:gravity="center">
 
@@ -10,36 +12,55 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Procesadora Perú S.A.C."
-        android:textSize="24sp"
+        android:textColor="@color/pp_green"
+        android:textSize="26sp"
         android:textStyle="bold"
         android:layout_marginBottom="32dp"/>
 
-    <EditText
-        android:id="@+id/etUsername"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Usuario (Ej. michaels)"
-        android:inputType="text" />
+        android:orientation="vertical"
+        android:background="@android:color/white"
+        android:padding="24dp"
+        android:elevation="4dp">
 
-    <EditText
-        android:id="@+id/etPassword"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Contraseña"
-        android:inputType="textPassword"
-        android:layout_marginTop="16dp"/>
+        <EditText
+            android:id="@+id/etUsername"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:hint="Usuario"
+            android:inputType="text"
+            android:background="@android:color/transparent"/>
 
-    <Button
-        android:id="@+id/btnLogin"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="INGRESAR"
-        android:layout_marginTop="32dp"/>
+        <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#E0E0E0" android:layout_marginBottom="16dp"/>
 
-    <ProgressBar
-        android:id="@+id/progressBarLogin"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:visibility="gone"/>
+        <EditText
+            android:id="@+id/etPassword"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:hint="Contraseña"
+            android:inputType="textPassword"
+            android:background="@android:color/transparent"/>
+
+        <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#E0E0E0"/>
+
+        <Button
+            android:id="@+id/btnLogin"
+            android:layout_width="match_parent"
+            android:layout_height="55dp"
+            android:text="INGRESAR"
+            android:textColor="@color/pp_white"
+            android:backgroundTint="@color/pp_green"
+            android:textStyle="bold"
+            android:layout_marginTop="24dp"/>
+
+        <ProgressBar
+            android:id="@+id/progressBarLogin"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="16dp"
+            android:visibility="gone"/>
+    </LinearLayout>
 </LinearLayout>

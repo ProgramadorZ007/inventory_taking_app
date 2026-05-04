@@ -7,24 +7,22 @@ import android.os.Build;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.procesadoraperu.inventario.domain.model.inventario.AuditClientInfo;
+import com.procesadoraperu.inventario.domain.provider.IAuditClientInfoProvider; // IMPORT NUEVO
 
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.util.Enumeration;
 
-public class AuditClientInfoProvider {
+public class AuditClientInfoProvider implements IAuditClientInfoProvider {
 
     private final FusedLocationProviderClient fusedLocationClient;
-
-    public interface OnAuditInfoCallback {
-        void onSuccess(AuditClientInfo auditInfo);
-    }
 
     public AuditClientInfoProvider(Context context) {
         this.fusedLocationClient = LocationServices.getFusedLocationProviderClient(context);
     }
 
+    @Override // NUEVO: Indica que respeta el contrato del Dominio
     @SuppressLint("MissingPermission")
     public void getAuditInfo(OnAuditInfoCallback callback) {
         // Obtenemos los datos inmutables primero

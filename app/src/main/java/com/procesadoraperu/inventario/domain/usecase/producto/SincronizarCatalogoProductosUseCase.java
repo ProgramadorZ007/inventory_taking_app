@@ -18,8 +18,8 @@ public class SincronizarCatalogoProductosUseCase {
      * Elimina registros antiguos e inserta los nuevos para reflejar cambios de nombres.
      */
     public void execute() throws Exception {
-        // 1. Descarga el catálogo completo desde la API detallada
-        List<Producto> catalogoRemoto = productoRepository.fetchAllProductosRemote();
+        // ¡CORRECCIÓN: Pasamos null, null para no filtrar y descargar todo el catálogo!
+        List<Producto> catalogoRemoto = productoRepository.fetchAllProductosRemote(null, null);
 
         if (catalogoRemoto != null && !catalogoRemoto.isEmpty()) {
             // 2. Sobrescribe la tabla 'Producto' en SQLite

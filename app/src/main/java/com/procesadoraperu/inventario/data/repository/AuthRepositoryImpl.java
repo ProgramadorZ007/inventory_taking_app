@@ -3,14 +3,16 @@ package com.procesadoraperu.inventario.data.repository;
 import android.content.Context;
 import android.content.SharedPreferences;
 
+import com.procesadoraperu.inventario.core.utils.JwtDecoder; // NUEVO: Importa tu decodificador
 import com.procesadoraperu.inventario.data.local.dao.UsuarioDao;
 import com.procesadoraperu.inventario.data.local.entity.UsuarioEntity;
 import com.procesadoraperu.inventario.data.remote.api.AuthApi;
 import com.procesadoraperu.inventario.data.remote.request.LoginRequest;
 import com.procesadoraperu.inventario.data.remote.response.AuthDataResponse;
-import com.procesadoraperu.inventario.data.remote.response.BaseResponse;
 import com.procesadoraperu.inventario.domain.model.auth.AuthToken;
 import com.procesadoraperu.inventario.domain.repository.auth.IAuthRepository;
+
+import org.json.JSONObject; // NUEVO
 
 import retrofit2.Response;
 
@@ -30,18 +32,26 @@ public class AuthRepositoryImpl implements IAuthRepository {
     public AuthToken login(String username, String password) throws Exception {
         LoginRequest request = new LoginRequest(username, password);
 
-        // Ya no usamos BaseResponse aquí tampoco
         Response<AuthDataResponse> response = authApi.login(request).execute();
 
-        // Verificamos que sea HTTP 200 y que el cuerpo no esté vacío
         if (response.isSuccessful() && response.body() != null) {
             AuthDataResponse data = response.body();
 
-            // 1. Guardar perfil del usuario en SQLite (Room)
+            // 1. Guardar el perfil real extrayendo datos del JWT
             UsuarioEntity userEntity = new UsuarioEntity();
-            userEntity.username = username; // Usamos el que digitó en pantalla
-            userEntity.nombres = "Operario"; // Placeholder temporal
-            userEntity.idCodigoGeneral = "";
+            userEntity.username = username;
+
+            // CORRECCIÓN APLICADA: Extraemos los claims
+            JSONObject payload = JwtDecoder.decodePayload(data.accessToken);
+            if (payload != null) {
+                // "http://schemas..." es la ruta estándar de Microsoft IIS/Identity
+                userEntity.nombres = payload.optString("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name", "Operario");
+                userEntity.idCodigoGeneral = payload.optString("user_code", "");
+            } else {
+                userEntity.nombres = "Operario (Sin red)";
+                userEntity.idCodigoGeneral = "";
+            }
+
             usuarioDao.insert(userEntity);
 
             // 2. Retornar el token puro para la capa de Dominio
@@ -51,15 +61,14 @@ public class AuthRepositoryImpl implements IAuthRepository {
         }
     }
 
+    // ... (El resto de tus métodos siguen exactamente igual) ...
     @Override
     public void register(String username, String password, String idCodigoGeneral, String nombres) throws Exception {
-        // TODO: Implementar consumo del endpoint /api/auth/register en AuthApi
         throw new UnsupportedOperationException("El registro desde la app aún no está implementado.");
     }
 
     @Override
     public AuthToken refreshToken(String refreshToken) throws Exception {
-        // TODO: Implementar consumo del endpoint /api/auth/refresh-token en AuthApi
         throw new UnsupportedOperationException("La renovación de token aún no está implementada.");
     }
 
@@ -74,7 +83,6 @@ public class AuthRepositoryImpl implements IAuthRepository {
 
     @Override
     public void logout() {
-        // Borramos las preferencias (tokens) y la base de datos del usuario
         prefs.edit().clear().apply();
         usuarioDao.deleteUsuario();
     }
@@ -88,7 +96,7 @@ public class AuthRepositoryImpl implements IAuthRepository {
         if (accessToken != null && refreshToken != null) {
             return new AuthToken(accessToken, refreshToken, expiresIn);
         }
-        return null; // No hay sesión guardada
+        return null;
     }
 
     @Override

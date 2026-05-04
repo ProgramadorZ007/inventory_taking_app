@@ -48,9 +48,10 @@ public class LoginActivity extends AppCompatActivity {
 
         viewModel.getLoginSuccess().observe(this, isSuccess -> {
             if (isSuccess) {
-                Intent intent = new Intent(LoginActivity.this, HomeActivity.class);
+                // CORRECCIÓN: Tras loguearte, vas a la selección, NO al Home
+                Intent intent = new Intent(LoginActivity.this, com.procesadoraperu.inventario.presentation.selection.SucursalActivity.class);
                 startActivity(intent);
-                finish(); // Destruimos el LoginActivity
+                finish();
             }
         });
 

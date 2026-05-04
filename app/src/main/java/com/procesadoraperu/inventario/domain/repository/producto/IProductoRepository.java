@@ -9,7 +9,8 @@ public interface IProductoRepository {
     Producto fetchProductoStock(String idSucursal, String idAlmacen, String idProducto) throws Exception;
 
     // Descarga masiva del catálogo (Paso 2)
-    List<Producto> fetchAllProductosRemote() throws Exception;
+    // DESCARGA DEL CATÁLOGO (Ahora con filtros opcionales)
+    List<Producto> fetchAllProductosRemote(String idGrupo, String idSubGrupo) throws Exception;
 
     // Operaciones de base de datos local (SQLite)
     void saveProductosLocal(List<Producto> productos);

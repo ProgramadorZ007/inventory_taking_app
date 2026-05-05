@@ -5,43 +5,60 @@ import android.util.Log;
 
 import org.json.JSONObject;
 
+/**
+ * Utilidad para el procesamiento y extracción de información de tokens JWT.
+ *
+ * Esta clase se encarga de decodificar la sección 'Payload' de un JSON Web Token.
+ * Es fundamental para la seguridad y personalización de la aplicación, ya que
+ * permite obtener los 'Claims' (datos del usuario) de forma local y eficiente.
+ */
 public class JwtDecoder {
 
     private static final String TAG = "JwtDecoder";
 
     /**
-     * Decodifica la carga útil (payload) de un token JWT.
+     * Decodifica la carga útil (Payload) de un token JWT.
      *
-     * @param jwtToken El token de acceso completo (Header.Payload.Signature)
-     * @return Un JSONObject con los datos (claims) del token, o null si falla.
+     * El proceso consiste en separar las partes del token, decodificar la sección
+     * central usando Base64 bajo el estándar URL_SAFE y transformar el resultado
+     * en un formato JSON manejable por la aplicación.
+     *
+     * @param jwtToken El token de acceso completo (formato: Header.Payload.Signature).
+     * @return Un {@link JSONObject} con los datos (claims) del token, o null si el token es inválido.
      */
     public static JSONObject decodePayload(String jwtToken) {
+        // Validación de entrada para evitar excepciones por nulos o vacíos
         if (jwtToken == null || jwtToken.isEmpty()) {
             return null;
         }
 
         try {
-            // Un JWT estándar tiene 3 partes separadas por puntos (Header.Payload.Signature)
+            // 1. DIVISIÓN DEL TOKEN:
+            // Un JWT estándar se compone de 3 partes separadas por puntos.
             String[] parts = jwtToken.split("\\.");
 
-            // Validamos que al menos tenga el Header y el Payload
+            // Verificamos que la estructura sea correcta (mínimo Header y Payload)
             if (parts.length < 2) {
-                Log.e(TAG, "Formato de JWT inválido.");
+                Log.e(TAG, "Estructura de JWT inválida detectada.");
                 return null;
             }
 
-            // El Payload es la segunda parte (índice 1)
+            // 2. EXTRACCIÓN DEL PAYLOAD:
+            // El Payload (datos del usuario) siempre se ubica en el índice 1.
             String payloadEncoded = parts[1];
 
-            // Decodificamos usando URL_SAFE (estándar para JWT)
+            // 3. DECODIFICACIÓN BASE64:
+            // Se utiliza URL_SAFE ya que los JWT están diseñados para ser transmitidos vía URL.
             byte[] decodedBytes = Base64.decode(payloadEncoded, Base64.URL_SAFE);
             String payloadDecoded = new String(decodedBytes, "UTF-8");
 
-            // Convertimos el String decodificado a un objeto JSON
+            // 4. PARSEO A JSON:
+            // Retorna los datos estructurados para su consumo en la lógica de negocio.
             return new JSONObject(payloadDecoded);
 
         } catch (Exception e) {
-            Log.e(TAG, "Error al decodificar el token JWT: " + e.getMessage());
+            // Registro de error en Logcat para facilitar el seguimiento técnico
+            Log.e(TAG, "Fallo crítico al procesar el Payload del JWT: " + e.getMessage());
             return null;
         }
     }

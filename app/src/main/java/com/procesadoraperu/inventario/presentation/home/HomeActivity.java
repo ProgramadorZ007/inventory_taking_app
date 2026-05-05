@@ -5,7 +5,6 @@ import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
@@ -109,6 +108,20 @@ public class HomeActivity extends AppCompatActivity
         });
 
         viewModel.cargarDatosCabecera();
+
+        // ── Manejo moderno del botón "Atrás" ──────────────────────────────────
+        getOnBackPressedDispatcher().addCallback(this, new androidx.activity.OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
+                    // Si el menú lateral está abierto, lo cerramos
+                    drawerLayout.closeDrawer(GravityCompat.START);
+                } else {
+                    // Si el menú está cerrado, cerramos la actividad y salimos de la app
+                    finish();
+                }
+            }
+        });
     }
 
     // ── Navigation Drawer ────────────────────────────────────────────────────
@@ -155,13 +168,5 @@ public class HomeActivity extends AppCompatActivity
         super.onResume();
         // Recarga los datos de cabecera por si el usuario cambió de ubicación
         viewModel.cargarDatosCabecera();
-    }
-
-    @Override
-    public void onBackPressed() {
-        if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
-            drawerLayout.closeDrawer(GravityCompat.START);
-        }
-        // Bloqueamos el botón atrás para no regresar al login
     }
 }

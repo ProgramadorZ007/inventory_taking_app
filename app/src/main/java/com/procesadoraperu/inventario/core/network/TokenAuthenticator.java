@@ -22,57 +22,82 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 import okhttp3.Route;
 
+/**
+ * Autenticador inteligente para la gestión de expiración de Tokens.
+ *
+ * Esta clase implementa la interfaz {@link Authenticator} de OkHttp. Se dispara
+ * automáticamente cuando el servidor responde con un error HTTP 401 (Unauthorized).
+ * Su función es intentar renovar el Access Token de forma transparente para el usuario.
+ */
 public class TokenAuthenticator implements Authenticator {
 
     private final Context context;
     private final SharedPreferences prefs;
 
+    /**
+     * Constructor del autenticador.
+     *
+     * @param context Contexto necesario para manejar SharedPreferences y navegación.
+     */
     public TokenAuthenticator(Context context) {
         this.context = context;
         this.prefs = context.getSharedPreferences("auth_prefs", Context.MODE_PRIVATE);
     }
 
+    /**
+     * Método de intercepción de errores de autenticación.
+     *
+     * Si la petición original falla por token expirado, este método detiene el flujo,
+     * solicita un nuevo token al servidor y reintenta la petición original con
+     * las nuevas credenciales.
+     */
     @Nullable
     @Override
     public Request authenticate(@Nullable Route route, @NonNull Response response) throws IOException {
-        // Si el código NO es 401, no hacemos nada.
-        // Si la petición original que falló ya era un intento de refresh, evitamos un bucle infinito.
+
+        // 1. VALIDACIÓN DE DISPARO:
+        // Solo actuamos si el error es 401.
+        // Evitamos bucles infinitos si la propia petición de refresco falla.
         if (response.code() != 401 || response.request().url().encodedPath().contains("/refresh-token")) {
             return null;
         }
 
+        // 2. RECUPERACIÓN DEL REFRESH TOKEN:
         String refreshToken = prefs.getString("REFRESH_TOKEN", null);
 
-        // Si no hay refresh token, el usuario debe iniciar sesión manualmente
         if (refreshToken == null || refreshToken.isEmpty()) {
             logoutAndNavigateToLogin();
             return null;
         }
 
-        // 1. Intentamos renovar el token haciendo una llamada síncrona
+        // 3. RENOVACIÓN SÍNCRONA:
+        // Se realiza una llamada bloqueante al servidor para obtener un nuevo par de tokens.
         String newAccessToken = fetchNewToken(refreshToken);
 
         if (newAccessToken != null) {
-            // 2. ¡Éxito! Clonamos la petición original que falló, pero le ponemos el NUEVO token
+            // ÉXITO: Se reconstruye la petición que falló originalmente inyectando el nuevo token.
             return response.request().newBuilder()
                     .header("Authorization", "Bearer " + newAccessToken)
                     .build();
         } else {
-            // 3. Falló la renovación (el refresh token expiró o fue revocado)
+            // FALLO CRÍTICO: El Refresh Token ya no es válido, se requiere login manual.
             logoutAndNavigateToLogin();
             return null;
         }
     }
 
     /**
-     * Hace la llamada directa a la API de Nisira para refrescar el token.
+     * Realiza la petición técnica al endpoint de renovación de Nisira.
+     *
+     * @param refreshToken El token de larga duración almacenado en el dispositivo.
+     * @return El nuevo Access Token en caso de éxito; null en caso contrario.
      */
     private String fetchNewToken(String refreshToken) {
         try {
             OkHttpClient client = new OkHttpClient();
             MediaType JSON = MediaType.parse("application/json; charset=utf-8");
 
-            // Armamos el JSON manualmente
+            // Construcción del cuerpo de la petición según el esquema esperado por la API
             String jsonBody = "{\"refreshToken\":\"" + refreshToken + "\"}";
             RequestBody body = RequestBody.create(jsonBody, JSON);
 
@@ -81,20 +106,19 @@ public class TokenAuthenticator implements Authenticator {
                     .post(body)
                     .build();
 
-            // Ejecutamos la petición
+            // Ejecución síncrona de la llamada
             Response refreshResponse = client.newCall(request).execute();
 
-            // MEJORA: Adaptado al formato real de la API Nisira (sin la envoltura "success")
             if (refreshResponse.isSuccessful() && refreshResponse.body() != null) {
                 String responseString = refreshResponse.body().string();
                 JSONObject jsonObject = new JSONObject(responseString);
 
-                // Comprobamos si el JSON tiene directamente el accessToken (Igual que el Login)
+                // Procesamiento de la respuesta (Formato estándar de API Nisira)
                 if (jsonObject.has("accessToken") && jsonObject.has("refreshToken")) {
                     String newAccessToken = jsonObject.getString("accessToken");
                     String newRefreshToken = jsonObject.getString("refreshToken");
 
-                    // Guardamos los nuevos tokens en SharedPreferences
+                    // Persistencia de las nuevas credenciales
                     prefs.edit()
                             .putString("ACCESS_TOKEN", newAccessToken)
                             .putString("REFRESH_TOKEN", newRefreshToken)
@@ -104,19 +128,22 @@ public class TokenAuthenticator implements Authenticator {
                 }
             }
         } catch (Exception e) {
-            Log.e("TokenAuthenticator", "Error refrescando el token", e);
+            Log.e("TokenAuthenticator", "Error crítico en proceso de refresco de token", e);
         }
         return null;
     }
 
     /**
-     * Limpia la sesión y manda al usuario a la pantalla de Login.
+     * Realiza el cierre de sesión forzoso y redirige al usuario a la pantalla de entrada.
+     *
+     * Este método garantiza que, si la seguridad del usuario se ve comprometida
+     * o la sesión expira totalmente, la app regrese a un estado seguro.
      */
     private void logoutAndNavigateToLogin() {
-        // Limpiamos los tokens guardados
+        // Limpieza de caché de credenciales
         prefs.edit().clear().apply();
 
-        // Lanzamos el Activity de Login y limpiamos el historial de pantallas
+        // Navegación con limpieza de historial (Evita que el usuario regrese con el botón atrás)
         Intent intent = new Intent(context, LoginActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         context.startActivity(intent);

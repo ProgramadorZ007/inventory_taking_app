@@ -41,10 +41,18 @@
     <string name="btn_sincronizar">Sincronizar Todo</string>
     <string name="empty_pendientes">No hay registros pendientes.\n¡Todo sincronizado! ✅</string>
 
-    <!-- Perfil -->
+    <!-- Perfil (SECCIÓN ACTUALIZADA) -->
     <string name="title_perfil">Mi Perfil</string>
+    <string name="label_usuario_prefijo">\@usuario</string>
+    <string name="label_datos_operario">Datos del Operario</string>
+    <string name="label_codigo_operario">Código de operario</string>
+    <string name="label_ubicacion_activa">Ubicación Activa</string>
+    <string name="label_sucursal">Sucursal</string>
+    <string name="label_almacen">Almacén</string>
+    <string name="btn_cambiar_ubicacion">🔄  Cambiar Sucursal / Almacén</string>
 
     <!-- Mensajes generales -->
     <string name="error_generico">Ocurrió un error inesperado.</string>
     <string name="loading">Cargando…</string>
+    <string name="no_data">—</string>
 </resources>

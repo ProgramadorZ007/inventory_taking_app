@@ -71,7 +71,7 @@
                         android:id="@+id/tvUsername"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@usuario"
+                        android:text="@string/label_usuario_prefijo"
                         android:textColor="#CCFFFFFF"
                         android:textSize="14sp"
                         android:gravity="center"

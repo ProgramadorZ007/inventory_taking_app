@@ -303,8 +303,8 @@
         android:layout_gravity="start"
         android:fitsSystemWindows="true"
         app:headerLayout="@layout/nav_header_main"
-        app:menu="@layout/nav_menu"
-        app:itemIconTint="@color/pp_green"
+        app:menu="@menu/nav_menu"
+        app:itemIconTint="@null"
         app:itemTextColor="@color/pp_text_dark"
         app:itemIconSize="24dp"/>
 

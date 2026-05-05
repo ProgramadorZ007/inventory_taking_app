@@ -1,9 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
-    <style name="Base.Theme.Inventario" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your light theme here. -->
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+
+    <style name="Base.Theme.Inventario" parent="Theme.Material3.Light.NoActionBar">
+        <item name="colorPrimary">@color/pp_green</item>
+        <item name="colorPrimaryDark">@color/pp_green_dark</item>
+        <item name="colorAccent">@color/pp_green_accent</item>
+        <item name="colorOnPrimary">@color/pp_white</item>
+        <item name="colorSurface">@color/pp_white</item>
+        <item name="colorOnSurface">@color/pp_text_dark</item>
+        <item name="android:windowBackground">@color/pp_gray</item>
+        <item name="android:statusBarColor">@color/pp_green_dark</item>
+        <item name="android:navigationBarColor">@color/pp_white</item>
     </style>
 
     <style name="Theme.Inventario" parent="Base.Theme.Inventario" />
+
+    <!-- Toolbar -->
+    <style name="Theme.Inventario.Toolbar" parent="ThemeOverlay.AppCompat.Dark.ActionBar">
+        <item name="colorControlNormal">@color/pp_white</item>
+    </style>
+
+    <!-- Card estilo PP -->
+    <style name="PPCard" parent="Widget.MaterialComponents.CardView">
+        <item name="cardCornerRadius">12dp</item>
+        <item name="cardElevation">3dp</item>
+        <item name="cardBackgroundColor">@color/pp_white</item>
+    </style>
+
+    <!-- Botón primario -->
+    <style name="PPButton.Primary" parent="Widget.MaterialComponents.Button">
+        <item name="backgroundTint">@color/pp_green</item>
+        <item name="android:textColor">@color/pp_white</item>
+        <item name="cornerRadius">8dp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <!-- Botón outlined -->
+    <style name="PPButton.Outlined" parent="Widget.MaterialComponents.Button.OutlinedButton">
+        <item name="strokeColor">@color/pp_green</item>
+        <item name="android:textColor">@color/pp_green</item>
+        <item name="cornerRadius">8dp</item>
+    </style>
+
+    <!-- TextInputLayout estilo PP -->
+    <style name="PPTextInput" parent="Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+        <item name="boxStrokeColor">@color/pp_green</item>
+        <item name="hintTextColor">@color/pp_green</item>
+        <item name="boxCornerRadiusTopStart">8dp</item>
+        <item name="boxCornerRadiusTopEnd">8dp</item>
+        <item name="boxCornerRadiusBottomStart">8dp</item>
+        <item name="boxCornerRadiusBottomEnd">8dp</item>
+    </style>
+
+    <!-- Dialog estilo PP -->
+    <style name="PPDialog" parent="ThemeOverlay.MaterialComponents.MaterialAlertDialog">
+        <item name="colorPrimary">@color/pp_green</item>
+        <item name="buttonBarPositiveButtonStyle">@style/PPButton.Primary</item>
+    </style>
+
 </resources>

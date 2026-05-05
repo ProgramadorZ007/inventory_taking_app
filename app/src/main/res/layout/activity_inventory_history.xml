@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/pp_gray">
+
+    <!-- Toolbar -->
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="@color/pp_green"
+        android:elevation="6dp"
+        app:titleTextColor="@color/pp_white"
+        app:navigationIconTint="@color/pp_white"/>
+
+    <!-- Progress bar de carga -->
+    <ProgressBar
+        android:id="@+id/progressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:indeterminateTint="@color/pp_green"
+        android:visibility="gone"
+        android:layout_margin="16dp"/>
+
+    <!-- Mensaje de lista vacía -->
+    <TextView
+        android:id="@+id/tvEmpty"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="No hay registros para el día de hoy.\n\nRealiza tu primera toma de inventario con el botón del inicio."
+        android:textColor="@color/pp_text_secondary"
+        android:textSize="15sp"
+        android:gravity="center"
+        android:padding="32dp"
+        android:visibility="gone"/>
+
+    <!-- Lista de inventarios -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:clipToPadding="false"
+        android:padding="8dp"/>
+
+</LinearLayout>

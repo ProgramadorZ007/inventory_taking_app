@@ -1,6 +1,7 @@
 package com.procesadoraperu.inventario.data.local.database;
 
 import android.content.Context;
+
 import androidx.room.Database;
 import androidx.room.Room;
 import androidx.room.RoomDatabase;
@@ -18,27 +19,37 @@ import com.procesadoraperu.inventario.data.local.entity.ProductoEntity;
 import com.procesadoraperu.inventario.data.local.entity.SucursalEntity;
 import com.procesadoraperu.inventario.data.local.entity.UsuarioEntity;
 
+/**
+ * Base de datos SQLite local usando Room.
+ * Permite que la app funcione completamente sin conexión a internet.
+ *
+ * Versión 4: Esquema estable con todas las entidades del sistema.
+ * fallbackToDestructiveMigration() se usa durante desarrollo.
+ * En producción se deben implementar migraciones explícitas.
+ */
 @Database(
         entities = {
                 SucursalEntity.class,
-                UsuarioEntity.class,
                 AlmacenEntity.class,
+                UsuarioEntity.class,
                 ProductoEntity.class,
                 InventarioEntity.class,
                 LogEntity.class
         },
-        version = 3,
+        version = 4,
         exportSchema = false
 )
 public abstract class InventarioDatabase extends RoomDatabase {
 
+    // ─── DAOs ────────────────────────────────────────────────
     public abstract SucursalDao sucursalDao();
-    public abstract UsuarioDao usuarioDao();
     public abstract AlmacenDao almacenDao();
+    public abstract UsuarioDao usuarioDao();
     public abstract ProductoDao productoDao();
     public abstract InventarioDao inventarioDao();
     public abstract LogDao logDao();
 
+    // ─── Singleton thread-safe ───────────────────────────────
     private static volatile InventarioDatabase INSTANCE;
 
     public static InventarioDatabase getInstance(Context context) {
@@ -48,13 +59,25 @@ public abstract class InventarioDatabase extends RoomDatabase {
                     INSTANCE = Room.databaseBuilder(
                                     context.getApplicationContext(),
                                     InventarioDatabase.class,
-                                    "ppsac_inventario_db"
+                                    "ppsac_inventario_v4.db"
                             )
+                            // Durante desarrollo: migración destructiva para evitar crasheos
+                            // TODO: Cambiar a migraciones explícitas antes de producción
                             .fallbackToDestructiveMigration()
                             .build();
                 }
             }
         }
         return INSTANCE;
+    }
+
+    /**
+     * Cierra la instancia (usar solo en tests o limpieza de sesión total).
+     */
+    public static void destroyInstance() {
+        if (INSTANCE != null && INSTANCE.isOpen()) {
+            INSTANCE.close();
+        }
+        INSTANCE = null;
     }
 }

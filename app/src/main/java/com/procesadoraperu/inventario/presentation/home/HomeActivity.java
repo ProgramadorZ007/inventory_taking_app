@@ -12,6 +12,7 @@ import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.cardview.widget.CardView;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.lifecycle.ViewModelProvider;
@@ -32,25 +33,23 @@ public class HomeActivity extends AppCompatActivity
     private HomeViewModel viewModel;
     private DrawerLayout drawerLayout;
 
-    // Header views (nav drawer header)
-    private TextView tvNavNombre, tvNavSucursal, tvNavAlmacen;
-    // Toolbar subtitle
-    private TextView tvToolbarSucursal;
+    // Header del Navigation Drawer
+    private TextView tvNavNombre, tvNavSucursal, tvNavAlmacen, tvNavAvatar;
+    // Toolbar
+    private TextView tvToolbarSubtitle;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
 
-        // --- Toolbar ---
+        // ── Toolbar ───────────────────────────────────────────────────────────
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().setTitle("");
-        }
-        tvToolbarSucursal = findViewById(R.id.tvToolbarSubtitle);
+        if (getSupportActionBar() != null) getSupportActionBar().setTitle("");
+        tvToolbarSubtitle = findViewById(R.id.tvToolbarSubtitle);
 
-        // --- Drawer ---
+        // ── Navigation Drawer ────────────────────────────────────────────────
         drawerLayout = findViewById(R.id.drawer_layout);
         NavigationView navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
@@ -63,27 +62,45 @@ public class HomeActivity extends AppCompatActivity
 
         // Vistas del header del drawer
         View headerView = navigationView.getHeaderView(0);
+        tvNavAvatar   = headerView.findViewById(R.id.tvNavAvatar);
         tvNavNombre   = headerView.findViewById(R.id.tvNavNombre);
         tvNavSucursal = headerView.findViewById(R.id.tvNavSucursal);
         tvNavAlmacen  = headerView.findViewById(R.id.tvNavAlmacen);
 
-        // Botón principal "Realizar Toma"
+        // ── Botón principal ───────────────────────────────────────────────────
         findViewById(R.id.btnRealizarToma).setOnClickListener(v ->
                 startActivity(new Intent(this, TakeInventoryActivity.class)));
 
-        // ViewModel
+        // ── Shortcuts ─────────────────────────────────────────────────────────
+        CardView cardHistorial = findViewById(R.id.cardHistorial);
+        CardView cardPendientes = findViewById(R.id.cardPendientes);
+
+        if (cardHistorial != null) {
+            cardHistorial.setOnClickListener(v ->
+                    startActivity(new Intent(this, InventoryHistoryActivity.class)));
+        }
+        if (cardPendientes != null) {
+            cardPendientes.setOnClickListener(v ->
+                    startActivity(new Intent(this, PendingInventoryActivity.class)));
+        }
+
+        // ── ViewModel ─────────────────────────────────────────────────────────
         ViewModelFactory factory = new ViewModelFactory(this);
         viewModel = new ViewModelProvider(this, factory).get(HomeViewModel.class);
 
         viewModel.getHeaderData().observe(this, data -> {
+            // Inicial del nombre para el avatar
+            String inicial = (data.nombreUsuario != null && !data.nombreUsuario.isEmpty())
+                    ? String.valueOf(data.nombreUsuario.charAt(0)).toUpperCase() : "O";
+            tvNavAvatar.setText(inicial);
             tvNavNombre.setText(data.nombreUsuario);
             tvNavSucursal.setText(data.sucursal);
             tvNavAlmacen.setText(data.almacen);
-            tvToolbarSucursal.setText(data.sucursal + " · " + data.almacen);
+            tvToolbarSubtitle.setText(data.sucursal + "  ·  " + data.almacen);
         });
 
         viewModel.getLogoutSuccess().observe(this, success -> {
-            if (success) {
+            if (Boolean.TRUE.equals(success)) {
                 Intent intent = new Intent(this, LoginActivity.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 startActivity(intent);
@@ -94,6 +111,7 @@ public class HomeActivity extends AppCompatActivity
         viewModel.cargarDatosCabecera();
     }
 
+    // ── Navigation Drawer ────────────────────────────────────────────────────
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         int id = item.getItemId();
@@ -104,9 +122,11 @@ public class HomeActivity extends AppCompatActivity
         } else if (id == R.id.nav_pendientes) {
             startActivity(new Intent(this, PendingInventoryActivity.class));
 
+        } else if (id == R.id.nav_toma) {
+            startActivity(new Intent(this, TakeInventoryActivity.class));
+
         } else if (id == R.id.nav_cambiar_ubicacion) {
             Intent intent = new Intent(this, SucursalActivity.class);
-            // Flag para que al terminar vuelva al Home con datos frescos
             intent.putExtra("CAMBIO_UBICACION", true);
             startActivity(intent);
 
@@ -124,8 +144,8 @@ public class HomeActivity extends AppCompatActivity
     private void confirmarCerrarSesion() {
         new AlertDialog.Builder(this)
                 .setTitle("Cerrar sesión")
-                .setMessage("¿Estás seguro de que deseas cerrar sesión?")
-                .setPositiveButton("Sí, cerrar", (dialog, which) -> viewModel.cerrarSesion())
+                .setMessage("¿Seguro que deseas cerrar sesión?")
+                .setPositiveButton("Sí, cerrar", (d, w) -> viewModel.cerrarSesion())
                 .setNegativeButton("Cancelar", null)
                 .show();
     }
@@ -133,7 +153,7 @@ public class HomeActivity extends AppCompatActivity
     @Override
     protected void onResume() {
         super.onResume();
-        // Recargar cabecera por si cambió la ubicación
+        // Recarga los datos de cabecera por si el usuario cambió de ubicación
         viewModel.cargarDatosCabecera();
     }
 
@@ -141,9 +161,7 @@ public class HomeActivity extends AppCompatActivity
     public void onBackPressed() {
         if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
             drawerLayout.closeDrawer(GravityCompat.START);
-        } else {
-            // Evitar retroceder al login
-            // No llamamos a super para bloquear el botón atrás en Home
         }
+        // Bloqueamos el botón atrás para no regresar al login
     }
 }

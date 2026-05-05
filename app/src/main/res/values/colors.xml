@@ -1,6 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="pp_green">#2E7D32</color> <color name="pp_green_light">#E8F5E9</color>
+    <!-- Paleta principal Procesadora Perú -->
+    <color name="pp_green">#2E7D32</color>
+    <color name="pp_green_dark">#1B5E20</color>
+    <color name="pp_green_light">#E8F5E9</color>
+    <color name="pp_green_accent">#43A047</color>
+
+    <!-- Colores de estado -->
+    <color name="pp_warning">#F57C00</color>
+    <color name="pp_warning_light">#FFF3E0</color>
+    <color name="pp_error">#C62828</color>
+    <color name="pp_error_light">#FFEBEE</color>
+    <color name="pp_success">#2E7D32</color>
+    <color name="pp_success_light">#E8F5E9</color>
+
+    <!-- Grises y neutros -->
     <color name="pp_white">#FFFFFF</color>
     <color name="pp_gray">#F5F5F5</color>
-    <color name="pp_text_dark">#333333</color>
+    <color name="pp_gray_medium">#E0E0E0</color>
+    <color name="pp_gray_dark">#9E9E9E</color>
+    <color name="pp_divider">#EEEEEE</color>
+
+    <!-- Texto -->
+    <color name="pp_text_dark">#212121</color>
+    <color name="pp_text_secondary">#757575</color>
+    <color name="pp_text_hint">#BDBDBD</color>
+
+    <!-- Overlay -->
+    <color name="pp_scrim">#80000000</color>
 </resources>

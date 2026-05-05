@@ -14,7 +14,8 @@ import com.procesadoraperu.inventario.domain.model.inventario.Inventario;
 import java.util.ArrayList;
 import java.util.List;
 
-public class InventoryHistoryAdapter extends RecyclerView.Adapter<InventoryHistoryAdapter.ViewHolder> {
+public class InventoryHistoryAdapter
+        extends RecyclerView.Adapter<InventoryHistoryAdapter.ViewHolder> {
 
     public interface OnItemClickListener {
         void onClick(Inventario inventario);
@@ -44,18 +45,19 @@ public class InventoryHistoryAdapter extends RecyclerView.Adapter<InventoryHisto
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Inventario inv = items.get(position);
 
-        holder.tvProducto.setText(inv.getProducto());
-        holder.tvCodigo.setText("Cód: " + inv.getIdProducto());
-        holder.tvCantidad.setText(
-                "Contado: " + formatNumber(inv.getCantidad()) + " " + inv.getUnidadMedida()
-        );
-        holder.tvStock.setText("Sistema: " + formatNumber(inv.getStock()));
+        holder.tvProducto.setText(inv.getProducto() != null ? inv.getProducto() : "—");
+        holder.tvCodigo.setText("Cód: " + (inv.getIdProducto() != null ? inv.getIdProducto() : "—"));
 
-        // Fecha (puede venir de fechaCreacion o fechaRegistroLocal)
+        String unidad = inv.getUnidadMedida() != null ? inv.getUnidadMedida() : "";
+        holder.tvCantidad.setText("Contado: " + formatNum(inv.getCantidad()) + " " + unidad);
+        holder.tvStock.setText("Sistema: " + formatNum(inv.getStock()));
+
+        // Fecha
         String fecha = inv.getFechaCreacion() != null
                 ? inv.getFechaCreacion() : inv.getFechaRegistroLocal();
         if (fecha != null && fecha.contains("T")) {
-            fecha = fecha.replace("T", "  ").substring(0, Math.min(fecha.length(), 19));
+            fecha = fecha.replace("T", "  ");
+            if (fecha.length() > 19) fecha = fecha.substring(0, 19);
         }
         holder.tvFecha.setText(fecha != null ? fecha : "—");
 
@@ -67,8 +69,10 @@ public class InventoryHistoryAdapter extends RecyclerView.Adapter<InventoryHisto
     @Override
     public int getItemCount() { return items.size(); }
 
-    private String formatNumber(double val) {
-        if (val == Math.floor(val)) return String.valueOf((int) val);
+    private String formatNum(double val) {
+        if (val == Math.floor(val) && !Double.isInfinite(val)) {
+            return String.valueOf((int) val);
+        }
         return String.valueOf(val);
     }
 

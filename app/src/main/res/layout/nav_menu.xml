@@ -1,7 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <!-- ── Inventario ─────────────────────────────── -->
     <group android:checkableBehavior="single">
+
+        <item
+            android:id="@+id/nav_toma"
+            android:icon="@drawable/ic_inventory"
+            android:title="Realizar Toma" />
 
         <item
             android:id="@+id/nav_historial"
@@ -15,6 +21,7 @@
 
     </group>
 
+    <!-- ── Sesión ──────────────────────────────────── -->
     <item android:title="Sesión">
         <menu>
             <item

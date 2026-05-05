@@ -1,7 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
-    <style name="Base.Theme.Inventario" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your dark theme here. -->
-        <!-- <item name="colorPrimary">@color/my_dark_primary</item> -->
+    <!-- La app mantiene tema claro independientemente del modo del sistema
+         (ambiente de almacén requiere alta visibilidad) -->
+    <style name="Base.Theme.Inventario" parent="Theme.Material3.Light.NoActionBar">
+        <item name="colorPrimary">@color/pp_green</item>
+        <item name="colorPrimaryDark">@color/pp_green_dark</item>
+        <item name="colorAccent">@color/pp_green_accent</item>
+        <item name="colorOnPrimary">@color/pp_white</item>
+        <item name="colorSurface">@color/pp_white</item>
+        <item name="colorOnSurface">@color/pp_text_dark</item>
+        <item name="android:windowBackground">@color/pp_gray</item>
+        <item name="android:statusBarColor">@color/pp_green_dark</item>
+        <item name="android:navigationBarColor">@color/pp_white</item>
     </style>
 </resources>

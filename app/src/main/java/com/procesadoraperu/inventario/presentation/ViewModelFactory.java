@@ -45,15 +45,22 @@ import com.procesadoraperu.inventario.presentation.home.HomeViewModel;
 import com.procesadoraperu.inventario.presentation.inventory.history.InventoryHistoryViewModel;
 import com.procesadoraperu.inventario.presentation.inventory.pending.PendingInventoryViewModel;
 import com.procesadoraperu.inventario.presentation.inventory.take.TakeInventoryViewModel;
+import com.procesadoraperu.inventario.presentation.profile.UserProfileViewModel;
 import com.procesadoraperu.inventario.presentation.selection.SelectionViewModel;
 
 import retrofit2.Retrofit;
 
+/**
+ * Fábrica central de ViewModels.
+ * Implementa el patrón de Inyección de Dependencias manual.
+ * Todas las dependencias se construyen aquí y se inyectan en los ViewModels.
+ */
 public class ViewModelFactory implements ViewModelProvider.Factory {
 
     private final Context context;
 
     public ViewModelFactory(Context context) {
+        // Usamos ApplicationContext para evitar memory leaks
         this.context = context.getApplicationContext();
     }
 
@@ -61,67 +68,92 @@ public class ViewModelFactory implements ViewModelProvider.Factory {
     @Override
     @SuppressWarnings("unchecked")
     public <T extends ViewModel> T create(@NonNull Class<T> modelClass) {
-        InventarioDatabase db = InventarioDatabase.getInstance(context);
-        Retrofit retrofit = ApiClient.getClient(context);
-        SharedPreferences appPrefs = context.getSharedPreferences("app_prefs", Context.MODE_PRIVATE);
 
-        // --- Repositorios ---
+        // ── Infraestructura ──────────────────────────────────────────────────
+        InventarioDatabase db  = InventarioDatabase.getInstance(context);
+        Retrofit retrofit      = ApiClient.getClient(context);
+
+        // SharedPreferences para estado de sesión (sucursal/almacén activos)
+        SharedPreferences appPrefs = context.getSharedPreferences(
+                "app_prefs", Context.MODE_PRIVATE);
+
+        // ── Repositorios ─────────────────────────────────────────────────────
         IAuthRepository authRepo = new AuthRepositoryImpl(
-                retrofit.create(AuthApi.class), db.usuarioDao(), context);
+                retrofit.create(AuthApi.class),
+                db.usuarioDao(),
+                context
+        );
 
         ISucursalRepository sucRepo = new SucursalRepositoryImpl(
-                retrofit.create(SucursalApi.class), db.sucursalDao(), appPrefs);
+                retrofit.create(SucursalApi.class),
+                db.sucursalDao(),
+                appPrefs
+        );
 
         IAlmacenRepository almRepo = new AlmacenRepositoryImpl(
-                retrofit.create(AlmacenApi.class), db.almacenDao(), appPrefs);
+                retrofit.create(AlmacenApi.class),
+                db.almacenDao(),
+                appPrefs
+        );
 
         IInventarioRepository invRepo = new InventarioRepositoryImpl(
-                retrofit.create(InventarioApi.class), db.inventarioDao());
+                retrofit.create(InventarioApi.class),
+                db.inventarioDao()
+        );
 
         IProductoRepository prodRepo = new ProductoRepositoryImpl(
-                retrofit.create(ProductoApi.class), db.productoDao());
+                retrofit.create(ProductoApi.class),
+                db.productoDao()
+        );
 
         ILogRepository logRepo = new LogRepositoryImpl(db.logDao());
 
         IUsuarioRepository usuarioRepo = new UsuarioRepositoryImpl(db.usuarioDao());
 
-        // --- Provider de auditoría ---
+        // ── Provider de auditoría (GPS + dispositivo) ────────────────────────
         IAuditClientInfoProvider auditProvider = new AuditClientInfoProvider(context);
 
-        // --- Casos de Uso ---
-        GetSucursalesUseCase getSucursalesUseCase = new GetSucursalesUseCase(sucRepo);
-        GetAlmacenesUseCase getAlmacenesUseCase = new GetAlmacenesUseCase(almRepo);
-        LogoutUseCase logoutUseCase = new LogoutUseCase(authRepo);
-        GetActiveUserUseCase getActiveUserUseCase = new GetActiveUserUseCase(usuarioRepo);
+        // ── Casos de Uso ─────────────────────────────────────────────────────
+        LoginUseCase loginUseCase                           = new LoginUseCase(authRepo);
+        LogoutUseCase logoutUseCase                         = new LogoutUseCase(authRepo);
+        GetSucursalesUseCase getSucursalesUseCase           = new GetSucursalesUseCase(sucRepo);
+        GetAlmacenesUseCase getAlmacenesUseCase             = new GetAlmacenesUseCase(almRepo);
+        GetActiveUserUseCase getActiveUserUseCase           = new GetActiveUserUseCase(usuarioRepo);
         ConsultarStockProductoUseCase consultarStockUseCase = new ConsultarStockProductoUseCase(prodRepo);
-        RegistrarInventarioUseCase registrarInventarioUseCase = new RegistrarInventarioUseCase(invRepo, logRepo, auditProvider);
+        RegistrarInventarioUseCase registrarInvUseCase      = new RegistrarInventarioUseCase(invRepo, logRepo, auditProvider);
         ConsultarHistorialUseCase consultarHistorialUseCase = new ConsultarHistorialUseCase(invRepo);
-        GetInventariosPendientesUseCase getPendientesUseCase = new GetInventariosPendientesUseCase(invRepo);
-        SincronizarPendientesUseCase sincronizarPendientesUseCase = new SincronizarPendientesUseCase(invRepo, logRepo);
+        GetInventariosPendientesUseCase getPendientesUC     = new GetInventariosPendientesUseCase(invRepo);
+        SincronizarPendientesUseCase sincronizarUseCase     = new SincronizarPendientesUseCase(invRepo, logRepo);
 
-        // --- ViewModels ---
+        // ── Construcción del ViewModel solicitado ────────────────────────────
         if (modelClass.isAssignableFrom(LoginViewModel.class)) {
-            return (T) new LoginViewModel(new LoginUseCase(authRepo));
+            return (T) new LoginViewModel(loginUseCase);
 
         } else if (modelClass.isAssignableFrom(SelectionViewModel.class)) {
-            return (T) new SelectionViewModel(getSucursalesUseCase, getAlmacenesUseCase, sucRepo, almRepo);
+            return (T) new SelectionViewModel(
+                    getSucursalesUseCase, getAlmacenesUseCase, sucRepo, almRepo);
 
         } else if (modelClass.isAssignableFrom(HomeViewModel.class)) {
-            return (T) new HomeViewModel(logoutUseCase, authRepo, sucRepo, almRepo, getActiveUserUseCase);
+            return (T) new HomeViewModel(
+                    logoutUseCase, authRepo, sucRepo, almRepo, getActiveUserUseCase);
 
         } else if (modelClass.isAssignableFrom(TakeInventoryViewModel.class)) {
-            return (T) new TakeInventoryViewModel(consultarStockUseCase, registrarInventarioUseCase,
-                    getActiveUserUseCase, sucRepo, almRepo);
+            return (T) new TakeInventoryViewModel(
+                    consultarStockUseCase, registrarInvUseCase, getActiveUserUseCase, sucRepo, almRepo);
 
         } else if (modelClass.isAssignableFrom(InventoryHistoryViewModel.class)) {
-            return (T) new InventoryHistoryViewModel(consultarHistorialUseCase, getActiveUserUseCase,
-                    sucRepo, almRepo);
+            return (T) new InventoryHistoryViewModel(
+                    consultarHistorialUseCase, getActiveUserUseCase, sucRepo, almRepo);
 
         } else if (modelClass.isAssignableFrom(PendingInventoryViewModel.class)) {
-            return (T) new PendingInventoryViewModel(getPendientesUseCase, sincronizarPendientesUseCase,
-                    getActiveUserUseCase);
+            return (T) new PendingInventoryViewModel(
+                    getPendientesUC, sincronizarUseCase, getActiveUserUseCase);
+
+        } else if (modelClass.isAssignableFrom(UserProfileViewModel.class)) {
+            return (T) new UserProfileViewModel(getActiveUserUseCase, sucRepo, almRepo);
         }
 
-        throw new IllegalArgumentException("ViewModel desconocido: " + modelClass.getName());
+        throw new IllegalArgumentException(
+                "ViewModel no registrado en ViewModelFactory: " + modelClass.getName());
     }
 }

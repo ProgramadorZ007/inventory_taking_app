@@ -1,3 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Inventario</string>
+    <string name="app_name">Inventario PP</string>
+    <string name="nav_open">Abrir menú</string>
+    <string name="nav_close">Cerrar menú</string>
+
+    <!-- Login -->
+    <string name="hint_usuario">Usuario</string>
+    <string name="hint_password">Contraseña</string>
+    <string name="btn_ingresar">INGRESAR</string>
+
+    <!-- Selección -->
+    <string name="title_seleccionar_sucursal">Seleccionar Sucursal</string>
+    <string name="title_seleccionar_almacen">Seleccionar Almacén</string>
+    <string name="hint_buscar">Buscar…</string>
+
+    <!-- Home -->
+    <string name="title_home">Inventario PP</string>
+    <string name="btn_iniciar_toma">INICIAR TOMA</string>
+    <string name="label_accesos_rapidos">Accesos rápidos</string>
+    <string name="label_mis_registros">Mis Registros</string>
+    <string name="label_pendientes">Pendientes</string>
+
+    <!-- Toma de inventario -->
+    <string name="title_toma">Toma de Inventario</string>
+    <string name="btn_escanear">Escanear Código de Barras</string>
+    <string name="hint_codigo_producto">Código del producto</string>
+    <string name="btn_buscar">Buscar Producto</string>
+    <string name="label_producto_encontrado">Producto Encontrado</string>
+    <string name="hint_cantidad">Cantidad contada físicamente</string>
+    <string name="btn_registrar">REGISTRAR INVENTARIO</string>
+    <string name="msg_registro_exitoso">Registro enviado correctamente al servidor.</string>
+    <string name="msg_guardado_local">Sin conexión. Registro guardado localmente.\nSe enviará cuando haya internet.</string>
+
+    <!-- Historial -->
+    <string name="title_historial">Mis Inventarios de Hoy</string>
+    <string name="empty_historial">No hay registros para el día de hoy.</string>
+
+    <!-- Pendientes -->
+    <string name="title_pendientes">Registros Pendientes</string>
+    <string name="btn_sincronizar">Sincronizar Todo</string>
+    <string name="empty_pendientes">No hay registros pendientes.\n¡Todo sincronizado! ✅</string>
+
+    <!-- Perfil -->
+    <string name="title_perfil">Mi Perfil</string>
+
+    <!-- Mensajes generales -->
+    <string name="error_generico">Ocurrió un error inesperado.</string>
+    <string name="loading">Cargando…</string>
 </resources>

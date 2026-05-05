@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/pp_gray">
+
+    <!-- Toolbar -->
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="@color/pp_green"
+        android:elevation="6dp"
+        app:titleTextColor="@color/pp_white"
+        app:navigationIconTint="@color/pp_white"/>
+
+    <!-- Banner superior: contador + botón sincronizar -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="@color/pp_white"
+        android:padding="16dp"
+        android:elevation="2dp">
+
+        <TextView
+            android:id="@+id/tvContador"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="0 registros pendientes"
+            android:textSize="14sp"
+            android:textColor="@color/pp_warning"
+            android:textStyle="bold"
+            android:layout_marginBottom="10dp"
+            android:visibility="gone"/>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnSincronizar"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:text="Sincronizar Todo"
+            android:textStyle="bold"
+            android:textSize="14sp"
+            android:textColor="@color/pp_white"
+            app:backgroundTint="@color/pp_green"
+            app:cornerRadius="10dp"
+            android:visibility="gone"/>
+
+        <!-- Progress de sincronización -->
+        <ProgressBar
+            android:id="@+id/progressSync"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:indeterminateTint="@color/pp_green"
+            android:visibility="gone"/>
+    </LinearLayout>
+
+    <!-- Progress de carga -->
+    <ProgressBar
+        android:id="@+id/progressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:indeterminateTint="@color/pp_green"
+        android:visibility="gone"
+        android:layout_margin="16dp"/>
+
+    <!-- Mensaje vacío -->
+    <TextView
+        android:id="@+id/tvEmpty"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="No hay registros pendientes.\n\n✅ ¡Todo sincronizado!"
+        android:textColor="@color/pp_text_secondary"
+        android:textSize="15sp"
+        android:gravity="center"
+        android:padding="32dp"
+        android:visibility="gone"/>
+
+    <!-- Lista de pendientes -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:clipToPadding="false"
+        android:padding="8dp"/>
+
+</LinearLayout>

@@ -14,7 +14,8 @@ import com.procesadoraperu.inventario.domain.model.inventario.Inventario;
 import java.util.ArrayList;
 import java.util.List;
 
-public class PendingInventoryAdapter extends RecyclerView.Adapter<PendingInventoryAdapter.ViewHolder> {
+public class PendingInventoryAdapter
+        extends RecyclerView.Adapter<PendingInventoryAdapter.ViewHolder> {
 
     public interface OnItemClickListener {
         void onClick(Inventario inventario);
@@ -43,10 +44,15 @@ public class PendingInventoryAdapter extends RecyclerView.Adapter<PendingInvento
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Inventario inv = items.get(position);
-        holder.tvProducto.setText(inv.getProducto());
-        holder.tvCantidad.setText("Cantidad: " + inv.getCantidad() + " " + inv.getUnidadMedida());
-        holder.tvAlmacen.setText(inv.getAlmacen());
-        String fecha = inv.getFechaRegistroLocal() != null ? inv.getFechaRegistroLocal() : "—";
+
+        holder.tvProducto.setText(inv.getProducto() != null ? inv.getProducto() : "—");
+
+        String unidad = inv.getUnidadMedida() != null ? inv.getUnidadMedida() : "";
+        holder.tvCantidad.setText("Cantidad: " + formatNum(inv.getCantidad()) + " " + unidad);
+        holder.tvAlmacen.setText(inv.getAlmacen() != null ? inv.getAlmacen() : "—");
+
+        String fecha = inv.getFechaRegistroLocal() != null
+                ? inv.getFechaRegistroLocal() : "—";
         holder.tvFecha.setText(fecha);
 
         holder.itemView.setOnClickListener(v -> {
@@ -56,6 +62,11 @@ public class PendingInventoryAdapter extends RecyclerView.Adapter<PendingInvento
 
     @Override
     public int getItemCount() { return items.size(); }
+
+    private String formatNum(double val) {
+        if (val == Math.floor(val) && !Double.isInfinite(val)) return String.valueOf((int) val);
+        return String.valueOf(val);
+    }
 
     static class ViewHolder extends RecyclerView.ViewHolder {
         TextView tvProducto, tvCantidad, tvAlmacen, tvFecha;

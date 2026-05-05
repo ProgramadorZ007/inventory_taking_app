@@ -1,8 +1,11 @@
 package com.procesadoraperu.inventario.data.remote.api;
 
 import com.procesadoraperu.inventario.data.local.entity.InventarioEntity;
+import com.procesadoraperu.inventario.data.remote.request.RegistrarInventarioRequest;
 import com.procesadoraperu.inventario.data.remote.response.BaseResponse;
+
 import java.util.List;
+
 import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.GET;
@@ -12,7 +15,7 @@ import retrofit2.http.Query;
 public interface InventarioApi {
 
     @POST("/api/almacen/inventarios")
-    Call<Void> registrarInventario(@Body InventarioEntity request);
+    Call<Void> registrarInventario(@Body RegistrarInventarioRequest request);
 
     @GET("/api/almacen/inventarios")
     Call<BaseResponse<List<InventarioEntity>>> getHistorial(

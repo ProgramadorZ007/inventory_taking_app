@@ -5,22 +5,39 @@ import androidx.room.Database;
 import androidx.room.Room;
 import androidx.room.RoomDatabase;
 
+import com.procesadoraperu.inventario.data.local.dao.AlmacenDao;
+import com.procesadoraperu.inventario.data.local.dao.InventarioDao;
+import com.procesadoraperu.inventario.data.local.dao.LogDao;
+import com.procesadoraperu.inventario.data.local.dao.ProductoDao;
 import com.procesadoraperu.inventario.data.local.dao.SucursalDao;
 import com.procesadoraperu.inventario.data.local.dao.UsuarioDao;
-import com.procesadoraperu.inventario.data.local.dao.AlmacenDao; // 1. Importa el AlmacenDao
+import com.procesadoraperu.inventario.data.local.entity.AlmacenEntity;
+import com.procesadoraperu.inventario.data.local.entity.InventarioEntity;
+import com.procesadoraperu.inventario.data.local.entity.LogEntity;
+import com.procesadoraperu.inventario.data.local.entity.ProductoEntity;
 import com.procesadoraperu.inventario.data.local.entity.SucursalEntity;
 import com.procesadoraperu.inventario.data.local.entity.UsuarioEntity;
-import com.procesadoraperu.inventario.data.local.entity.AlmacenEntity; // 2. Importa la entidad
 
-// 3. Agrega AlmacenEntity a la lista y sube la versión a 2 (o el número que siga)
-@Database(entities = {SucursalEntity.class, UsuarioEntity.class, AlmacenEntity.class}, version = 2, exportSchema = false)
+@Database(
+        entities = {
+                SucursalEntity.class,
+                UsuarioEntity.class,
+                AlmacenEntity.class,
+                ProductoEntity.class,
+                InventarioEntity.class,
+                LogEntity.class
+        },
+        version = 3,
+        exportSchema = false
+)
 public abstract class InventarioDatabase extends RoomDatabase {
 
     public abstract SucursalDao sucursalDao();
     public abstract UsuarioDao usuarioDao();
-
-    // 4. ESTA ES LA LÍNEA QUE TE FALTA: Expone el AlmacenDao a la base de datos
     public abstract AlmacenDao almacenDao();
+    public abstract ProductoDao productoDao();
+    public abstract InventarioDao inventarioDao();
+    public abstract LogDao logDao();
 
     private static volatile InventarioDatabase INSTANCE;
 
@@ -28,8 +45,11 @@ public abstract class InventarioDatabase extends RoomDatabase {
         if (INSTANCE == null) {
             synchronized (InventarioDatabase.class) {
                 if (INSTANCE == null) {
-                    INSTANCE = Room.databaseBuilder(context.getApplicationContext(),
-                                    InventarioDatabase.class, "ppsac_inventario_db")
+                    INSTANCE = Room.databaseBuilder(
+                                    context.getApplicationContext(),
+                                    InventarioDatabase.class,
+                                    "ppsac_inventario_db"
+                            )
                             .fallbackToDestructiveMigration()
                             .build();
                 }

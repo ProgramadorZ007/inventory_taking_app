@@ -1,6 +1,5 @@
 package com.procesadoraperu.inventario.data.local.entity;
 
-import androidx.annotation.NonNull;
 import androidx.room.Embedded;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
@@ -24,20 +23,10 @@ public class InventarioEntity {
     public String usuarioCreacion;
     public String fechaCreacion;
     public String fechaRegistroLocal;
-    public String estadoSincronizacion;
+    public String estadoSincronizacion; // "PENDIENTE" | "SINCRONIZADO"
 
     @Embedded(prefix = "audit_")
     public AuditClientInfoEntity auditClientInfo;
 
     public InventarioEntity() {}
-}
-
-// Clase de apoyo para el embebido
-class AuditClientInfoEntity {
-    public String dispositivo;
-    public String ip;
-    public String hostname;
-    public String userAgent;
-    public String latitud;
-    public String longitud;
 }

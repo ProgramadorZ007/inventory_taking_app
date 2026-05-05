@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="200dp"
+    android:background="@color/pp_green"
+    android:orientation="vertical"
+    android:padding="24dp"
+    android:gravity="bottom">
+
+    <!-- Avatar circular con inicial -->
+    <TextView
+        android:id="@+id/tvAvatar"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
+        android:text="O"
+        android:textColor="@color/pp_green"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:gravity="center"
+        android:background="@color/pp_white"
+        android:layout_marginBottom="12dp"/>
+
+    <TextView
+        android:id="@+id/tvNavNombre"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Cargando..."
+        android:textColor="@color/pp_white"
+        android:textSize="17sp"
+        android:textStyle="bold"
+        android:ellipsize="end"
+        android:maxLines="1"/>
+
+    <TextView
+        android:id="@+id/tvNavSucursal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="—"
+        android:textColor="#CCFFFFFF"
+        android:textSize="13sp"
+        android:layout_marginTop="3dp"/>
+
+    <TextView
+        android:id="@+id/tvNavAlmacen"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="—"
+        android:textColor="#AAFFFFFF"
+        android:textSize="12sp"
+        android:layout_marginTop="2dp"/>
+
+</LinearLayout>

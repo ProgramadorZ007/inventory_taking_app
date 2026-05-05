@@ -1,8 +1,10 @@
 package com.procesadoraperu.inventario.data.repository;
 
 import com.procesadoraperu.inventario.data.local.dao.InventarioDao;
+import com.procesadoraperu.inventario.data.local.entity.AuditClientInfoEntity;
 import com.procesadoraperu.inventario.data.local.entity.InventarioEntity;
 import com.procesadoraperu.inventario.data.remote.api.InventarioApi;
+import com.procesadoraperu.inventario.data.remote.request.RegistrarInventarioRequest;
 import com.procesadoraperu.inventario.data.remote.response.BaseResponse;
 import com.procesadoraperu.inventario.domain.model.inventario.AuditClientInfo;
 import com.procesadoraperu.inventario.domain.model.inventario.Inventario;
@@ -10,9 +12,12 @@ import com.procesadoraperu.inventario.domain.repository.inventario.IInventarioRe
 
 import java.util.ArrayList;
 import java.util.List;
+
 import retrofit2.Response;
 
 public class InventarioRepositoryImpl implements IInventarioRepository {
+
+    private static final String ID_EMPRESA = "001"; // Constante de empresa
 
     private final InventarioApi inventarioApi;
     private final InventarioDao inventarioDao;
@@ -24,23 +29,24 @@ public class InventarioRepositoryImpl implements IInventarioRepository {
 
     @Override
     public void enviarInventarioRemote(Inventario inventario) throws Exception {
-        InventarioEntity entity = mapToEntity(inventario);
-        Response<Void> response = inventarioApi.registrarInventario(entity).execute();
+        RegistrarInventarioRequest request = mapToRequest(inventario);
+        Response<Void> response = inventarioApi.registrarInventario(request).execute();
 
         if (!response.isSuccessful()) {
-            throw new Exception("Error al sincronizar con el servidor de Procesadora Perú.");
+            throw new Exception("Error al sincronizar. Código: " + response.code());
         }
     }
 
     @Override
-    public List<Inventario> fetchHistorialRemote(String idSucursal, String idAlmacen, String fechaInicio, String fechaFin) throws Exception {
+    public List<Inventario> fetchHistorialRemote(String idSucursal, String idAlmacen,
+                                                 String fechaInicio, String fechaFin) throws Exception {
         Response<BaseResponse<List<InventarioEntity>>> response =
                 inventarioApi.getHistorial(idSucursal, idAlmacen, fechaInicio, fechaFin).execute();
 
-        if (response.isSuccessful() && response.body() != null) {
+        if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
             return mapListToDomain(response.body().getData());
         } else {
-            throw new Exception("No se pudo obtener el historial.");
+            throw new Exception("No se pudo obtener el historial del servidor.");
         }
     }
 
@@ -60,41 +66,100 @@ public class InventarioRepositoryImpl implements IInventarioRepository {
     }
 
     // ==========================================
-    // MAPPERS (Transformación de Datos)
+    // MAPPERS
     // ==========================================
+
+    private RegistrarInventarioRequest mapToRequest(Inventario d) {
+        RegistrarInventarioRequest req = new RegistrarInventarioRequest();
+        req.idEmpresa   = (d.getIdEmpresa() != null) ? d.getIdEmpresa() : ID_EMPRESA;
+        req.idSucursal  = d.getIdSucursal();
+        req.idAlmacen   = d.getIdAlmacen();
+        req.idProducto  = d.getIdProducto();
+        req.dscProducto = d.getProducto();
+        req.idMedida    = d.getUnidadMedida();
+        req.stock       = d.getStock();
+        req.cantidad    = d.getCantidad();
+
+        if (d.getAuditClientInfo() != null) {
+            RegistrarInventarioRequest.AuditInfo audit = new RegistrarInventarioRequest.AuditInfo();
+            audit.dispositivo = d.getAuditClientInfo().getDispositivo();
+            audit.ip          = d.getAuditClientInfo().getIp();
+            audit.hostname    = d.getAuditClientInfo().getHostname();
+            audit.userAgent   = d.getAuditClientInfo().getUserAgent();
+            audit.latitud     = d.getAuditClientInfo().getLatitud();
+            audit.longitud    = d.getAuditClientInfo().getLongitud();
+            req.auditClientInfo = audit;
+        }
+        return req;
+    }
 
     private InventarioEntity mapToEntity(Inventario d) {
         InventarioEntity e = new InventarioEntity();
-        e.idInventario = d.getIdInventario();
-        e.idEmpresa = d.getIdEmpresa();
-        e.idSucursal = d.getIdSucursal();
-        e.sucursal = d.getSucursal();
-        e.idAlmacen = d.getIdAlmacen();
-        e.almacen = d.getAlmacen();
-        e.idProducto = d.getIdProducto();
-        e.producto = d.getProducto();
-        e.unidadMedida = d.getUnidadMedida();
-        e.stock = d.getStock();
-        e.cantidad = d.getCantidad();
-        e.usuarioCreacion = d.getUsuarioCreacion();
-        e.fechaCreacion = d.getFechaCreacion();
-        e.fechaRegistroLocal = d.getFechaRegistroLocal();
+        e.idInventario         = d.getIdInventario();
+        e.idEmpresa            = (d.getIdEmpresa() != null) ? d.getIdEmpresa() : ID_EMPRESA;
+        e.idSucursal           = d.getIdSucursal();
+        e.sucursal             = d.getSucursal();
+        e.idAlmacen            = d.getIdAlmacen();
+        e.almacen              = d.getAlmacen();
+        e.idProducto           = d.getIdProducto();
+        e.producto             = d.getProducto();
+        e.unidadMedida         = d.getUnidadMedida();
+        e.stock                = d.getStock();
+        e.cantidad             = d.getCantidad();
+        e.usuarioCreacion      = d.getUsuarioCreacion();
+        e.fechaCreacion        = d.getFechaCreacion();
+        e.fechaRegistroLocal   = d.getFechaRegistroLocal();
         e.estadoSincronizacion = d.getEstadoSincronizacion();
 
         if (d.getAuditClientInfo() != null) {
-            // Mapeo manual del objeto embebido
-            // ... (rellenar campos de AuditClientInfoEntity)
+            AuditClientInfoEntity audit = new AuditClientInfoEntity();
+            audit.dispositivo = d.getAuditClientInfo().getDispositivo();
+            audit.ip          = d.getAuditClientInfo().getIp();
+            audit.hostname    = d.getAuditClientInfo().getHostname();
+            audit.userAgent   = d.getAuditClientInfo().getUserAgent();
+            audit.latitud     = d.getAuditClientInfo().getLatitud();
+            audit.longitud    = d.getAuditClientInfo().getLongitud();
+            e.auditClientInfo = audit;
         }
         return e;
+    }
+
+    private Inventario mapToDomain(InventarioEntity e) {
+        Inventario d = new Inventario();
+        d.setIdInventario(e.idInventario);
+        d.setIdEmpresa(e.idEmpresa);
+        d.setIdSucursal(e.idSucursal);
+        d.setSucursal(e.sucursal);
+        d.setIdAlmacen(e.idAlmacen);
+        d.setAlmacen(e.almacen);
+        d.setIdProducto(e.idProducto);
+        d.setProducto(e.producto);
+        d.setUnidadMedida(e.unidadMedida);
+        d.setStock(e.stock);
+        d.setCantidad(e.cantidad);
+        d.setUsuarioCreacion(e.usuarioCreacion);
+        d.setFechaCreacion(e.fechaCreacion);
+        d.setFechaRegistroLocal(e.fechaRegistroLocal);
+        d.setEstadoSincronizacion(e.estadoSincronizacion);
+
+        if (e.auditClientInfo != null) {
+            d.setAuditClientInfo(new AuditClientInfo(
+                    e.auditClientInfo.dispositivo,
+                    e.auditClientInfo.ip,
+                    e.auditClientInfo.hostname,
+                    e.auditClientInfo.userAgent,
+                    e.auditClientInfo.latitud,
+                    e.auditClientInfo.longitud
+            ));
+        }
+        return d;
     }
 
     private List<Inventario> mapListToDomain(List<InventarioEntity> entities) {
         List<Inventario> list = new ArrayList<>();
         if (entities != null) {
             for (InventarioEntity e : entities) {
-                Inventario i = new Inventario();
-                // ... (setear campos de i desde e)
-                list.add(i);
+                list.add(mapToDomain(e));
             }
         }
         return list;

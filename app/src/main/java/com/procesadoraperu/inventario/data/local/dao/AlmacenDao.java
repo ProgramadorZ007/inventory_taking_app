@@ -22,7 +22,7 @@ public interface AlmacenDao {
     @Query("DELETE FROM Almacen WHERE idSucursal = :idSucursal")
     void deletePorSucursal(String idSucursal);
 
-    // Transacción limpia: Borra los viejos de ESA sucursal y mete los nuevos
+    // Transacción limpia: Borra los viejos de ESA sucursal y mete nuevos
     @Transaction
     default void refreshData(String idSucursal, List<AlmacenEntity> almacenes) {
         deletePorSucursal(idSucursal);

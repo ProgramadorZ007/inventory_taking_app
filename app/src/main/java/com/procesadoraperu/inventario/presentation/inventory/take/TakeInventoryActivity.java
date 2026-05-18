@@ -7,7 +7,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.annotation.NonNull;
@@ -16,10 +15,13 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.cardview.widget.CardView;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputEditText;
 import com.journeyapps.barcodescanner.ScanContract;
 import com.journeyapps.barcodescanner.ScanOptions;
@@ -32,25 +34,23 @@ public class TakeInventoryActivity extends AppCompatActivity {
     private static final int REQUEST_CAMERA_PERMISSION = 100;
 
     private TakeInventoryViewModel viewModel;
+    private View rootView;
 
-    // ── Vistas de búsqueda ────────────────────────────────────────────────────
     private TextInputEditText etCodigoManual;
     private ProgressBar progressBuscar;
 
-    // ── Vistas de producto encontrado ─────────────────────────────────────────
     private CardView cardProducto;
     private TextView tvNombreProducto, tvIdProducto, tvUnidadMedida, tvStockSistema;
     private TextInputEditText etCantidadContada;
     private MaterialButton btnRegistrar;
     private ProgressBar progressRegistrar;
 
-    // ── Escáner de código de barras (ZXing Android Embedded) ─────────────────
     private final ActivityResultLauncher<ScanOptions> barcodeLauncher =
             registerForActivityResult(new ScanContract(), result -> {
                 if (result.getContents() != null) {
-                    String codigoEscaneado = result.getContents().trim();
-                    etCodigoManual.setText(codigoEscaneado);
-                    viewModel.buscarProducto(codigoEscaneado);
+                    String codigo = result.getContents().trim();
+                    etCodigoManual.setText(codigo);
+                    viewModel.buscarProducto(codigo);
                 }
             });
 
@@ -58,6 +58,8 @@ public class TakeInventoryActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_take_inventory);
+
+        rootView = findViewById(android.R.id.content);
 
         // ── Toolbar ───────────────────────────────────────────────────────────
         Toolbar toolbar = findViewById(R.id.toolbar);
@@ -67,19 +69,29 @@ public class TakeInventoryActivity extends AppCompatActivity {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
 
-        // ── Vistas de búsqueda ────────────────────────────────────────────────
-        etCodigoManual = findViewById(R.id.etCodigoManual);
-        progressBuscar = findViewById(R.id.progressBuscar);
+        // ── Ajuste de insets para teclado ─────────────────────────────────────
+        View scrollContent = findViewById(R.id.scrollContent);
+        if (scrollContent != null) {
+            ViewCompat.setOnApplyWindowInsetsListener(scrollContent, (v, insets) -> {
+                int imeHeight = insets.getInsets(WindowInsetsCompat.Type.ime()).bottom;
+                int navBar    = insets.getInsets(WindowInsetsCompat.Type.systemBars()).bottom;
+                v.setPadding(v.getPaddingLeft(), v.getPaddingTop(),
+                        v.getPaddingRight(), Math.max(imeHeight, navBar) + 16);
+                return insets;
+            });
+        }
 
-        // ── Vistas de producto encontrado ─────────────────────────────────────
-        cardProducto       = findViewById(R.id.cardProducto);
-        tvNombreProducto   = findViewById(R.id.tvNombreProducto);
-        tvIdProducto       = findViewById(R.id.tvIdProducto);
-        tvUnidadMedida     = findViewById(R.id.tvUnidadMedida);
-        tvStockSistema     = findViewById(R.id.tvStockSistema);
-        etCantidadContada  = findViewById(R.id.etCantidadContada);
-        btnRegistrar       = findViewById(R.id.btnRegistrar);
-        progressRegistrar  = findViewById(R.id.progressRegistrar);
+        // ── Vistas ────────────────────────────────────────────────────────────
+        etCodigoManual  = findViewById(R.id.etCodigoManual);
+        progressBuscar  = findViewById(R.id.progressBuscar);
+        cardProducto    = findViewById(R.id.cardProducto);
+        tvNombreProducto  = findViewById(R.id.tvNombreProducto);
+        tvIdProducto      = findViewById(R.id.tvIdProducto);
+        tvUnidadMedida    = findViewById(R.id.tvUnidadMedida);
+        tvStockSistema    = findViewById(R.id.tvStockSistema);
+        etCantidadContada = findViewById(R.id.etCantidadContada);
+        btnRegistrar      = findViewById(R.id.btnRegistrar);
+        progressRegistrar = findViewById(R.id.progressRegistrar);
 
         // ── Listeners ─────────────────────────────────────────────────────────
         findViewById(R.id.btnEscanear).setOnClickListener(v -> solicitarCamaraYEscanear());
@@ -99,25 +111,18 @@ public class TakeInventoryActivity extends AppCompatActivity {
         // ── ViewModel ─────────────────────────────────────────────────────────
         ViewModelFactory factory = new ViewModelFactory(this);
         viewModel = new ViewModelProvider(this, factory).get(TakeInventoryViewModel.class);
-
         observarViewModel();
     }
-
-    // ── Observadores ──────────────────────────────────────────────────────────
 
     private void observarViewModel() {
         viewModel.getIsLoadingProducto().observe(this, loading -> {
             progressBuscar.setVisibility(loading ? View.VISIBLE : View.GONE);
-            // Ocultar la card mientras se carga
             if (loading) cardProducto.setVisibility(View.GONE);
         });
 
         viewModel.getProductoEncontrado().observe(this, producto -> {
-            if (producto != null) {
-                mostrarProducto(producto);
-            } else {
-                cardProducto.setVisibility(View.GONE);
-            }
+            if (producto != null) mostrarProducto(producto);
+            else cardProducto.setVisibility(View.GONE);
         });
 
         viewModel.getIsRegistrando().observe(this, loading -> {
@@ -127,9 +132,11 @@ public class TakeInventoryActivity extends AppCompatActivity {
         });
 
         viewModel.getErrorMessage().observe(this, error -> {
-            if (error != null && !error.isEmpty()) {
-                Toast.makeText(this, error, Toast.LENGTH_LONG).show();
-            }
+            if (error == null || error.isEmpty()) return;
+            Snackbar snack = Snackbar.make(rootView, error, Snackbar.LENGTH_LONG);
+            snack.setBackgroundTint(getColor(R.color.pp_error));
+            snack.setTextColor(getColor(R.color.pp_white));
+            snack.show();
         });
 
         viewModel.getRegistroResult().observe(this, result -> {
@@ -141,17 +148,16 @@ public class TakeInventoryActivity extends AppCompatActivity {
                     break;
                 case GUARDADO_LOCAL:
                     mostrarResultado(false,
-                            "⚠️ Sin conexión a internet.\n\nEl registro fue guardado localmente " +
-                                    "y se enviará automáticamente cuando haya conexión.");
+                            "📴 Sin conexión a internet.\n\n" +
+                                    "El registro fue guardado en el dispositivo. " +
+                                    "Se enviará automáticamente al servidor cuando recuperes la conexión.\n\n" +
+                                    "Puedes verlo en la sección «Registros Pendientes».");
                     break;
                 case ERROR:
-                    // El error ya se mostró via errorMessage
                     break;
             }
         });
     }
-
-    // ── Mostrar datos del producto ────────────────────────────────────────────
 
     private void mostrarProducto(Producto producto) {
         tvNombreProducto.setText(producto.getDescripcion());
@@ -160,8 +166,7 @@ public class TakeInventoryActivity extends AppCompatActivity {
 
         double stockVal = producto.getStock().doubleValue();
         String stockStr = (stockVal == Math.floor(stockVal))
-                ? String.valueOf((int) stockVal)
-                : String.valueOf(stockVal);
+                ? String.valueOf((int) stockVal) : String.valueOf(stockVal);
         tvStockSistema.setText("Stock en sistema: " + stockStr + " " + producto.getIdMedida());
 
         etCantidadContada.setText("");
@@ -169,12 +174,10 @@ public class TakeInventoryActivity extends AppCompatActivity {
         etCantidadContada.requestFocus();
     }
 
-    // ── Registro ──────────────────────────────────────────────────────────────
-
     private void registrarInventario() {
         Producto producto = viewModel.getProductoEncontrado().getValue();
         if (producto == null) {
-            Toast.makeText(this, "Primero busca un producto", Toast.LENGTH_SHORT).show();
+            Snackbar.make(rootView, "Primero busca un producto", Snackbar.LENGTH_SHORT).show();
             return;
         }
 
@@ -188,17 +191,12 @@ public class TakeInventoryActivity extends AppCompatActivity {
 
         try {
             double cantidad = Double.parseDouble(cantidadStr);
-            if (cantidad < 0) {
-                etCantidadContada.setError("La cantidad no puede ser negativa");
-                return;
-            }
+            if (cantidad < 0) { etCantidadContada.setError("La cantidad no puede ser negativa"); return; }
             viewModel.registrarInventario(producto, cantidad);
         } catch (NumberFormatException e) {
             etCantidadContada.setError("Cantidad inválida");
         }
     }
-
-    // ── Diálogo resultado ─────────────────────────────────────────────────────
 
     private void mostrarResultado(boolean exito, String mensaje) {
         new MaterialAlertDialogBuilder(this)
@@ -215,34 +213,28 @@ public class TakeInventoryActivity extends AppCompatActivity {
                 .show();
     }
 
-    // ── Cámara y escáner ──────────────────────────────────────────────────────
-
     private void solicitarCamaraYEscanear() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
                 == PackageManager.PERMISSION_GRANTED) {
             lanzarEscaner();
         } else {
-            ActivityCompat.requestPermissions(
-                    this,
-                    new String[]{Manifest.permission.CAMERA},
-                    REQUEST_CAMERA_PERMISSION
-            );
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.CAMERA}, REQUEST_CAMERA_PERMISSION);
         }
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode,
-                                           @NonNull String[] permissions,
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
                                            @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == REQUEST_CAMERA_PERMISSION) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                lanzarEscaner();
-            } else {
-                Toast.makeText(this,
-                        "Se necesita permiso de cámara para escanear códigos",
-                        Toast.LENGTH_LONG).show();
-            }
+        if (requestCode == REQUEST_CAMERA_PERMISSION
+                && grantResults.length > 0
+                && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            lanzarEscaner();
+        } else {
+            Snackbar.make(rootView,
+                    "Se necesita permiso de cámara para escanear códigos",
+                    Snackbar.LENGTH_LONG).show();
         }
     }
 
@@ -254,8 +246,6 @@ public class TakeInventoryActivity extends AppCompatActivity {
         options.setBarcodeImageEnabled(false);
         barcodeLauncher.launch(options);
     }
-
-    // ── Toolbar ───────────────────────────────────────────────────────────────
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {

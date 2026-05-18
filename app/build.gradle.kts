@@ -67,6 +67,9 @@ dependencies {
     // La librería core de ZXing (requerida por zxing-android-embedded)
     implementation("com.google.zxing:core:3.5.3")
 
+    // Librería de Lottie para la animación del Splash
+    implementation(libs.lottie)
+
     // Testing
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)

@@ -86,8 +86,14 @@ public class InventarioRepositoryImpl implements IInventarioRepository {
             audit.ip          = d.getAuditClientInfo().getIp();
             audit.hostname    = d.getAuditClientInfo().getHostname();
             audit.userAgent   = d.getAuditClientInfo().getUserAgent();
-            audit.latitud     = d.getAuditClientInfo().getLatitud();
-            audit.longitud    = d.getAuditClientInfo().getLongitud();
+
+            // CORRECCIÓN AQUÍ: Evitamos enviar textos vacíos a la API
+            String lat = d.getAuditClientInfo().getLatitud();
+            String lon = d.getAuditClientInfo().getLongitud();
+
+            audit.latitud = (lat != null && !lat.trim().isEmpty()) ? lat : null;
+            audit.longitud = (lon != null && !lon.trim().isEmpty()) ? lon : null;
+
             req.auditClientInfo = audit;
         }
         return req;

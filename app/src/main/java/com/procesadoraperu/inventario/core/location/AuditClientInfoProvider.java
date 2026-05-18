@@ -6,6 +6,8 @@ import android.os.Build;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.Priority;
+import com.google.android.gms.tasks.CancellationTokenSource;
 import com.procesadoraperu.inventario.domain.model.inventario.AuditClientInfo;
 import com.procesadoraperu.inventario.domain.provider.IAuditClientInfoProvider;
 
@@ -17,105 +19,106 @@ import java.util.Enumeration;
 /**
  * Proveedor de información de auditoría del cliente.
  *
- * Esta clase se encarga de recolectar metadatos del dispositivo (IP, Modelo, User Agent)
- * y coordenadas geográficas (Latitud/Longitud) para garantizar la trazabilidad
- * de las operaciones de inventario realizadas en campo.
- *
- * Implementa {@link IAuditClientInfoProvider} siguiendo el principio de inversión
- * de dependencias de Clean Architecture.
+ * CORRECCIÓN GPS: Se reemplazó getLastLocation() (que devuelve null si no hay
+ * ubicación reciente en caché) por getCurrentLocation() con PRIORITY_HIGH_ACCURACY,
+ * que solicita activamente una ubicación fresca al hardware GPS/Red.
+ * Si getCurrentLocation() también falla, cae en getLastLocation() como fallback.
  */
 public class AuditClientInfoProvider implements IAuditClientInfoProvider {
 
     private final FusedLocationProviderClient fusedLocationClient;
+    private final Context context;
 
-    /**
-     * Constructor del proveedor de auditoría.
-     *
-     * @param context Contexto de la aplicación necesario para inicializar
-     *                el cliente de servicios de ubicación de Google.
-     */
     public AuditClientInfoProvider(Context context) {
-        this.fusedLocationClient = LocationServices.getFusedLocationProviderClient(context);
+        this.context = context.getApplicationContext();
+        this.fusedLocationClient = LocationServices.getFusedLocationProviderClient(this.context);
     }
 
-    /**
-     * Obtiene de forma asíncrona la información de auditoría completa.
-     *
-     * Recopila datos de hardware, red y ubicación. En caso de que el GPS esté
-     * desactivado o falle, el proceso continúa retornando los datos técnicos
-     * con las coordenadas vacías para no bloquear la operación principal.
-     *
-     * @param callback Interfaz de respuesta para retornar el objeto {@link AuditClientInfo}.
-     */
     @Override
     @SuppressLint("MissingPermission")
     public void getAuditInfo(OnAuditInfoCallback callback) {
 
-        // 1. Recolección de datos de identidad del hardware
+        // ── Datos del hardware (siempre disponibles) ────────────────────────
         final String dispositivo = Build.MANUFACTURER + " " + Build.MODEL;
-        final String hostname = Build.DEVICE;
-        final String ip = getLocalIpAddress();
+        final String hostname    = Build.DEVICE;
+        final String ip          = getLocalIpAddress();
+        final String userAgent   = obtenerUserAgent();
 
-        // 2. Obtención del User Agent del sistema
-        String uaTemp = System.getProperty("http.agent");
-        final String userAgent = (uaTemp != null) ? uaTemp : "Android / Procesadora Peru App";
+        // ── Intento 1: getCurrentLocation (ubicación FRESCA del GPS) ────────
+        // A diferencia de getLastLocation(), este método enciende el GPS si es necesario.
+        CancellationTokenSource cts = new CancellationTokenSource();
 
         try {
-            // 3. Intento de obtención de la última ubicación conocida (Last Location)
-            fusedLocationClient.getLastLocation()
+            fusedLocationClient
+                    .getCurrentLocation(Priority.PRIORITY_HIGH_ACCURACY, cts.getToken())
                     .addOnSuccessListener(location -> {
-                        String lat = "";
-                        String lon = "";
-
                         if (location != null) {
-                            lat = String.valueOf(location.getLatitude());
-                            lon = String.valueOf(location.getLongitude());
+                            // ✅ GPS devolvió coordenadas frescas
+                            String lat = String.valueOf(location.getLatitude());
+                            String lon = String.valueOf(location.getLongitude());
+                            callback.onSuccess(new AuditClientInfo(
+                                    dispositivo, ip, hostname, userAgent, lat, lon));
+                        } else {
+                            // getCurrentLocation devolvió null → fallback a última conocida
+                            intentarUltimaUbicacion(dispositivo, ip, hostname, userAgent, callback);
                         }
-
-                        // Retorno exitoso con datos de ubicación (si existen)
-                        callback.onSuccess(new AuditClientInfo(
-                                dispositivo, ip, hostname, userAgent, lat, lon
-                        ));
                     })
-                    .addOnFailureListener(e -> {
-                        // Retorno preventivo: Se envían datos técnicos aunque falle el GPS
-                        callback.onSuccess(new AuditClientInfo(
-                                dispositivo, ip, hostname, userAgent, "", ""
-                        ));
-                    });
+                    .addOnFailureListener(e ->
+                            // getCurrentLocation falló → fallback a última conocida
+                            intentarUltimaUbicacion(dispositivo, ip, hostname, userAgent, callback));
 
         } catch (Exception e) {
-            // Manejo de excepciones críticas para asegurar que el flujo nunca se detenga
-            callback.onSuccess(new AuditClientInfo(
-                    dispositivo, ip, hostname, userAgent, "", ""
-            ));
+            // El servicio de ubicación no está disponible → retornar sin coords
+            callback.onSuccess(new AuditClientInfo(dispositivo, ip, hostname, userAgent, "", ""));
         }
     }
 
     /**
-     * Obtiene la dirección IP local (IPv4) asignada al dispositivo en la red actual.
-     *
-     * Recorre las interfaces de red activas (Wi-Fi o Datos) buscando una dirección
-     * que no sea de tipo Loopback (127.0.0.1).
-     *
-     * @return String con la dirección IP local o "127.0.0.1" si no se detecta red.
+     * Intento 2 (fallback): getLastLocation — retorna la última coordenada en caché.
+     * Puede ser null si el GPS no ha sido usado recientemente o está desactivado.
+     */
+    @SuppressLint("MissingPermission")
+    private void intentarUltimaUbicacion(String dispositivo, String ip, String hostname,
+                                         String userAgent, OnAuditInfoCallback callback) {
+        try {
+            fusedLocationClient.getLastLocation()
+                    .addOnSuccessListener(location -> {
+                        String lat = (location != null) ? String.valueOf(location.getLatitude()) : "";
+                        String lon = (location != null) ? String.valueOf(location.getLongitude()) : "";
+                        callback.onSuccess(new AuditClientInfo(
+                                dispositivo, ip, hostname, userAgent, lat, lon));
+                    })
+                    .addOnFailureListener(e ->
+                            callback.onSuccess(new AuditClientInfo(
+                                    dispositivo, ip, hostname, userAgent, "", "")));
+        } catch (Exception e) {
+            callback.onSuccess(new AuditClientInfo(dispositivo, ip, hostname, userAgent, "", ""));
+        }
+    }
+
+    private String obtenerUserAgent() {
+        String ua = System.getProperty("http.agent");
+        return (ua != null && !ua.isEmpty()) ? ua : "Android/" + Build.VERSION.RELEASE + " InventarioPP";
+    }
+
+    /**
+     * Obtiene la dirección IPv4 local del dispositivo.
+     * Ignora loopback y direcciones IPv6.
      */
     private String getLocalIpAddress() {
         try {
-            for (Enumeration<NetworkInterface> en = NetworkInterface.getNetworkInterfaces(); en.hasMoreElements();) {
+            for (Enumeration<NetworkInterface> en = NetworkInterface.getNetworkInterfaces();
+                 en.hasMoreElements(); ) {
                 NetworkInterface intf = en.nextElement();
-                for (Enumeration<InetAddress> enumIpAddr = intf.getInetAddresses(); enumIpAddr.hasMoreElements();) {
-                    InetAddress inetAddress = enumIpAddr.nextElement();
-
-                    // Filtramos para obtener solo IPv4 y omitir la dirección interna
-                    if (!inetAddress.isLoopbackAddress() && inetAddress instanceof Inet4Address) {
-                        return inetAddress.getHostAddress();
+                for (Enumeration<InetAddress> addrs = intf.getInetAddresses();
+                     addrs.hasMoreElements(); ) {
+                    InetAddress addr = addrs.nextElement();
+                    if (!addr.isLoopbackAddress() && addr instanceof Inet4Address) {
+                        return addr.getHostAddress();
                     }
                 }
             }
-        } catch (Exception ignored) {
-            // El error se ignora para evitar interrupciones; se retorna el default.
-        }
+        } catch (Exception ignored) { }
         return "127.0.0.1";
     }
 }

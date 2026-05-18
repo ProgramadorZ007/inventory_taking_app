@@ -31,6 +31,8 @@
     <string name="btn_registrar">REGISTRAR INVENTARIO</string>
     <string name="msg_registro_exitoso">Registro enviado correctamente al servidor.</string>
     <string name="msg_guardado_local">Sin conexión. Registro guardado localmente.\nSe enviará cuando haya internet.</string>
+    <string name="error_search_product_first">Primero busca un producto</string>
+    <string name="error_invalid_quantity">Ingrese una cantidad válida</string>
 
     <!-- Historial -->
     <string name="title_historial">Mis Inventarios de Hoy</string>
@@ -41,7 +43,7 @@
     <string name="btn_sincronizar">Sincronizar Todo</string>
     <string name="empty_pendientes">No hay registros pendientes.\n¡Todo sincronizado! ✅</string>
 
-    <!-- Perfil (SECCIÓN ACTUALIZADA) -->
+    <!-- Perfil -->
     <string name="title_perfil">Mi Perfil</string>
     <string name="label_usuario_prefijo">\@usuario</string>
     <string name="label_datos_operario">Datos del Operario</string>

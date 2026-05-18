@@ -13,6 +13,13 @@
         <item name="android:navigationBarColor">@color/pp_white</item>
     </style>
 
+    <style name="Theme.Inventario.Splash" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:windowContentOverlay">@null</item>
+
+        <item name="android:windowBackground">@color/pp_green</item>
+    </style>
+
     <style name="Theme.Inventario" parent="Base.Theme.Inventario" />
 
     <!-- Toolbar -->

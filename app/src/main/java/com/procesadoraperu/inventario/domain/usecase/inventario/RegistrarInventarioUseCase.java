@@ -2,21 +2,25 @@ package com.procesadoraperu.inventario.domain.usecase.inventario;
 
 import com.procesadoraperu.inventario.domain.model.inventario.Inventario;
 import com.procesadoraperu.inventario.domain.model.log.LogIntegracion;
-import com.procesadoraperu.inventario.domain.provider.IAuditClientInfoProvider; // IMPORT NUEVO
+import com.procesadoraperu.inventario.domain.provider.IAuditClientInfoProvider;
 import com.procesadoraperu.inventario.domain.repository.inventario.IInventarioRepository;
 import com.procesadoraperu.inventario.domain.repository.log.ILogRepository;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class RegistrarInventarioUseCase {
 
     private final IInventarioRepository inventarioRepository;
     private final ILogRepository logRepository;
-    private final IAuditClientInfoProvider auditProvider; // NUEVO: Interfaz de auditoría
+    private final IAuditClientInfoProvider auditProvider;
 
-    // Inyectamos la interfaz en el constructor
+    // Hilo de fondo exclusivo para este UseCase
+    private final ExecutorService executor = Executors.newSingleThreadExecutor();
+
     public RegistrarInventarioUseCase(IInventarioRepository inventarioRepository,
                                       ILogRepository logRepository,
                                       IAuditClientInfoProvider auditProvider) {
@@ -26,59 +30,58 @@ public class RegistrarInventarioUseCase {
     }
 
     public void execute(Inventario inventario) {
-        // 1. Primero pedimos la información de auditoría (GPS, IP, dispositivo, etc.)
+        // Pedimos la info del dispositivo (GPS, IP). Esto es asíncrono y su callback
+        // puede volver en el MainThread (hilo de la interfaz gráfica).
         auditProvider.getAuditInfo(auditInfo -> {
-
-            // 2. Cuando el proveedor responda, le asignamos la info al inventario
             inventario.setAuditClientInfo(auditInfo);
 
-            // 3. Ejecutamos la lógica de red y base de datos
-            ejecutarGuardadoYLog(inventario);
+            // CORRECCIÓN CRÍTICA:
+            // Forzamos explícitamente que todo el proceso de guardado y red se ejecute
+            // dentro del ExecutorService (hilo de fondo), escapando del MainThread.
+            executor.execute(() -> ejecutarGuardadoYLog(inventario));
         });
     }
 
-    // Separamos la lógica en un método privado para mantener el código limpio
+    // Este método ya NO tiene un executor adentro, asume que quien lo llama
+    // ya lo puso en un hilo secundario (como hicimos justo arriba).
     private void ejecutarGuardadoYLog(Inventario inventario) {
-        long startTime = System.currentTimeMillis(); // ⏱️ Inicia el cronómetro
+        long startTime = System.currentTimeMillis();
         String fechaActual = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(new Date());
 
-        // Simulación básica del payload para el log
         String payload = "{idProducto: " + inventario.getIdProducto() + ", cantidad: " + inventario.getCantidad() + "}";
-
-        // Definimos la referencia para saber qué registro generó este log
         String referencia = "Prod: " + inventario.getIdProducto();
 
         try {
-            // 1. Intentamos enviar a la API
+            // 1. Envío a API (Llamada de red - requiere estar fuera del MainThread)
             inventarioRepository.enviarInventarioRemote(inventario);
 
-            // Si llega aquí, fue un éxito.
+            // Éxito:
             inventario.setEstadoSincronizacion("SINCRONIZADO");
 
-            // ⏱️ Detiene cronómetro y guarda Log de ÉXITO
             long timeTaken = System.currentTimeMillis() - startTime;
             LogIntegracion logExito = new LogIntegracion(
                     "/api/almacen/inventarios", "POST", 200, payload, "OK", null,
                     timeTaken, fechaActual, inventario.getUsuarioCreacion(),
-                    referencia // <-- Se inyecta aquí
+                    referencia
             );
+            // (Acceso a Room - requiere estar fuera del MainThread)
             logRepository.saveLogLocal(logExito);
 
         } catch (Exception e) {
-            // 2. Falló el envío (No hay internet o servidor caído)
+            // 2. Falló el envío (ej. sin internet), guardamos local
             inventario.setEstadoSincronizacion("PENDIENTE");
-
-            // Usamos la fecha actual como fecha de registro local para ordenar los pendientes
             inventario.setFechaRegistroLocal(fechaActual);
+
+            // (Acceso a Room - requiere estar fuera del MainThread)
             inventarioRepository.saveInventarioLocal(inventario);
 
-            // ⏱️ Detiene cronómetro y guarda Log de ERROR
             long timeTaken = System.currentTimeMillis() - startTime;
             LogIntegracion logError = new LogIntegracion(
                     "/api/almacen/inventarios", "POST", 500, payload, null, e.getMessage(),
                     timeTaken, fechaActual, inventario.getUsuarioCreacion(),
-                    referencia // <-- Se inyecta aquí
+                    referencia
             );
+            // (Acceso a Room - requiere estar fuera del MainThread)
             logRepository.saveLogLocal(logError);
         }
     }

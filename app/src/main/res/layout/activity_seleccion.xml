@@ -6,6 +6,7 @@
     android:orientation="vertical"
     android:background="@color/pp_gray">
 
+    <!-- Cabecera Verde -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -24,6 +25,7 @@
             android:textStyle="bold"/>
     </LinearLayout>
 
+    <!-- Buscador -->
     <EditText
         android:id="@+id/etBuscar"
         android:layout_width="match_parent"
@@ -36,10 +38,13 @@
         android:elevation="2dp"
         android:inputType="text"/>
 
+    <!-- Lista de Opciones (Corregida) -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerViewOpciones"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
         android:clipToPadding="false"
         android:padding="8dp"/>
+
 </LinearLayout>

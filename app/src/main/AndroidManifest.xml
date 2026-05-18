@@ -2,16 +2,16 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- Permisos de red -->
+    <!-- ── Permisos de red ──────────────────────────────────────────────── -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
 
-    <!-- Permisos de ubicación -->
+    <!-- ── Permisos de ubicación ────────────────────────────────────────── -->
+    <!-- IMPORTANTE: ACCESS_FINE_LOCATION es necesario para PRIORITY_HIGH_ACCURACY -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 
-    <!-- Cámara para escaneo de código de barras -->
+    <!-- ── Cámara ────────────────────────────────────────────────────────── -->
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-feature android:name="android.hardware.camera" android:required="false" />
     <uses-feature android:name="android.hardware.camera.autofocus" android:required="false" />
@@ -28,23 +28,40 @@
         android:usesCleartextTraffic="true"
         tools:targetApi="31">
 
-        <!-- ═══════════════════════════════════
-             PANTALLA DE INICIO — LOGIN
-             ═══════════════════════════════════ -->
+        <!-- ══════════════════════════════════════
+             SPLASH — LANZADOR PRINCIPAL
+             ══════════════════════════════════════ -->
         <activity
-            android:name=".presentation.auth.LoginActivity"
+            android:name=".presentation.splash.SplashActivity"
             android:exported="true"
-            android:windowSoftInputMode="adjustResize"
-            android:screenOrientation="portrait">
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.Inventario.Splash">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
 
-        <!-- ═══════════════════════════════════
+        <!-- ══════════════════════════════════════
+             LOGIN
+             ══════════════════════════════════════ -->
+        <activity
+            android:name=".presentation.auth.LoginActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize"
+            android:screenOrientation="portrait" />
+
+        <!-- ══════════════════════════════════════
+             TÉRMINOS Y PRIVACIDAD
+             ══════════════════════════════════════ -->
+        <activity
+            android:name=".presentation.legal.LegalActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
+
+        <!-- ══════════════════════════════════════
              SELECCIÓN DE UBICACIÓN
-             ═══════════════════════════════════ -->
+             ══════════════════════════════════════ -->
         <activity
             android:name=".presentation.selection.SucursalActivity"
             android:exported="false"
@@ -57,43 +74,43 @@
             android:screenOrientation="portrait"
             android:windowSoftInputMode="adjustResize" />
 
-        <!-- ═══════════════════════════════════
-             HOME PRINCIPAL (NavigationDrawer)
-             ═══════════════════════════════════ -->
+        <!-- ══════════════════════════════════════
+             HOME
+             ══════════════════════════════════════ -->
         <activity
             android:name=".presentation.home.HomeActivity"
             android:exported="false"
             android:screenOrientation="portrait"
             android:launchMode="singleTop" />
 
-        <!-- ═══════════════════════════════════
+        <!-- ══════════════════════════════════════
              TOMA DE INVENTARIO
-             ═══════════════════════════════════ -->
+             ══════════════════════════════════════ -->
         <activity
             android:name=".presentation.inventory.take.TakeInventoryActivity"
             android:exported="false"
             android:screenOrientation="portrait"
             android:windowSoftInputMode="adjustResize" />
 
-        <!-- ═══════════════════════════════════
-             HISTORIAL DE INVENTARIOS
-             ═══════════════════════════════════ -->
+        <!-- ══════════════════════════════════════
+             HISTORIAL
+             ══════════════════════════════════════ -->
         <activity
             android:name=".presentation.inventory.history.InventoryHistoryActivity"
             android:exported="false"
             android:screenOrientation="portrait" />
 
-        <!-- ═══════════════════════════════════
-             INVENTARIOS PENDIENTES
-             ═══════════════════════════════════ -->
+        <!-- ══════════════════════════════════════
+             PENDIENTES
+             ══════════════════════════════════════ -->
         <activity
             android:name=".presentation.inventory.pending.PendingInventoryActivity"
             android:exported="false"
             android:screenOrientation="portrait" />
 
-        <!-- ═══════════════════════════════════
-             PERFIL DE USUARIO
-             ═══════════════════════════════════ -->
+        <!-- ══════════════════════════════════════
+             PERFIL
+             ══════════════════════════════════════ -->
         <activity
             android:name=".presentation.profile.UserProfileActivity"
             android:exported="false"

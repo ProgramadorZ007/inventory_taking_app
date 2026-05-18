@@ -1,8 +1,11 @@
 package com.procesadoraperu.inventario.domain.usecase.inventario;
 
+import android.content.Context;
+
+import com.procesadoraperu.inventario.core.sync.SyncScheduler;
 import com.procesadoraperu.inventario.domain.model.inventario.Inventario;
 import com.procesadoraperu.inventario.domain.model.log.LogIntegracion;
-import com.procesadoraperu.inventario.domain.provider.IAuditClientInfoProvider; // IMPORT NUEVO
+import com.procesadoraperu.inventario.domain.provider.IAuditClientInfoProvider;
 import com.procesadoraperu.inventario.domain.repository.inventario.IInventarioRepository;
 import com.procesadoraperu.inventario.domain.repository.log.ILogRepository;
 
@@ -10,76 +13,72 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
+/**
+ * MODIFICADO respecto al original:
+ *
+ * Cuando no hay conexión (catch), además de guardar localmente como PENDIENTE,
+ * ahora programa un SyncScheduler.scheduleSyncWhenConnected() para que
+ * WorkManager sincronice automáticamente cuando el dispositivo recupere red.
+ *
+ * El resto de la lógica es idéntica al original.
+ */
 public class RegistrarInventarioUseCase {
 
     private final IInventarioRepository inventarioRepository;
     private final ILogRepository logRepository;
-    private final IAuditClientInfoProvider auditProvider; // NUEVO: Interfaz de auditoría
+    private final IAuditClientInfoProvider auditProvider;
+    private final Context context; // NUEVO: necesario para SyncScheduler
 
-    // Inyectamos la interfaz en el constructor
     public RegistrarInventarioUseCase(IInventarioRepository inventarioRepository,
                                       ILogRepository logRepository,
-                                      IAuditClientInfoProvider auditProvider) {
+                                      IAuditClientInfoProvider auditProvider,
+                                      Context context) {  // NUEVO parámetro
         this.inventarioRepository = inventarioRepository;
         this.logRepository = logRepository;
         this.auditProvider = auditProvider;
+        this.context = context.getApplicationContext(); // siempre usar appContext
     }
 
     public void execute(Inventario inventario) {
-        // 1. Primero pedimos la información de auditoría (GPS, IP, dispositivo, etc.)
         auditProvider.getAuditInfo(auditInfo -> {
-
-            // 2. Cuando el proveedor responda, le asignamos la info al inventario
             inventario.setAuditClientInfo(auditInfo);
-
-            // 3. Ejecutamos la lógica de red y base de datos
             ejecutarGuardadoYLog(inventario);
         });
     }
 
-    // Separamos la lógica en un método privado para mantener el código limpio
     private void ejecutarGuardadoYLog(Inventario inventario) {
-        long startTime = System.currentTimeMillis(); // ⏱️ Inicia el cronómetro
+        long startTime = System.currentTimeMillis();
         String fechaActual = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(new Date());
-
-        // Simulación básica del payload para el log
         String payload = "{idProducto: " + inventario.getIdProducto() + ", cantidad: " + inventario.getCantidad() + "}";
-
-        // Definimos la referencia para saber qué registro generó este log
         String referencia = "Prod: " + inventario.getIdProducto();
 
         try {
-            // 1. Intentamos enviar a la API
+            // 1. Intentamos enviar a la API directamente
             inventarioRepository.enviarInventarioRemote(inventario);
-
-            // Si llega aquí, fue un éxito.
             inventario.setEstadoSincronizacion("SINCRONIZADO");
 
-            // ⏱️ Detiene cronómetro y guarda Log de ÉXITO
             long timeTaken = System.currentTimeMillis() - startTime;
-            LogIntegracion logExito = new LogIntegracion(
+            logRepository.saveLogLocal(new LogIntegracion(
                     "/api/almacen/inventarios", "POST", 200, payload, "OK", null,
-                    timeTaken, fechaActual, inventario.getUsuarioCreacion(),
-                    referencia // <-- Se inyecta aquí
-            );
-            logRepository.saveLogLocal(logExito);
+                    timeTaken, fechaActual, inventario.getUsuarioCreacion(), referencia
+            ));
 
         } catch (Exception e) {
-            // 2. Falló el envío (No hay internet o servidor caído)
+            // 2. Sin conexión → guardamos local como PENDIENTE
             inventario.setEstadoSincronizacion("PENDIENTE");
-
-            // Usamos la fecha actual como fecha de registro local para ordenar los pendientes
             inventario.setFechaRegistroLocal(fechaActual);
             inventarioRepository.saveInventarioLocal(inventario);
 
-            // ⏱️ Detiene cronómetro y guarda Log de ERROR
             long timeTaken = System.currentTimeMillis() - startTime;
-            LogIntegracion logError = new LogIntegracion(
+            logRepository.saveLogLocal(new LogIntegracion(
                     "/api/almacen/inventarios", "POST", 500, payload, null, e.getMessage(),
-                    timeTaken, fechaActual, inventario.getUsuarioCreacion(),
-                    referencia // <-- Se inyecta aquí
-            );
-            logRepository.saveLogLocal(logError);
+                    timeTaken, fechaActual, inventario.getUsuarioCreacion(), referencia
+            ));
+
+            // ── NUEVO: Programar sync automático cuando haya conexión ──────────
+            // WorkManager esperará silenciosamente hasta que el dispositivo
+            // tenga red, luego ejecutará SyncInventarioWorker.
+            SyncScheduler.scheduleSyncWhenConnected(context, inventario.getUsuarioCreacion());
         }
     }
 }

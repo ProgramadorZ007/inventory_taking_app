@@ -120,7 +120,7 @@ public class ViewModelFactory implements ViewModelProvider.Factory {
         GetAlmacenesUseCase getAlmacenesUseCase             = new GetAlmacenesUseCase(almRepo);
         GetActiveUserUseCase getActiveUserUseCase           = new GetActiveUserUseCase(usuarioRepo);
         ConsultarStockProductoUseCase consultarStockUseCase = new ConsultarStockProductoUseCase(prodRepo);
-        RegistrarInventarioUseCase registrarInvUseCase      = new RegistrarInventarioUseCase(invRepo, logRepo, auditProvider);
+        RegistrarInventarioUseCase registrarInvUseCase      = new RegistrarInventarioUseCase(invRepo, logRepo, auditProvider, context);
         ConsultarHistorialUseCase consultarHistorialUseCase = new ConsultarHistorialUseCase(invRepo);
         GetInventariosPendientesUseCase getPendientesUC     = new GetInventariosPendientesUseCase(invRepo);
         SincronizarPendientesUseCase sincronizarUseCase     = new SincronizarPendientesUseCase(invRepo, logRepo);

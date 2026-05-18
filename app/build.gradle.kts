@@ -67,6 +67,9 @@ dependencies {
     // La librería core de ZXing (requerida por zxing-android-embedded)
     implementation("com.google.zxing:core:3.5.3")
 
+    //Work
+    implementation("androidx.work:work-runtime:2.9.0")
+
     // Testing
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)

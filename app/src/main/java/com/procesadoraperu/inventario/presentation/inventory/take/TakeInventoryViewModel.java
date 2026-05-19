@@ -12,6 +12,7 @@ import com.procesadoraperu.inventario.domain.model.usuario.Usuario;
 import com.procesadoraperu.inventario.domain.repository.almacen.IAlmacenRepository;
 import com.procesadoraperu.inventario.domain.repository.sucursal.ISucursalRepository;
 import com.procesadoraperu.inventario.domain.usecase.inventario.RegistrarInventarioUseCase;
+import com.procesadoraperu.inventario.domain.usecase.inventario.RegistrarInventarioUseCase.OnRegistroCallback;
 import com.procesadoraperu.inventario.domain.usecase.producto.ConsultarStockProductoUseCase;
 import com.procesadoraperu.inventario.domain.usecase.usuario.GetActiveUserUseCase;
 
@@ -130,17 +131,32 @@ public class TakeInventoryViewModel extends ViewModel {
                 inventario.setFechaCreacion(fechaActual);
                 inventario.setFechaRegistroLocal(fechaActual);
 
-                registrarInventarioUseCase.execute(inventario);
+                // Pasar el callback para recibir el resultado de forma asíncrona,
+                // sin leer inventario.getEstadoSincronizacion() prematuramente.
+                registrarInventarioUseCase.execute(inventario, new OnRegistroCallback() {
+                    @Override
+                    public void onSincronizado() {
+                        registroResult.postValue(RegistroResult.SINCRONIZADO);
+                        isRegistrando.postValue(false);
+                    }
 
-                RegistroResult result = "SINCRONIZADO".equals(inventario.getEstadoSincronizacion())
-                        ? RegistroResult.SINCRONIZADO
-                        : RegistroResult.GUARDADO_LOCAL;
-                registroResult.postValue(result);
+                    @Override
+                    public void onGuardadoLocal() {
+                        registroResult.postValue(RegistroResult.GUARDADO_LOCAL);
+                        isRegistrando.postValue(false);
+                    }
+
+                    @Override
+                    public void onError(Exception e) {
+                        errorMessage.postValue("Error inesperado: " + e.getMessage());
+                        registroResult.postValue(RegistroResult.ERROR);
+                        isRegistrando.postValue(false);
+                    }
+                });
 
             } catch (Exception e) {
                 errorMessage.postValue("Error inesperado: " + e.getMessage());
                 registroResult.postValue(RegistroResult.ERROR);
-            } finally {
                 isRegistrando.postValue(false);
             }
         });

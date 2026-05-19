@@ -30,19 +30,22 @@ import java.util.concurrent.atomic.AtomicBoolean;
 /**
  * Proveedor de información de auditoría del cliente.
  *
- * Estrategia GPS (3 intentos en cascada):
- *   1. getCurrentLocation(HIGH_ACCURACY)  — ubicación fresca, timeout 8 seg
- *   2. getLastLocation()                  — última conocida en caché
- *   3. requestLocationUpdates()           — fuerza al proveedor a escanear, timeout 12 seg
+ * Estrategia GPS (3 intentos en cascada, optimizada para interiores):
+ *   1. getLastLocation()                       — instantáneo, usa caché del proveedor
+ *   2. getCurrentLocation(BALANCED_POWER)      — red/WiFi, funciona en interiores, timeout 6 seg
+ *   3. requestLocationUpdates(BALANCED_POWER)  — fuerza escaneo de red, timeout 10 seg
+ *
+ * Se usa PRIORITY_BALANCED_POWER_ACCURACY (WiFi + red móvil) porque la app
+ * opera principalmente en almacenes cerrados donde el GPS satelital no penetra.
  * Si los 3 fallan, se registra con lat/lon vacíos (nunca se bloquea el flujo).
  */
 public class AuditClientInfoProvider implements IAuditClientInfoProvider {
 
     private static final String TAG = "AuditClientInfoProvider";
 
-    // Tiempo máximo esperando GPS antes de rendirse (milisegundos)
-    private static final long GPS_TIMEOUT_MS        = 8_000L;
-    private static final long GPS_FALLBACK_TIMEOUT  = 12_000L;
+    // Timeouts ajustados: la ubicación por red es mucho más rápida que el GPS
+    private static final long TIMEOUT_GET_CURRENT_MS   = 6_000L;
+    private static final long TIMEOUT_REQUEST_UPDATE_MS = 10_000L;
 
     private final FusedLocationProviderClient fusedLocationClient;
     private final Context context;
@@ -76,73 +79,15 @@ public class AuditClientInfoProvider implements IAuditClientInfoProvider {
             return;
         }
 
-        // ── Intento 1: getCurrentLocation con timeout manual ─────────────────
-        intentoGetCurrentLocation(dispositivo, ip, hostname, userAgent, callback);
+        // ── Intento 1: getLastLocation (instantáneo, usa caché) ──────────────
+        // Es la fuente más rápida. Si el dispositivo usó ubicación recientemente
+        // (Maps, otra app, etc.), devuelve coordenadas en milisegundos.
+        intentoGetLastLocation(dispositivo, ip, hostname, userAgent, callback);
     }
 
     /**
-     * Intento 1: getCurrentLocation (ubicación fresca del GPS/Red).
-     * Aplica un timeout manual de GPS_TIMEOUT_MS para no bloquear el flujo.
-     */
-    @SuppressLint("MissingPermission")
-    private void intentoGetCurrentLocation(String dispositivo, String ip, String hostname,
-                                           String userAgent, OnAuditInfoCallback callback) {
-
-        // AtomicBoolean para evitar que el callback se llame dos veces
-        // (una vez por el resultado y otra por el timeout)
-        final AtomicBoolean respondido = new AtomicBoolean(false);
-        final Handler handler = new Handler(Looper.getMainLooper());
-        final CancellationTokenSource cts = new CancellationTokenSource();
-
-        // Timeout: si en GPS_TIMEOUT_MS no llegó respuesta, pasamos al fallback
-        Runnable timeoutRunnable = () -> {
-            if (respondido.compareAndSet(false, true)) {
-                Log.w(TAG, "getCurrentLocation timeout — pasando a getLastLocation");
-                cts.cancel(); // Cancela la tarea de GPS activa
-                intentoGetLastLocation(dispositivo, ip, hostname, userAgent, callback);
-            }
-        };
-        handler.postDelayed(timeoutRunnable, GPS_TIMEOUT_MS);
-
-        try {
-            fusedLocationClient
-                    .getCurrentLocation(Priority.PRIORITY_HIGH_ACCURACY, cts.getToken())
-                    .addOnSuccessListener(location -> {
-                        handler.removeCallbacks(timeoutRunnable);
-                        if (respondido.compareAndSet(false, true)) {
-                            if (location != null) {
-                                Log.d(TAG, "GPS OK: " + location.getLatitude() + ", " + location.getLongitude());
-                                callback.onSuccess(new AuditClientInfo(
-                                        dispositivo, ip, hostname, userAgent,
-                                        String.valueOf(location.getLatitude()),
-                                        String.valueOf(location.getLongitude())
-                                ));
-                            } else {
-                                Log.w(TAG, "getCurrentLocation devolvió null — pasando a getLastLocation");
-                                intentoGetLastLocation(dispositivo, ip, hostname, userAgent, callback);
-                            }
-                        }
-                    })
-                    .addOnFailureListener(e -> {
-                        handler.removeCallbacks(timeoutRunnable);
-                        if (respondido.compareAndSet(false, true)) {
-                            Log.w(TAG, "getCurrentLocation falló: " + e.getMessage());
-                            intentoGetLastLocation(dispositivo, ip, hostname, userAgent, callback);
-                        }
-                    });
-
-        } catch (Exception e) {
-            handler.removeCallbacks(timeoutRunnable);
-            if (respondido.compareAndSet(false, true)) {
-                Log.e(TAG, "Excepción en getCurrentLocation: " + e.getMessage());
-                intentoGetLastLocation(dispositivo, ip, hostname, userAgent, callback);
-            }
-        }
-    }
-
-    /**
-     * Intento 2: getLastLocation — última coordenada en caché del proveedor.
-     * Rápido pero puede ser null si el GPS no se usó recientemente.
+     * Intento 1: getLastLocation — última coordenada en caché del proveedor.
+     * Rápido (sin espera), pero puede ser null si el GPS no se usó recientemente.
      */
     @SuppressLint("MissingPermission")
     private void intentoGetLastLocation(String dispositivo, String ip, String hostname,
@@ -151,32 +96,95 @@ public class AuditClientInfoProvider implements IAuditClientInfoProvider {
             fusedLocationClient.getLastLocation()
                     .addOnSuccessListener(location -> {
                         if (location != null) {
-                            Log.d(TAG, "LastLocation OK: " + location.getLatitude() + ", " + location.getLongitude());
+                            Log.d(TAG, "✅ LastLocation OK: "
+                                    + location.getLatitude() + ", " + location.getLongitude());
                             callback.onSuccess(new AuditClientInfo(
                                     dispositivo, ip, hostname, userAgent,
                                     String.valueOf(location.getLatitude()),
                                     String.valueOf(location.getLongitude())
                             ));
                         } else {
-                            // getLastLocation también vino null → forzar escaneo activo
-                            Log.w(TAG, "getLastLocation null — intentando requestLocationUpdates");
-                            intentoRequestUpdates(dispositivo, ip, hostname, userAgent, callback);
+                            // Caché vacía → intentar ubicación por red (funciona en interiores)
+                            Log.w(TAG, "LastLocation null → intentando getCurrentLocation (BALANCED)");
+                            intentoGetCurrentLocation(dispositivo, ip, hostname, userAgent, callback);
                         }
                     })
                     .addOnFailureListener(e -> {
                         Log.w(TAG, "getLastLocation falló: " + e.getMessage());
-                        intentoRequestUpdates(dispositivo, ip, hostname, userAgent, callback);
+                        intentoGetCurrentLocation(dispositivo, ip, hostname, userAgent, callback);
                     });
         } catch (Exception e) {
             Log.e(TAG, "Excepción en getLastLocation: " + e.getMessage());
-            intentoRequestUpdates(dispositivo, ip, hostname, userAgent, callback);
+            intentoGetCurrentLocation(dispositivo, ip, hostname, userAgent, callback);
         }
     }
 
     /**
-     * Intento 3: requestLocationUpdates — fuerza al hardware GPS/Red a escanear.
-     * Más agresivo, útil cuando el caché está vacío (primera vez del día).
-     * Aplica timeout de GPS_FALLBACK_TIMEOUT.
+     * Intento 2: getCurrentLocation con PRIORITY_BALANCED_POWER_ACCURACY.
+     * Usa WiFi y red móvil — funciona en interiores (almacenes, oficinas).
+     * Timeout de TIMEOUT_GET_CURRENT_MS ms para no bloquear el flujo.
+     */
+    @SuppressLint("MissingPermission")
+    private void intentoGetCurrentLocation(String dispositivo, String ip, String hostname,
+                                           String userAgent, OnAuditInfoCallback callback) {
+
+        final AtomicBoolean respondido = new AtomicBoolean(false);
+        final Handler handler = new Handler(Looper.getMainLooper());
+        final CancellationTokenSource cts = new CancellationTokenSource();
+
+        // Timeout: si en TIMEOUT_GET_CURRENT_MS no llegó respuesta, pasamos al siguiente
+        Runnable timeoutRunnable = () -> {
+            if (respondido.compareAndSet(false, true)) {
+                Log.w(TAG, "getCurrentLocation timeout → intentando requestLocationUpdates");
+                cts.cancel();
+                intentoRequestUpdates(dispositivo, ip, hostname, userAgent, callback);
+            }
+        };
+        handler.postDelayed(timeoutRunnable, TIMEOUT_GET_CURRENT_MS);
+
+        try {
+            // CORRECCIÓN CLAVE: BALANCED_POWER usa WiFi + red móvil,
+            // HIGH_ACCURACY solo funciona bien al aire libre con GPS satelital.
+            fusedLocationClient
+                    .getCurrentLocation(Priority.PRIORITY_BALANCED_POWER_ACCURACY, cts.getToken())
+                    .addOnSuccessListener(location -> {
+                        handler.removeCallbacks(timeoutRunnable);
+                        if (respondido.compareAndSet(false, true)) {
+                            if (location != null) {
+                                Log.d(TAG, "✅ getCurrentLocation (BALANCED) OK: "
+                                        + location.getLatitude() + ", " + location.getLongitude());
+                                callback.onSuccess(new AuditClientInfo(
+                                        dispositivo, ip, hostname, userAgent,
+                                        String.valueOf(location.getLatitude()),
+                                        String.valueOf(location.getLongitude())
+                                ));
+                            } else {
+                                Log.w(TAG, "getCurrentLocation devolvió null → requestLocationUpdates");
+                                intentoRequestUpdates(dispositivo, ip, hostname, userAgent, callback);
+                            }
+                        }
+                    })
+                    .addOnFailureListener(e -> {
+                        handler.removeCallbacks(timeoutRunnable);
+                        if (respondido.compareAndSet(false, true)) {
+                            Log.w(TAG, "getCurrentLocation falló: " + e.getMessage());
+                            intentoRequestUpdates(dispositivo, ip, hostname, userAgent, callback);
+                        }
+                    });
+
+        } catch (Exception e) {
+            handler.removeCallbacks(timeoutRunnable);
+            if (respondido.compareAndSet(false, true)) {
+                Log.e(TAG, "Excepción en getCurrentLocation: " + e.getMessage());
+                intentoRequestUpdates(dispositivo, ip, hostname, userAgent, callback);
+            }
+        }
+    }
+
+    /**
+     * Intento 3: requestLocationUpdates con BALANCED_POWER.
+     * Fuerza al proveedor a escanear WiFi/redes disponibles.
+     * Timeout final de TIMEOUT_REQUEST_UPDATE_MS ms.
      */
     @SuppressLint("MissingPermission")
     private void intentoRequestUpdates(String dispositivo, String ip, String hostname,
@@ -185,10 +193,11 @@ public class AuditClientInfoProvider implements IAuditClientInfoProvider {
         final AtomicBoolean respondido = new AtomicBoolean(false);
         final Handler handler = new Handler(Looper.getMainLooper());
 
-        // Configuración: una sola actualización, máxima precisión
-        LocationRequest request = new LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 1000)
+        // CORRECCIÓN: BALANCED_POWER para funcionar en interiores
+        LocationRequest request = new LocationRequest.Builder(
+                Priority.PRIORITY_BALANCED_POWER_ACCURACY, 1000)
                 .setMaxUpdates(1)
-                .setWaitForAccurateLocation(false) // No esperar GPS perfecto
+                .setWaitForAccurateLocation(false)
                 .build();
 
         LocationCallback locationCallback = new LocationCallback() {
@@ -199,28 +208,32 @@ public class AuditClientInfoProvider implements IAuditClientInfoProvider {
                     fusedLocationClient.removeLocationUpdates(this);
                     if (locationResult != null && locationResult.getLastLocation() != null) {
                         android.location.Location loc = locationResult.getLastLocation();
-                        Log.d(TAG, "RequestUpdates OK: " + loc.getLatitude() + ", " + loc.getLongitude());
+                        Log.d(TAG, "✅ RequestUpdates (BALANCED) OK: "
+                                + loc.getLatitude() + ", " + loc.getLongitude());
                         callback.onSuccess(new AuditClientInfo(
                                 dispositivo, ip, hostname, userAgent,
                                 String.valueOf(loc.getLatitude()),
                                 String.valueOf(loc.getLongitude())
                         ));
                     } else {
-                        Log.w(TAG, "RequestUpdates sin resultado — registrando sin coordenadas");
-                        callback.onSuccess(new AuditClientInfo(dispositivo, ip, hostname, userAgent, "", ""));
+                        Log.w(TAG, "RequestUpdates sin resultado → registrando sin coordenadas");
+                        callback.onSuccess(new AuditClientInfo(
+                                dispositivo, ip, hostname, userAgent, "", ""));
                     }
                 }
             }
         };
 
-        // Timeout final: si en GPS_FALLBACK_TIMEOUT no hay señal, rendirse
+        // Timeout final: rendirse y registrar sin coordenadas
         handler.postDelayed(() -> {
             if (respondido.compareAndSet(false, true)) {
-                try { fusedLocationClient.removeLocationUpdates(locationCallback); } catch (Exception ignored) {}
-                Log.w(TAG, "RequestUpdates timeout — registrando sin coordenadas");
-                callback.onSuccess(new AuditClientInfo(dispositivo, ip, hostname, userAgent, "", ""));
+                try { fusedLocationClient.removeLocationUpdates(locationCallback); }
+                catch (Exception ignored) {}
+                Log.w(TAG, "RequestUpdates timeout → registrando sin coordenadas");
+                callback.onSuccess(new AuditClientInfo(
+                        dispositivo, ip, hostname, userAgent, "", ""));
             }
-        }, GPS_FALLBACK_TIMEOUT);
+        }, TIMEOUT_REQUEST_UPDATE_MS);
 
         try {
             fusedLocationClient.requestLocationUpdates(
@@ -232,7 +245,8 @@ public class AuditClientInfoProvider implements IAuditClientInfoProvider {
             handler.removeCallbacksAndMessages(null);
             if (respondido.compareAndSet(false, true)) {
                 Log.e(TAG, "Excepción en requestLocationUpdates: " + e.getMessage());
-                callback.onSuccess(new AuditClientInfo(dispositivo, ip, hostname, userAgent, "", ""));
+                callback.onSuccess(new AuditClientInfo(
+                        dispositivo, ip, hostname, userAgent, "", ""));
             }
         }
     }
@@ -252,10 +266,8 @@ public class AuditClientInfoProvider implements IAuditClientInfoProvider {
                  en.hasMoreElements(); ) {
                 NetworkInterface intf = en.nextElement();
 
-                // Ignorar interfaces desactivadas o loopback
                 if (!intf.isUp() || intf.isLoopback()) continue;
 
-                // Ignorar interfaces virtuales/dummy comunes
                 String nombre = intf.getName().toLowerCase();
                 if (nombre.contains("dummy") || nombre.contains("p2p")
                         || nombre.contains("tun") || nombre.contains("tap")) continue;

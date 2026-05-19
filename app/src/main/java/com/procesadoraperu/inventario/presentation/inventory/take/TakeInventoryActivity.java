@@ -3,6 +3,7 @@ package com.procesadoraperu.inventario.presentation.inventory.take;
 import android.Manifest;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.view.inputmethod.EditorInfo;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -14,9 +15,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.google.android.material.button.MaterialButton;
@@ -35,7 +33,6 @@ public class TakeInventoryActivity extends AppCompatActivity {
     private static final int REQUEST_CAMERA_PERMISSION = 100;
 
     private TakeInventoryViewModel viewModel;
-    private View rootView;
 
     private TextInputEditText etCodigoManual;
     private ProgressBar progressBuscar;
@@ -46,24 +43,29 @@ public class TakeInventoryActivity extends AppCompatActivity {
     private MaterialButton btnRegistrar;
     private ProgressBar progressRegistrar;
 
+    /* ── Escáner de código de barras / QR ─────────────────────────────────── */
     private final ActivityResultLauncher<ScanOptions> barcodeLauncher =
             registerForActivityResult(new ScanContract(), result -> {
                 if (result.getContents() != null) {
                     String codigo = result.getContents().trim();
                     etCodigoManual.setText(codigo);
                     viewModel.buscarProducto(codigo);
+                } else {
+                    // El usuario canceló el escaneo
+                    mostrarSnackbar("Escaneo cancelado", false);
                 }
             });
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        // EdgeToEdge SIN listener manual de insets:
+        // El AppBarLayout con fitsSystemWindows="true" en el XML gestiona
+        // automáticamente el espacio para la barra de estado.
         EdgeToEdge.enable(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_take_inventory);
 
-        rootView = findViewById(R.id.take_inventory_container);
-
-        // Configurar Toolbar
+        // Toolbar
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         if (getSupportActionBar() != null) {
@@ -72,40 +74,48 @@ public class TakeInventoryActivity extends AppCompatActivity {
         }
         toolbar.setNavigationOnClickListener(v -> finish());
 
-        // Manejo de Safe Area e Insets
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.take_inventory_container), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            Insets ime = insets.getInsets(WindowInsetsCompat.Type.ime());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, Math.max(systemBars.bottom, ime.bottom));
-            return WindowInsetsCompat.CONSUMED;
-        });
-
         initViews();
         setupViewModel();
     }
 
     private void initViews() {
-        etCodigoManual = findViewById(R.id.etCodigoManual);
-        progressBuscar = findViewById(R.id.progressBuscar);
-        cardProducto = findViewById(R.id.cardProducto);
+        etCodigoManual   = findViewById(R.id.etCodigoManual);
+        progressBuscar   = findViewById(R.id.progressBuscar);
+        cardProducto     = findViewById(R.id.cardProducto);
         tvNombreProducto = findViewById(R.id.tvNombreProducto);
-        tvIdProducto = findViewById(R.id.tvIdProducto);
-        tvStockSistema = findViewById(R.id.tvStockSistema);
+        tvIdProducto     = findViewById(R.id.tvIdProducto);
+        tvStockSistema   = findViewById(R.id.tvStockSistema);
         etCantidadContada = findViewById(R.id.etCantidadContada);
-        btnRegistrar = findViewById(R.id.btnRegistrar);
+        btnRegistrar     = findViewById(R.id.btnRegistrar);
         progressRegistrar = findViewById(R.id.progressRegistrar);
 
+        // Escanear con cámara
         findViewById(R.id.btnEscanear).setOnClickListener(v -> solicitarCamaraYEscanear());
-        findViewById(R.id.btnBuscarManual).setOnClickListener(v -> {
-            String codigo = etCodigoManual.getText().toString().trim();
-            if (codigo.isEmpty()) {
-                etCodigoManual.setError("Ingrese un código");
-                return;
+
+        // Buscar manualmente
+        findViewById(R.id.btnBuscarManual).setOnClickListener(v -> buscarManual());
+
+        // También buscar al presionar "Buscar" en el teclado
+        etCodigoManual.setOnEditorActionListener((v, actionId, event) -> {
+            if (actionId == EditorInfo.IME_ACTION_SEARCH ||
+                    actionId == EditorInfo.IME_ACTION_DONE) {
+                buscarManual();
+                return true;
             }
-            viewModel.buscarProducto(codigo);
+            return false;
         });
 
         btnRegistrar.setOnClickListener(v -> registrarInventario());
+    }
+
+    private void buscarManual() {
+        String codigo = (etCodigoManual.getText() != null)
+                ? etCodigoManual.getText().toString().trim() : "";
+        if (codigo.isEmpty()) {
+            etCodigoManual.setError("Ingrese un código");
+            return;
+        }
+        viewModel.buscarProducto(codigo);
     }
 
     private void setupViewModel() {
@@ -129,10 +139,9 @@ public class TakeInventoryActivity extends AppCompatActivity {
         });
 
         viewModel.getErrorMessage().observe(this, error -> {
-            if (error != null) {
-                Snackbar.make(rootView, error, Snackbar.LENGTH_LONG)
-                        .setBackgroundTint(getColor(R.color.pp_error))
-                        .show();
+            if (error != null && !error.isEmpty()) {
+                mostrarSnackbar(error, true);
+                viewModel.limpiarEstado();
             }
         });
 
@@ -140,38 +149,52 @@ public class TakeInventoryActivity extends AppCompatActivity {
             if (result == null) return;
             switch (result) {
                 case SINCRONIZADO:
-                    mostrarResultado(true, "Registro enviado correctamente al servidor.");
+                    mostrarResultado(true, "✅ Registro enviado correctamente al servidor.");
                     break;
                 case GUARDADO_LOCAL:
-                    mostrarResultado(false, "Sin conexión. Guardado en el dispositivo.");
+                    mostrarResultado(false,
+                            "⚠️ Sin conexión. Guardado en el dispositivo.\nSe enviará al recuperar internet.");
+                    break;
+                case ERROR:
+                    // El error ya fue mostrado en errorMessage
                     break;
             }
         });
     }
 
     private void mostrarProducto(Producto producto) {
-        tvNombreProducto.setText(producto.getDescripcion());
+        tvNombreProducto.setText(producto.getDescripcion() != null
+                ? producto.getDescripcion() : "Sin descripción");
         tvIdProducto.setText("Código: " + producto.getIdProducto());
-        tvStockSistema.setText("Stock actual: " + producto.getStock() + " " + producto.getIdMedida());
+        tvStockSistema.setText("Stock sistema: "
+                + producto.getStock().toPlainString()
+                + " " + (producto.getIdMedida() != null ? producto.getIdMedida() : ""));
         cardProducto.setVisibility(View.VISIBLE);
         etCantidadContada.requestFocus();
     }
 
     private void registrarInventario() {
         Producto producto = viewModel.getProductoEncontrado().getValue();
-        String cantidadStr = etCantidadContada.getText().toString().trim();
+        String cantidadStr = (etCantidadContada.getText() != null)
+                ? etCantidadContada.getText().toString().trim() : "";
 
-        if (producto == null) return;
-        if (cantidadStr.isEmpty()) {
-            etCantidadContada.setError("Ingrese cantidad");
+        if (producto == null) {
+            mostrarSnackbar("Primero busca un producto", false);
             return;
         }
-
+        if (cantidadStr.isEmpty()) {
+            etCantidadContada.setError("Ingrese la cantidad");
+            return;
+        }
         try {
             double cantidad = Double.parseDouble(cantidadStr);
+            if (cantidad < 0) {
+                etCantidadContada.setError("La cantidad no puede ser negativa");
+                return;
+            }
             viewModel.registrarInventario(producto, cantidad);
         } catch (NumberFormatException e) {
-            etCantidadContada.setError("Formato inválido");
+            etCantidadContada.setError("Formato inválido (use números)");
         }
     }
 
@@ -182,6 +205,7 @@ public class TakeInventoryActivity extends AppCompatActivity {
                 .setPositiveButton("Nuevo registro", (d, w) -> {
                     viewModel.limpiarEstado();
                     etCodigoManual.setText("");
+                    etCantidadContada.setText("");
                     cardProducto.setVisibility(View.GONE);
                 })
                 .setNegativeButton("Finalizar", (d, w) -> finish())
@@ -189,27 +213,53 @@ public class TakeInventoryActivity extends AppCompatActivity {
                 .show();
     }
 
+    private void mostrarSnackbar(String mensaje, boolean esError) {
+        View root = findViewById(R.id.take_inventory_container);
+        if (root == null) return;
+        Snackbar snack = Snackbar.make(root, mensaje, Snackbar.LENGTH_LONG);
+        if (esError) snack.setBackgroundTint(getColor(R.color.pp_error));
+        snack.show();
+    }
+
+    /* ── Cámara ─────────────────────────────────────────────────────────────── */
+
     private void solicitarCamaraYEscanear() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
+                == PackageManager.PERMISSION_GRANTED) {
             lanzarEscaner();
         } else {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA}, REQUEST_CAMERA_PERMISSION);
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.CAMERA}, REQUEST_CAMERA_PERMISSION);
         }
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode,
+                                           @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == REQUEST_CAMERA_PERMISSION && grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+        if (requestCode == REQUEST_CAMERA_PERMISSION
+                && grantResults.length > 0
+                && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
             lanzarEscaner();
+        } else {
+            mostrarSnackbar("Se necesita permiso de cámara para escanear", true);
         }
     }
 
     private void lanzarEscaner() {
         ScanOptions options = new ScanOptions();
-        options.setPrompt("Escanea el producto");
+        options.setPrompt("Escanea el código del producto");
         options.setBeepEnabled(true);
         options.setOrientationLocked(false);
+        // Soporta tanto QR como código de barras
+        options.setDesiredBarcodeFormats(
+                ScanOptions.QR_CODE,
+                ScanOptions.CODE_128,
+                ScanOptions.CODE_39,
+                ScanOptions.EAN_13,
+                ScanOptions.EAN_8
+        );
         barcodeLauncher.launch(options);
     }
 }

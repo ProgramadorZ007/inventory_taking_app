@@ -5,24 +5,32 @@
     android:id="@+id/take_inventory_container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/pp_background">
+    android:background="@color/pp_background"
+    android:fitsSystemWindows="true">
 
+    <!--
+        CORRECCIÓN SAFE AREA:
+        android:fitsSystemWindows="true" en AppBarLayout hace que la barra de
+        estado sea respetada automáticamente. El icono de retroceso ya no
+        aparecerá detrás/encima de la barra de notificaciones.
+    -->
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/appBar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@android:color/transparent"
-        app:elevation="0dp">
+        android:fitsSystemWindows="true"
+        app:elevation="4dp">
 
         <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
+            android:background="@color/pp_green"
             app:title="Toma de Inventario"
             app:titleCentered="true"
-            app:titleTextColor="@color/pp_text_primary"
+            app:titleTextColor="@color/pp_white"
             app:navigationIcon="@drawable/ic_back"
-            app:navigationIconTint="@color/pp_text_primary"/>
+            app:navigationIconTint="@color/pp_white"/>
     </com.google.android.material.appbar.AppBarLayout>
 
     <androidx.core.widget.NestedScrollView
@@ -58,7 +66,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         style="@style/Widget.Inventario.Button"
-                        android:text="Escanear Código"
+                        android:text="Escanear Código QR / Barras"
                         app:icon="@drawable/ic_camera"
                         android:layout_marginBottom="20dp"/>
 
@@ -75,6 +83,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:inputType="text"
+                            android:imeOptions="actionSearch"
                             android:textColor="@color/pp_text_primary"/>
                     </com.google.android.material.textfield.TextInputLayout>
 
@@ -92,6 +101,7 @@
                         android:layout_height="32dp"
                         android:layout_gravity="center"
                         android:layout_marginTop="12dp"
+                        android:indeterminateTint="@color/pp_green"
                         android:visibility="gone"/>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
@@ -177,9 +187,11 @@
                         android:layout_height="32dp"
                         android:layout_gravity="center"
                         android:layout_marginTop="12dp"
+                        android:indeterminateTint="@color/pp_green"
                         android:visibility="gone"/>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
+
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 

@@ -28,7 +28,9 @@ public class InventoryHistoryActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_inventory_history);
 
-        // Toolbar
+        // CORRECCIÓN: El AppBarLayout en el XML tiene fitsSystemWindows=true,
+        // así el toolbar ya respeta la status bar sin necesidad de EdgeToEdge
+        // ni listeners manuales de insets.
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         if (getSupportActionBar() != null) {
@@ -41,22 +43,19 @@ public class InventoryHistoryActivity extends AppCompatActivity {
 
         RecyclerView recyclerView = findViewById(R.id.recyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        adapter = new InventoryHistoryAdapter(inventario -> {
-            // Mostrar detalle del inventario en un dialog
-            mostrarDetalle(inventario);
-        });
+        adapter = new InventoryHistoryAdapter(this::mostrarDetalle);
         recyclerView.setAdapter(adapter);
 
         ViewModelFactory factory = new ViewModelFactory(this);
         viewModel = new ViewModelProvider(this, factory).get(InventoryHistoryViewModel.class);
 
-        viewModel.getIsLoading().observe(this, loading -> {
-            progressBar.setVisibility(loading ? View.VISIBLE : View.GONE);
-        });
+        viewModel.getIsLoading().observe(this, loading ->
+                progressBar.setVisibility(loading ? View.VISIBLE : View.GONE));
 
         viewModel.getHistorial().observe(this, lista -> {
             adapter.setList(lista);
-            tvEmpty.setVisibility((lista == null || lista.isEmpty()) ? View.VISIBLE : View.GONE);
+            tvEmpty.setVisibility(
+                    (lista == null || lista.isEmpty()) ? View.VISIBLE : View.GONE);
         });
 
         viewModel.getErrorMessage().observe(this, error -> {
@@ -66,16 +65,18 @@ public class InventoryHistoryActivity extends AppCompatActivity {
         viewModel.cargarHistorialHoy();
     }
 
-    private void mostrarDetalle(com.procesadoraperu.inventario.domain.model.inventario.Inventario inv) {
+    private void mostrarDetalle(
+            com.procesadoraperu.inventario.domain.model.inventario.Inventario inv) {
         String detalle =
                 "Producto: " + inv.getProducto() + "\n" +
                         "Código: "   + inv.getIdProducto() + "\n" +
                         "U.M.: "     + inv.getUnidadMedida() + "\n\n" +
-                        "Stock sistema: " + inv.getStock() + "\n" +
+                        "Stock sistema: "   + inv.getStock() + "\n" +
                         "Cantidad contada: " + inv.getCantidad() + "\n\n" +
                         "Almacén: "  + inv.getAlmacen() + "\n" +
                         "Sucursal: " + inv.getSucursal() + "\n" +
-                        "Fecha: "    + (inv.getFechaCreacion() != null
+                        "Registrado por: " + inv.getUsuarioCreacion() + "\n" +
+                        "Fecha: " + (inv.getFechaCreacion() != null
                         ? inv.getFechaCreacion().replace("T", " ") : "—");
 
         new com.google.android.material.dialog.MaterialAlertDialogBuilder(this)

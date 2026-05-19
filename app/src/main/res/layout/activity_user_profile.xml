@@ -5,17 +5,25 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="@color/pp_gray">
+    android:background="@color/pp_gray"
+    android:fitsSystemWindows="true">
 
-    <!-- Toolbar -->
-    <androidx.appcompat.widget.Toolbar
-        android:id="@+id/toolbar"
+    <!-- CORRECCIÓN SAFE AREA -->
+    <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
-        android:background="@color/pp_green"
-        android:elevation="6dp"
-        app:titleTextColor="@color/pp_white"
-        app:navigationIconTint="@color/pp_white"/>
+        android:layout_height="wrap_content"
+        android:fitsSystemWindows="true"
+        android:theme="@style/ThemeOverlay.MaterialComponents.Dark.ActionBar"
+        app:elevation="4dp">
+
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="@color/pp_green"
+            app:titleTextColor="@color/pp_white"
+            app:navigationIconTint="@color/pp_white"/>
+    </com.google.android.material.appbar.AppBarLayout>
 
     <ScrollView
         android:layout_width="match_parent"
@@ -43,7 +51,6 @@
                     android:padding="28dp"
                     android:gravity="center">
 
-                    <!-- Avatar circular -->
                     <TextView
                         android:id="@+id/tvAvatarGrande"
                         android:layout_width="80dp"
@@ -53,7 +60,7 @@
                         android:textSize="36sp"
                         android:textStyle="bold"
                         android:gravity="center"
-                        android:background="@color/pp_white"
+                        android:background="@drawable/shape_circle_white"
                         android:layout_marginBottom="14dp"/>
 
                     <TextView
@@ -104,7 +111,6 @@
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="16dp"/>
 
-                    <!-- Código general -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -142,13 +148,6 @@
                                 android:layout_height="wrap_content"/>
                         </LinearLayout>
                     </LinearLayout>
-
-                    <View
-                        android:layout_width="match_parent"
-                        android:layout_height="1dp"
-                        android:background="@color/pp_divider"
-                        android:layout_marginBottom="12dp"/>
-
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
@@ -185,90 +184,48 @@
                         android:gravity="center_vertical"
                         android:layout_marginBottom="12dp">
 
-                        <TextView
-                            android:text="🏭"
-                            android:textSize="18sp"
-                            android:layout_width="32dp"
-                            android:layout_height="wrap_content"/>
+                        <TextView android:text="🏭" android:textSize="18sp"
+                            android:layout_width="32dp" android:layout_height="wrap_content"/>
 
-                        <LinearLayout
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:orientation="vertical"
+                        <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content"
+                            android:layout_weight="1" android:orientation="vertical"
                             android:layout_marginStart="8dp">
-
-                            <TextView
-                                android:text="Sucursal"
-                                android:textSize="12sp"
+                            <TextView android:text="Sucursal" android:textSize="12sp"
                                 android:textColor="@color/pp_text_secondary"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"/>
-
-                            <TextView
-                                android:id="@+id/tvSucursal"
-                                android:text="—"
-                                android:textSize="15sp"
-                                android:textColor="@color/pp_text_dark"
+                                android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+                            <TextView android:id="@+id/tvSucursal" android:text="—"
+                                android:textSize="15sp" android:textColor="@color/pp_text_dark"
                                 android:textStyle="bold"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"/>
+                                android:layout_width="wrap_content" android:layout_height="wrap_content"/>
                         </LinearLayout>
                     </LinearLayout>
 
-                    <View
-                        android:layout_width="match_parent"
-                        android:layout_height="1dp"
-                        android:background="@color/pp_divider"
-                        android:layout_marginBottom="12dp"/>
+                    <View android:layout_width="match_parent" android:layout_height="1dp"
+                        android:background="@color/pp_divider" android:layout_marginBottom="12dp"/>
 
                     <!-- Almacén -->
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical">
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                        android:orientation="horizontal" android:gravity="center_vertical">
 
-                        <TextView
-                            android:text="🏢"
-                            android:textSize="18sp"
-                            android:layout_width="32dp"
-                            android:layout_height="wrap_content"/>
+                        <TextView android:text="🏢" android:textSize="18sp"
+                            android:layout_width="32dp" android:layout_height="wrap_content"/>
 
-                        <LinearLayout
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:orientation="vertical"
+                        <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content"
+                            android:layout_weight="1" android:orientation="vertical"
                             android:layout_marginStart="8dp">
-
-                            <TextView
-                                android:text="Almacén"
-                                android:textSize="12sp"
+                            <TextView android:text="Almacén" android:textSize="12sp"
                                 android:textColor="@color/pp_text_secondary"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"/>
-
-                            <TextView
-                                android:id="@+id/tvAlmacen"
-                                android:text="—"
-                                android:textSize="15sp"
-                                android:textColor="@color/pp_text_dark"
+                                android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+                            <TextView android:id="@+id/tvAlmacen" android:text="—"
+                                android:textSize="15sp" android:textColor="@color/pp_text_dark"
                                 android:textStyle="bold"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"/>
-
-                            <TextView
-                                android:id="@+id/tvIdAlmacen"
-                                android:text="Cód: —"
-                                android:textSize="12sp"
-                                android:textColor="@color/pp_text_secondary"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
+                                android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+                            <TextView android:id="@+id/tvIdAlmacen" android:text="Cód: —"
+                                android:textSize="12sp" android:textColor="@color/pp_text_secondary"
+                                android:layout_width="wrap_content" android:layout_height="wrap_content"
                                 android:layout_marginTop="2dp"/>
                         </LinearLayout>
                     </LinearLayout>
-
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 

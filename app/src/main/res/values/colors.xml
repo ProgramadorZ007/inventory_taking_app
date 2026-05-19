@@ -1,23 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Paleta Principal (Modernizada) -->
     <color name="pp_green">#00875A</color>
     <color name="pp_green_dark">#006644</color>
     <color name="pp_green_light">#E3FCEF</color>
     <color name="pp_green_accent">#36B37E</color>
 
-    <!-- Superficies y Fondos -->
     <color name="pp_background">#F4F5F7</color>
     <color name="pp_surface">#FFFFFF</color>
     <color name="pp_white">#FFFFFF</color>
 
-    <!-- Texto -->
     <color name="pp_text_primary">#172B4D</color>
     <color name="pp_text_secondary">#5E6C84</color>
     <color name="pp_text_dark">#091E42</color>
 
-    <!-- Estado -->
     <color name="pp_error">#DE350B</color>
     <color name="pp_warning">#FFAB00</color>
-    <color name="pp_gray">#EBECF0</color>
+    <color name="pp_warning_light">#FFF6E0</color> <color name="pp_gray">#EBECF0</color>
+
+    <color name="pp_divider">#DFE1E6</color>
+
 </resources>

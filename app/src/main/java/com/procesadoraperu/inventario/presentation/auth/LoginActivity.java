@@ -1,11 +1,14 @@
 package com.procesadoraperu.inventario.presentation.auth;
 
+import android.animation.ObjectAnimator;
+import android.animation.ValueAnimator;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
@@ -49,6 +52,21 @@ public class LoginActivity extends AppCompatActivity {
         btnLogin    = findViewById(R.id.btnLogin);
         progressBar = findViewById(R.id.progressBarLogin);
 
+        // ✔️ AQUÍ: Conectamos la imagen y le ponemos la animación
+        ImageView logo = findViewById(R.id.ivLogoLogin);
+        if (logo != null) {
+            ObjectAnimator scaleX = ObjectAnimator.ofFloat(logo, "scaleX", 1f, 1.10f, 1f);
+            ObjectAnimator scaleY = ObjectAnimator.ofFloat(logo, "scaleY", 1f, 1.10f, 1f);
+
+            scaleX.setRepeatCount(ValueAnimator.INFINITE);
+            scaleY.setRepeatCount(ValueAnimator.INFINITE);
+            scaleX.setDuration(1500); // Un poco más lento que el Splash para que no desespere
+            scaleY.setDuration(1500);
+
+            scaleX.start();
+            scaleY.start();
+        }
+
         // Manejo de Insets (Safe Area + teclado)
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(android.R.id.content), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
@@ -58,8 +76,7 @@ public class LoginActivity extends AppCompatActivity {
             return WindowInsetsCompat.CONSUMED;
         });
 
-        // CORRECCIÓN: Conectar los listeners de Términos y Privacidad
-        // (estaban en el XML pero nunca se inicializaban en el código)
+        // Listeners legales
         TextView tvTerminos = findViewById(R.id.tvTerminos);
         TextView tvPrivacidad = findViewById(R.id.tvPrivacidad);
 
@@ -98,8 +115,6 @@ public class LoginActivity extends AppCompatActivity {
                 Snackbar.make(findViewById(android.R.id.content), error, Snackbar.LENGTH_LONG)
                         .setBackgroundTint(getColor(R.color.pp_error))
                         .show();
-                // CORRECCIÓN: Limpiar el error después de mostrarlo para que no
-                // se vuelva a disparar si se rota la pantalla
                 viewModel.clearError();
             }
         });

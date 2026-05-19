@@ -13,15 +13,12 @@
         android:orientation="vertical"
         android:gravity="center">
 
-        <!-- Animación Lottie Modernizada -->
-        <com.airbnb.lottie.LottieAnimationView
-            android:id="@+id/lottieView"
-            android:layout_width="280dp"
-            android:layout_height="280dp"
-            app:lottie_rawRes="@raw/pp_splash"
-            app:lottie_autoPlay="true"
-            app:lottie_loop="false"
-            app:lottie_speed="1.2" />
+        <ImageView
+            android:id="@+id/ivLogoAnimado"
+            android:layout_width="200dp"
+            android:layout_height="200dp"
+            android:src="@drawable/logo_pp_blanco"
+            android:scaleType="fitCenter" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -31,16 +28,14 @@
             android:textSize="26sp"
             android:textStyle="bold"
             android:fontFamily="sans-serif-medium"
-            android:layout_marginTop="16dp" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Gestión Inteligente de Inventario"
-            android:textColor="#CCFFFFFF"
-            android:textSize="16sp"
-            android:letterSpacing="0.05"
-            android:layout_marginTop="8dp" />
+            android:layout_marginTop="24dp" /> <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Gestión Inteligente de Inventario"
+        android:textColor="#CCFFFFFF"
+        android:textSize="16sp"
+        android:letterSpacing="0.05"
+        android:layout_marginTop="8dp" />
 
     </LinearLayout>
 

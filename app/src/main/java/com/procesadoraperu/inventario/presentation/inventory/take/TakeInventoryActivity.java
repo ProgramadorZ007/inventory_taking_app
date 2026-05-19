@@ -15,6 +15,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.google.android.material.button.MaterialButton;
@@ -58,12 +61,19 @@ public class TakeInventoryActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        // EdgeToEdge SIN listener manual de insets:
-        // El AppBarLayout con fitsSystemWindows="true" en el XML gestiona
-        // automáticamente el espacio para la barra de estado.
         EdgeToEdge.enable(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_take_inventory);
+
+        // ✔️ AQUÍ ESTÁ LA SOLUCIÓN DEL SCROLL: Escucha el teclado (IME)
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.take_inventory_container), (v, insets) -> {
+            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+            Insets ime = insets.getInsets(WindowInsetsCompat.Type.ime());
+
+            // Aplica el padding de la barra de estado arriba y el teclado abajo
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, Math.max(systemBars.bottom, ime.bottom));
+            return WindowInsetsCompat.CONSUMED;
+        });
 
         // Toolbar
         Toolbar toolbar = findViewById(R.id.toolbar);

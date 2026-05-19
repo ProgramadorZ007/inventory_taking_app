@@ -5,20 +5,12 @@
     android:id="@+id/take_inventory_container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/pp_background"
-    android:fitsSystemWindows="true">
+    android:background="@color/pp_background">
 
-    <!--
-        CORRECCIÓN SAFE AREA:
-        android:fitsSystemWindows="true" en AppBarLayout hace que la barra de
-        estado sea respetada automáticamente. El icono de retroceso ya no
-        aparecerá detrás/encima de la barra de notificaciones.
-    -->
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/appBar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:fitsSystemWindows="true"
         app:elevation="4dp">
 
         <com.google.android.material.appbar.MaterialToolbar
@@ -46,7 +38,6 @@
             android:orientation="vertical"
             android:padding="20dp">
 
-            <!-- Card: Buscar Producto -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -106,7 +97,6 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Card: Detalle del Producto -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/cardProducto"
                 android:layout_width="match_parent"

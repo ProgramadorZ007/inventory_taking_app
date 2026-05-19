@@ -28,13 +28,11 @@ public class InventoryHistoryActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_inventory_history);
 
-        // CORRECCIÓN: El AppBarLayout en el XML tiene fitsSystemWindows=true,
-        // así el toolbar ya respeta la status bar sin necesidad de EdgeToEdge
-        // ni listeners manuales de insets.
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         if (getSupportActionBar() != null) {
-            getSupportActionBar().setTitle("Mis Inventarios de Hoy");
+            // ✔️ CORRECCIÓN: Actualizamos el título para reflejar el nuevo rango de tiempo
+            getSupportActionBar().setTitle("Historial Trimestral");
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
 
@@ -62,7 +60,8 @@ public class InventoryHistoryActivity extends AppCompatActivity {
             if (error != null) Toast.makeText(this, error, Toast.LENGTH_LONG).show();
         });
 
-        viewModel.cargarHistorialHoy();
+        // ✔️ CORRECCIÓN: Llamamos al nuevo método que carga los últimos 3 meses
+        viewModel.cargarHistorialUltimos3Meses();
     }
 
     private void mostrarDetalle(

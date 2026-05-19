@@ -7,8 +7,9 @@ import androidx.room.PrimaryKey;
 @Entity(tableName = "Inventario")
 public class InventarioEntity {
 
-    @PrimaryKey(autoGenerate = true)
-    public int idInventario;
+    @PrimaryKey
+    @androidx.annotation.NonNull
+    public String idInventario = "";
 
     public String idEmpresa;
     public String idSucursal;

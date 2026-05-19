@@ -3,7 +3,7 @@ package com.procesadoraperu.inventario.domain.model.inventario;
 public class Inventario {
 
     // Identificadores Generales
-    private int idInventario;
+    private String idInventario;
     private String idEmpresa;
 
     // Ubicación
@@ -47,8 +47,8 @@ public class Inventario {
     // GETTERS Y SETTERS
     // ==========================================
 
-    public int getIdInventario() { return idInventario; }
-    public void setIdInventario(int idInventario) { this.idInventario = idInventario; }
+    public String getIdInventario() { return idInventario; }
+    public void setIdInventario(String idInventario) { this.idInventario = idInventario; }
 
     public String getIdEmpresa() { return idEmpresa; }
     public void setIdEmpresa(String idEmpresa) { this.idEmpresa = idEmpresa; }

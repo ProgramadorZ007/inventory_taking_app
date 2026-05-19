@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel;
 import com.procesadoraperu.inventario.domain.model.almacen.Almacen;
 import com.procesadoraperu.inventario.domain.model.inventario.Inventario;
 import com.procesadoraperu.inventario.domain.model.producto.Producto;
+import com.procesadoraperu.inventario.domain.model.sucursal.Sucursal;
 import com.procesadoraperu.inventario.domain.model.usuario.Usuario;
 import com.procesadoraperu.inventario.domain.repository.almacen.IAlmacenRepository;
 import com.procesadoraperu.inventario.domain.repository.sucursal.ISucursalRepository;
@@ -16,6 +17,7 @@ import com.procesadoraperu.inventario.domain.usecase.usuario.GetActiveUserUseCas
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -30,7 +32,6 @@ public class TakeInventoryViewModel extends ViewModel {
 
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
 
-    // Estado de la pantalla
     private final MutableLiveData<Boolean> isLoadingProducto = new MutableLiveData<>(false);
     private final MutableLiveData<Boolean> isRegistrando    = new MutableLiveData<>(false);
     private final MutableLiveData<Producto> productoEncontrado = new MutableLiveData<>();
@@ -57,7 +58,6 @@ public class TakeInventoryViewModel extends ViewModel {
     public LiveData<String> getErrorMessage()        { return errorMessage; }
     public LiveData<RegistroResult> getRegistroResult() { return registroResult; }
 
-    /** Busca el producto por su código (barcode o manual) */
     public void buscarProducto(String idProducto) {
         if (idProducto == null || idProducto.trim().isEmpty()) {
             errorMessage.postValue("Ingresa un código de producto válido");
@@ -89,7 +89,6 @@ public class TakeInventoryViewModel extends ViewModel {
         });
     }
 
-    /** Registra el inventario con la cantidad ingresada por el operario */
     public void registrarInventario(Producto producto, double cantidadContada) {
         if (producto == null) {
             errorMessage.postValue("Primero busca un producto");
@@ -110,11 +109,14 @@ public class TakeInventoryViewModel extends ViewModel {
                 String fechaActual = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
                         .format(new Date());
 
-                // Construimos el objeto Inventario
+                // CORRECCIÓN: Resolver el nombre real de la sucursal desde SQLite
+                // en lugar de hardcodear "Sucursal " + idSucursal
+                String nombreSucursal = resolverNombreSucursal(idSucursal);
+
                 Inventario inventario = new Inventario();
                 inventario.setIdEmpresa("001");
                 inventario.setIdSucursal(idSucursal);
-                inventario.setSucursal("Sucursal " + idSucursal);
+                inventario.setSucursal(nombreSucursal); // ← nombre real, no hardcodeado
                 inventario.setIdAlmacen(almacen.getIdAlmacen());
                 inventario.setAlmacen(almacen.getDescripcion());
                 inventario.setIdProducto(producto.getIdProducto());
@@ -122,14 +124,14 @@ public class TakeInventoryViewModel extends ViewModel {
                 inventario.setUnidadMedida(producto.getIdMedida());
                 inventario.setStock(producto.getStock().doubleValue());
                 inventario.setCantidad(cantidadContada);
-                inventario.setUsuarioCreacion(usuario.getUsername());
+                // CORRECCIÓN: Usar username en minúsculas para que coincida
+                // con el guardado en login y el filtro del historial funcione
+                inventario.setUsuarioCreacion(usuario.getUsername().toLowerCase());
                 inventario.setFechaCreacion(fechaActual);
                 inventario.setFechaRegistroLocal(fechaActual);
 
-                // El UseCase maneja envío + fallback local
                 registrarInventarioUseCase.execute(inventario);
 
-                // Determinar resultado según el estado que quedó
                 RegistroResult result = "SINCRONIZADO".equals(inventario.getEstadoSincronizacion())
                         ? RegistroResult.SINCRONIZADO
                         : RegistroResult.GUARDADO_LOCAL;
@@ -144,7 +146,26 @@ public class TakeInventoryViewModel extends ViewModel {
         });
     }
 
-    /** Limpia el estado para registrar otro producto */
+    /**
+     * CORRECCIÓN: Resuelve el nombre descriptivo de la sucursal buscando en la
+     * lista local guardada en SQLite, en lugar de hardcodear el prefijo.
+     */
+    private String resolverNombreSucursal(String idSucursal) {
+        if (idSucursal == null) return "Sin sucursal";
+        try {
+            List<Sucursal> locales = sucRepo.getSucursalesLocal();
+            if (locales != null) {
+                for (Sucursal s : locales) {
+                    if (idSucursal.equals(s.getIdSucursal())) {
+                        return s.getDescripcion();
+                    }
+                }
+            }
+        } catch (Exception ignored) {}
+        // Fallback: si no se encuentra en SQLite, al menos no muestra el prefijo feo
+        return idSucursal;
+    }
+
     public void limpiarEstado() {
         productoEncontrado.postValue(null);
         errorMessage.postValue(null);

@@ -14,23 +14,29 @@ public class LoginViewModel extends ViewModel {
     private final LoginUseCase loginUseCase;
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
 
-    // LiveData para notificar a la vista (Activity)
-    private final MutableLiveData<Boolean> isLoading = new MutableLiveData<>(false);
+    private final MutableLiveData<Boolean> isLoading    = new MutableLiveData<>(false);
     private final MutableLiveData<Boolean> loginSuccess = new MutableLiveData<>();
-    private final MutableLiveData<String> errorMessage = new MutableLiveData<>();
+    private final MutableLiveData<String> errorMessage  = new MutableLiveData<>();
 
     public LoginViewModel(LoginUseCase loginUseCase) {
         this.loginUseCase = loginUseCase;
     }
 
-    public LiveData<Boolean> getIsLoading() { return isLoading; }
+    public LiveData<Boolean> getIsLoading()    { return isLoading; }
     public LiveData<Boolean> getLoginSuccess() { return loginSuccess; }
-    public LiveData<String> getErrorMessage() { return errorMessage; }
+    public LiveData<String> getErrorMessage()  { return errorMessage; }
+
+    /**
+     * CORRECCIÓN: Permite a la Activity limpiar el error después de mostrarlo,
+     * evitando que se vuelva a mostrar al rotar la pantalla.
+     */
+    public void clearError() {
+        errorMessage.setValue(null);
+    }
 
     public void login(String username, String password) {
         isLoading.postValue(true);
 
-        // Ejecutamos en segundo plano para no congelar la pantalla
         executor.execute(() -> {
             try {
                 loginUseCase.execute(username, password);
@@ -41,5 +47,11 @@ public class LoginViewModel extends ViewModel {
                 isLoading.postValue(false);
             }
         });
+    }
+
+    @Override
+    protected void onCleared() {
+        super.onCleared();
+        executor.shutdown();
     }
 }

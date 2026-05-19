@@ -29,14 +29,13 @@ public class LoginActivity extends AppCompatActivity {
     private EditText etUsername, etPassword;
     private Button btnLogin;
     private ProgressBar progressBar;
-    private View rootView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        EdgeToEdge.enable(this); // Habilita diseño de pantalla completa nativo
+        EdgeToEdge.enable(this);
         super.onCreate(savedInstanceState);
 
-        // Verificar sesión antes de inflar
+        // Verificar sesión existente antes de inflar la UI
         SharedPreferences authPrefs = getSharedPreferences("auth_prefs", MODE_PRIVATE);
         if (authPrefs.getString("ACCESS_TOKEN", null) != null) {
             navegarSiguiente();
@@ -45,21 +44,40 @@ public class LoginActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_login);
 
-        // Referencias
-        rootView = findViewById(R.id.main_login_container); // Asegúrate de que este ID exista en el XML
-        etUsername = findViewById(R.id.etUsername);
-        etPassword = findViewById(R.id.etPassword);
-        btnLogin = findViewById(R.id.btnLogin);
+        etUsername  = findViewById(R.id.etUsername);
+        etPassword  = findViewById(R.id.etPassword);
+        btnLogin    = findViewById(R.id.btnLogin);
         progressBar = findViewById(R.id.progressBarLogin);
 
-        // Manejo de Insets (Safe Area)
+        // Manejo de Insets (Safe Area + teclado)
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(android.R.id.content), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             Insets ime = insets.getInsets(WindowInsetsCompat.Type.ime());
-            // Aplicamos padding inferior dinámico para el teclado y barras del sistema
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, Math.max(systemBars.bottom, ime.bottom));
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right,
+                    Math.max(systemBars.bottom, ime.bottom));
             return WindowInsetsCompat.CONSUMED;
         });
+
+        // CORRECCIÓN: Conectar los listeners de Términos y Privacidad
+        // (estaban en el XML pero nunca se inicializaban en el código)
+        TextView tvTerminos = findViewById(R.id.tvTerminos);
+        TextView tvPrivacidad = findViewById(R.id.tvPrivacidad);
+
+        if (tvTerminos != null) {
+            tvTerminos.setOnClickListener(v -> {
+                Intent intent = new Intent(this, LegalActivity.class);
+                intent.putExtra(LegalActivity.EXTRA_TIPO, LegalActivity.TIPO_TERMINOS);
+                startActivity(intent);
+            });
+        }
+
+        if (tvPrivacidad != null) {
+            tvPrivacidad.setOnClickListener(v -> {
+                Intent intent = new Intent(this, LegalActivity.class);
+                intent.putExtra(LegalActivity.EXTRA_TIPO, LegalActivity.TIPO_PRIVACIDAD);
+                startActivity(intent);
+            });
+        }
 
         setupViewModel();
         setupListeners();
@@ -80,6 +98,9 @@ public class LoginActivity extends AppCompatActivity {
                 Snackbar.make(findViewById(android.R.id.content), error, Snackbar.LENGTH_LONG)
                         .setBackgroundTint(getColor(R.color.pp_error))
                         .show();
+                // CORRECCIÓN: Limpiar el error después de mostrarlo para que no
+                // se vuelva a disparar si se rota la pantalla
+                viewModel.clearError();
             }
         });
 
@@ -103,8 +124,8 @@ public class LoginActivity extends AppCompatActivity {
     private void navegarSiguiente() {
         SharedPreferences appPrefs = getSharedPreferences("app_prefs", MODE_PRIVATE);
         String idAlmacen = appPrefs.getString("ACTIVE_ALMACEN_ID", null);
-        Intent intent = (idAlmacen != null) 
-                ? new Intent(this, HomeActivity.class) 
+        Intent intent = (idAlmacen != null)
+                ? new Intent(this, HomeActivity.class)
                 : new Intent(this, SucursalActivity.class);
         startActivity(intent);
         overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);

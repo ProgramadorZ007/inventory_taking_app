@@ -1,50 +1,70 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<androidx.coordinatorlayout.widget.CoordinatorLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/main_selection_container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:background="@color/pp_gray">
+    android:background="@color/pp_background">
 
-    <!-- Cabecera Verde -->
-    <LinearLayout
+    <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/pp_green"
-        android:padding="20dp"
-        android:orientation="horizontal"
-        android:gravity="center_vertical">
+        android:background="@android:color/transparent"
+        app:elevation="0dp">
 
-        <TextView
-            android:id="@+id/tvTituloSeleccion"
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/toolbarSeleccion"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            app:titleTextColor="@color/pp_text_primary">
+
+            <TextView
+                android:id="@+id/tvTituloSeleccion"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Seleccionar"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:textColor="@color/pp_text_primary"/>
+        </com.google.android.material.appbar.MaterialToolbar>
+
+        <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Seleccionar Opción"
-            android:textColor="@color/pp_white"
-            android:textSize="20sp"
-            android:textStyle="bold"/>
-    </LinearLayout>
+            android:layout_marginHorizontal="16dp"
+            android:layout_marginBottom="16dp"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="2dp"
+            app:strokeWidth="0dp">
 
-    <!-- Buscador -->
-    <EditText
-        android:id="@+id/etBuscar"
-        android:layout_width="match_parent"
-        android:layout_height="50dp"
-        android:layout_margin="16dp"
-        android:paddingStart="16dp"
-        android:paddingEnd="16dp"
-        android:background="@android:color/white"
-        android:hint="Buscar..."
-        android:elevation="2dp"
-        android:inputType="text"/>
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:hintEnabled="false"
+                app:startIconDrawable="@drawable/ic_search"
+                app:startIconTint="@color/pp_text_secondary"
+                app:boxBackgroundMode="none">
 
-    <!-- Lista de Opciones (Corregida) -->
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etBuscar"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/hint_buscar"
+                    android:inputType="text"
+                    android:paddingVertical="12dp"
+                    android:background="@android:color/transparent"
+                    android:textColor="@color/pp_text_primary"/>
+            </com.google.android.material.textfield.TextInputLayout>
+        </com.google.android.material.card.MaterialCardView>
+    </com.google.android.material.appbar.AppBarLayout>
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerViewOpciones"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
+        android:layout_height="match_parent"
         android:clipToPadding="false"
-        android:padding="8dp"/>
+        android:padding="8dp"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"/>
 
-</LinearLayout>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

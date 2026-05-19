@@ -1,46 +1,41 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-    activity_login.xml
-    - ScrollView para que el contenido no quede oculto bajo el teclado
-    - fitsSystemWindows para respetar la barra de estado
-    - Links a Términos y Política de Privacidad
--->
 <ScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/main_login_container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/pp_green"
-    android:fitsSystemWindows="true"
     android:fillViewport="true">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:gravity="center_vertical"
-        android:paddingStart="28dp"
-        android:paddingEnd="28dp"
-        android:paddingTop="60dp"
-        android:paddingBottom="32dp"
-        android:minHeight="700dp">
+        android:gravity="center_horizontal"
+        android:paddingHorizontal="32dp"
+        android:paddingBottom="40dp">
 
-        <!-- ── Logo / Encabezado ──────────────────────────────────────────── -->
+        <!-- Espaciador superior para el logo -->
+        <View
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_weight="1"/>
+
+        <!-- Logo / Brand Section -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:gravity="center"
-            android:layout_marginBottom="36dp">
+            android:layout_marginBottom="40dp">
 
-            <!-- Ícono de caja -->
-            <TextView
-                android:layout_width="80dp"
-                android:layout_height="80dp"
-                android:text="📦"
-                android:textSize="40sp"
-                android:gravity="center"
-                android:background="@drawable/shape_circle_white"
+            <com.airbnb.lottie.LottieAnimationView
+                android:layout_width="120dp"
+                android:layout_height="120dp"
+                app:lottie_rawRes="@raw/pp_splash"
+                app:lottie_autoPlay="true"
+                app:lottie_loop="true"
                 android:layout_marginBottom="16dp"/>
 
             <TextView
@@ -48,88 +43,73 @@
                 android:layout_height="wrap_content"
                 android:text="Procesadora Perú S.A.C."
                 android:textColor="@color/pp_white"
-                android:textSize="22sp"
+                android:textSize="24sp"
                 android:textStyle="bold"
-                android:fontFamily="sans-serif-medium"
                 android:gravity="center"/>
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Control de Inventario"
+                android:text="Gestión de Inventario"
                 android:textColor="#CCFFFFFF"
-                android:textSize="14sp"
-                android:gravity="center"
+                android:textSize="16sp"
                 android:layout_marginTop="4dp"/>
         </LinearLayout>
 
-        <!-- ── Tarjeta de login ───────────────────────────────────────────── -->
-        <androidx.cardview.widget.CardView
+        <!-- Login Card -->
+        <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:cardCornerRadius="20dp"
-            app:cardElevation="12dp"
-            app:cardBackgroundColor="@color/pp_white"
-            android:layout_marginBottom="20dp">
+            app:cardCornerRadius="24dp"
+            app:cardElevation="0dp"
+            app:cardBackgroundColor="@color/pp_surface">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="28dp">
+                android:padding="24dp">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Iniciar Sesión"
-                    android:textColor="@color/pp_text_dark"
-                    android:textSize="20sp"
+                    android:text="¡Bienvenido!"
+                    android:textColor="@color/pp_text_primary"
+                    android:textSize="22sp"
                     android:textStyle="bold"
-                    android:fontFamily="sans-serif-medium"
+                    android:layout_marginBottom="8dp"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Ingresa tus credenciales para continuar"
+                    android:textColor="@color/pp_text_secondary"
+                    android:textSize="14sp"
                     android:layout_marginBottom="24dp"/>
 
-                <!-- Campo Usuario -->
                 <com.google.android.material.textfield.TextInputLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="Usuario"
-                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                    app:boxStrokeColor="@color/pp_green"
-                    app:hintTextColor="@color/pp_green"
+                    android:hint="@string/hint_usuario"
+                    style="@style/Widget.Inventario.TextInputLayout"
                     app:startIconDrawable="@drawable/ic_person"
-                    app:startIconTint="@color/pp_green"
-                    app:boxCornerRadiusTopStart="12dp"
-                    app:boxCornerRadiusTopEnd="12dp"
-                    app:boxCornerRadiusBottomStart="12dp"
-                    app:boxCornerRadiusBottomEnd="12dp"
-                    android:layout_marginBottom="14dp">
+                    android:layout_marginBottom="16dp">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/etUsername"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:inputType="text"
-                        android:imeOptions="actionNext"
-                        android:textColor="@color/pp_text_dark"
-                        android:autofillHints="username"/>
+                        android:textColor="@color/pp_text_primary"/>
                 </com.google.android.material.textfield.TextInputLayout>
 
-                <!-- Campo Contraseña -->
                 <com.google.android.material.textfield.TextInputLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="Contraseña"
-                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                    app:boxStrokeColor="@color/pp_green"
-                    app:hintTextColor="@color/pp_green"
+                    android:hint="@string/hint_password"
+                    style="@style/Widget.Inventario.TextInputLayout"
                     app:startIconDrawable="@drawable/ic_logout"
-                    app:startIconTint="@color/pp_green"
                     app:passwordToggleEnabled="true"
-                    app:passwordToggleTint="@color/pp_green"
-                    app:boxCornerRadiusTopStart="12dp"
-                    app:boxCornerRadiusTopEnd="12dp"
-                    app:boxCornerRadiusBottomStart="12dp"
-                    app:boxCornerRadiusBottomEnd="12dp"
                     android:layout_marginBottom="24dp">
 
                     <com.google.android.material.textfield.TextInputEditText
@@ -137,88 +117,63 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:inputType="textPassword"
-                        android:imeOptions="actionDone"
-                        android:textColor="@color/pp_text_dark"
-                        android:autofillHints="password"/>
+                        android:textColor="@color/pp_text_primary"/>
                 </com.google.android.material.textfield.TextInputLayout>
 
-                <!-- Botón ingresar -->
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnLogin"
                     android:layout_width="match_parent"
-                    android:layout_height="56dp"
-                    android:text="INGRESAR"
-                    android:textSize="15sp"
-                    android:textStyle="bold"
-                    android:textColor="@color/pp_white"
-                    app:backgroundTint="@color/pp_green"
-                    app:cornerRadius="12dp"
-                    android:elevation="2dp"/>
+                    android:layout_height="wrap_content"
+                    style="@style/Widget.Inventario.Button"
+                    android:text="@string/btn_ingresar"/>
 
                 <ProgressBar
                     android:id="@+id/progressBarLogin"
-                    android:layout_width="36dp"
-                    android:layout_height="36dp"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
                     android:layout_gravity="center"
-                    android:layout_marginTop="12dp"
-                    android:indeterminateTint="@color/pp_green"
+                    android:layout_marginTop="16dp"
                     android:visibility="gone"/>
 
             </LinearLayout>
-        </androidx.cardview.widget.CardView>
+        </com.google.android.material.card.MaterialCardView>
 
-        <!-- ── Términos y Privacidad ──────────────────────────────────────── -->
+        <!-- Espaciador inferior -->
+        <View
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_weight="1.5"/>
+
+        <!-- Footer -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:gravity="center">
-
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center">
-
-                <TextView
-                    android:id="@+id/tvTerminos"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Términos y condiciones"
-                    android:textColor="@color/pp_white"
-                    android:textSize="13sp"
-                    android:textStyle="bold"
-                    android:padding="8dp"
-                    android:clickable="true"
-                    android:focusable="true"/>
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="·"
-                    android:textColor="#AAFFFFFF"
-                    android:textSize="14sp"/>
-
-                <TextView
-                    android:id="@+id/tvPrivacidad"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Política de privacidad"
-                    android:textColor="@color/pp_white"
-                    android:textSize="13sp"
-                    android:textStyle="bold"
-                    android:padding="8dp"
-                    android:clickable="true"
-                    android:focusable="true"/>
-            </LinearLayout>
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:layout_marginTop="24dp">
 
             <TextView
+                android:id="@+id/tvTerminos"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="© 2026 Procesadora Perú S.A.C."
-                android:textColor="#88FFFFFF"
-                android:textSize="11sp"
-                android:layout_marginTop="4dp"/>
+                android:text="Términos"
+                android:textColor="@color/pp_white"
+                android:textStyle="bold"
+                android:padding="12dp"/>
+
+            <View
+                android:layout_width="1dp"
+                android:layout_height="14dp"
+                android:background="#66FFFFFF"/>
+
+            <TextView
+                android:id="@+id/tvPrivacidad"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Privacidad"
+                android:textColor="@color/pp_white"
+                android:textStyle="bold"
+                android:padding="12dp"/>
         </LinearLayout>
 
     </LinearLayout>

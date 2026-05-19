@@ -9,7 +9,9 @@ import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.lifecycle.ViewModelProvider;
@@ -31,87 +33,81 @@ public class LoginActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        EdgeToEdge.enable(this); // Habilita diseño de pantalla completa nativo
         super.onCreate(savedInstanceState);
 
-        // ── Verificar sesión activa ANTES de inflar el layout ───────────────
-        // Esto evita que el usuario tenga que loguearse cada vez que abre la app.
+        // Verificar sesión antes de inflar
         SharedPreferences authPrefs = getSharedPreferences("auth_prefs", MODE_PRIVATE);
-        SharedPreferences appPrefs  = getSharedPreferences("app_prefs",  MODE_PRIVATE);
-        String accessToken = authPrefs.getString("ACCESS_TOKEN", null);
-
-        if (accessToken != null) {
-            String idAlmacen = appPrefs.getString("ACTIVE_ALMACEN_ID", null);
-            Intent dest = (idAlmacen != null)
-                    ? new Intent(this, HomeActivity.class)
-                    : new Intent(this, SucursalActivity.class);
-            startActivity(dest);
-            finish();
+        if (authPrefs.getString("ACCESS_TOKEN", null) != null) {
+            navegarSiguiente();
             return;
         }
 
         setContentView(R.layout.activity_login);
 
-        rootView     = findViewById(android.R.id.content);
-        etUsername   = findViewById(R.id.etUsername);
-        etPassword   = findViewById(R.id.etPassword);
-        btnLogin     = findViewById(R.id.btnLogin);
-        progressBar  = findViewById(R.id.progressBarLogin);
+        // Referencias
+        rootView = findViewById(R.id.main_login_container); // Asegúrate de que este ID exista en el XML
+        etUsername = findViewById(R.id.etUsername);
+        etPassword = findViewById(R.id.etPassword);
+        btnLogin = findViewById(R.id.btnLogin);
+        progressBar = findViewById(R.id.progressBarLogin);
 
-        // ── Manejo correcto del teclado (ajustar padding en vez de resize) ──
-        ViewCompat.setOnApplyWindowInsetsListener(rootView, (v, insets) -> {
-            int imeHeight = insets.getInsets(WindowInsetsCompat.Type.ime()).bottom;
-            int navBar    = insets.getInsets(WindowInsetsCompat.Type.systemBars()).bottom;
-            v.setPadding(0, 0, 0, Math.max(imeHeight, navBar));
-            return insets;
+        // Manejo de Insets (Safe Area)
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(android.R.id.content), (v, insets) -> {
+            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+            Insets ime = insets.getInsets(WindowInsetsCompat.Type.ime());
+            // Aplicamos padding inferior dinámico para el teclado y barras del sistema
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, Math.max(systemBars.bottom, ime.bottom));
+            return WindowInsetsCompat.CONSUMED;
         });
 
-        // ── Términos y Privacidad ────────────────────────────────────────────
-        TextView tvTerminos  = findViewById(R.id.tvTerminos);
-        TextView tvPrivacidad = findViewById(R.id.tvPrivacidad);
+        setupViewModel();
+        setupListeners();
+    }
 
-        tvTerminos.setOnClickListener(v -> {
-            Intent intent = new Intent(this, LegalActivity.class);
-            intent.putExtra(LegalActivity.EXTRA_TIPO, LegalActivity.TIPO_TERMINOS);
-            startActivity(intent);
-        });
-
-        tvPrivacidad.setOnClickListener(v -> {
-            Intent intent = new Intent(this, LegalActivity.class);
-            intent.putExtra(LegalActivity.EXTRA_TIPO, LegalActivity.TIPO_PRIVACIDAD);
-            startActivity(intent);
-        });
-
-        // ── ViewModel ─────────────────────────────────────────────────────────
+    private void setupViewModel() {
         ViewModelFactory factory = new ViewModelFactory(this);
         viewModel = new ViewModelProvider(this, factory).get(LoginViewModel.class);
 
         viewModel.getIsLoading().observe(this, isLoading -> {
             progressBar.setVisibility(isLoading ? View.VISIBLE : View.GONE);
             btnLogin.setEnabled(!isLoading);
-            btnLogin.setText(isLoading ? "Verificando…" : "INGRESAR");
+            btnLogin.setText(isLoading ? "Verificando..." : "INGRESAR");
         });
 
         viewModel.getErrorMessage().observe(this, error -> {
-            if (error == null) return;
-            Snackbar snack = Snackbar.make(rootView, error, Snackbar.LENGTH_LONG);
-            snack.setBackgroundTint(getColor(R.color.pp_error));
-            snack.setTextColor(getColor(R.color.pp_white));
-            snack.show();
-        });
-
-        viewModel.getLoginSuccess().observe(this, isSuccess -> {
-            if (Boolean.TRUE.equals(isSuccess)) {
-                startActivity(new Intent(this, SucursalActivity.class));
-                finish();
+            if (error != null) {
+                Snackbar.make(findViewById(android.R.id.content), error, Snackbar.LENGTH_LONG)
+                        .setBackgroundTint(getColor(R.color.pp_error))
+                        .show();
             }
         });
 
+        viewModel.getLoginSuccess().observe(this, success -> {
+            if (Boolean.TRUE.equals(success)) navegarSiguiente();
+        });
+    }
+
+    private void setupListeners() {
         btnLogin.setOnClickListener(v -> {
             String user = etUsername.getText().toString().trim();
             String pass = etPassword.getText().toString().trim();
-            if (user.isEmpty()) { etUsername.setError("Ingresa tu usuario"); return; }
-            if (pass.isEmpty()) { etPassword.setError("Ingresa tu contraseña"); return; }
+            if (user.isEmpty() || pass.isEmpty()) {
+                Snackbar.make(v, "Completa todos los campos", Snackbar.LENGTH_SHORT).show();
+                return;
+            }
             viewModel.login(user, pass);
         });
+    }
+
+    private void navegarSiguiente() {
+        SharedPreferences appPrefs = getSharedPreferences("app_prefs", MODE_PRIVATE);
+        String idAlmacen = appPrefs.getString("ACTIVE_ALMACEN_ID", null);
+        Intent intent = (idAlmacen != null) 
+                ? new Intent(this, HomeActivity.class) 
+                : new Intent(this, SucursalActivity.class);
+        startActivity(intent);
+        overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+        finish();
     }
 }

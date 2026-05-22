@@ -28,11 +28,11 @@ public class InventoryHistoryActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_inventory_history);
 
-        // Toolbar
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         if (getSupportActionBar() != null) {
-            getSupportActionBar().setTitle("Mis Inventarios de Hoy");
+            // ✔️ CORRECCIÓN: Actualizamos el título para reflejar el nuevo rango de tiempo
+            getSupportActionBar().setTitle("Historial Trimestral");
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
 
@@ -41,41 +41,41 @@ public class InventoryHistoryActivity extends AppCompatActivity {
 
         RecyclerView recyclerView = findViewById(R.id.recyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        adapter = new InventoryHistoryAdapter(inventario -> {
-            // Mostrar detalle del inventario en un dialog
-            mostrarDetalle(inventario);
-        });
+        adapter = new InventoryHistoryAdapter(this::mostrarDetalle);
         recyclerView.setAdapter(adapter);
 
         ViewModelFactory factory = new ViewModelFactory(this);
         viewModel = new ViewModelProvider(this, factory).get(InventoryHistoryViewModel.class);
 
-        viewModel.getIsLoading().observe(this, loading -> {
-            progressBar.setVisibility(loading ? View.VISIBLE : View.GONE);
-        });
+        viewModel.getIsLoading().observe(this, loading ->
+                progressBar.setVisibility(loading ? View.VISIBLE : View.GONE));
 
         viewModel.getHistorial().observe(this, lista -> {
             adapter.setList(lista);
-            tvEmpty.setVisibility((lista == null || lista.isEmpty()) ? View.VISIBLE : View.GONE);
+            tvEmpty.setVisibility(
+                    (lista == null || lista.isEmpty()) ? View.VISIBLE : View.GONE);
         });
 
         viewModel.getErrorMessage().observe(this, error -> {
             if (error != null) Toast.makeText(this, error, Toast.LENGTH_LONG).show();
         });
 
-        viewModel.cargarHistorialHoy();
+        // ✔️ CORRECCIÓN: Llamamos al nuevo método que carga los últimos 3 meses
+        viewModel.cargarHistorialUltimos3Meses();
     }
 
-    private void mostrarDetalle(com.procesadoraperu.inventario.domain.model.inventario.Inventario inv) {
+    private void mostrarDetalle(
+            com.procesadoraperu.inventario.domain.model.inventario.Inventario inv) {
         String detalle =
                 "Producto: " + inv.getProducto() + "\n" +
                         "Código: "   + inv.getIdProducto() + "\n" +
                         "U.M.: "     + inv.getUnidadMedida() + "\n\n" +
-                        "Stock sistema: " + inv.getStock() + "\n" +
+                        "Stock sistema: "   + inv.getStock() + "\n" +
                         "Cantidad contada: " + inv.getCantidad() + "\n\n" +
                         "Almacén: "  + inv.getAlmacen() + "\n" +
                         "Sucursal: " + inv.getSucursal() + "\n" +
-                        "Fecha: "    + (inv.getFechaCreacion() != null
+                        "Registrado por: " + inv.getUsuarioCreacion() + "\n" +
+                        "Fecha: " + (inv.getFechaCreacion() != null
                         ? inv.getFechaCreacion().replace("T", " ") : "—");
 
         new com.google.android.material.dialog.MaterialAlertDialogBuilder(this)

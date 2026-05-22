@@ -2,6 +2,7 @@ package com.procesadoraperu.inventario.domain.usecase.inventario;
 
 import com.procesadoraperu.inventario.domain.model.inventario.Inventario;
 import com.procesadoraperu.inventario.domain.repository.inventario.IInventarioRepository;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,18 +17,20 @@ public class ConsultarHistorialUseCase {
     public List<Inventario> execute(String idSucursal, String idAlmacen,
                                     String fechaInicio, String fechaFin, String username) throws Exception {
 
-        // 1. Traemos la data del servidor
         List<Inventario> historialCompleto = inventarioRepository.fetchHistorialRemote(
                 idSucursal, idAlmacen, fechaInicio, fechaFin
         );
 
-        // 2. Filtramos para mostrarle al operario SOLO los que él hizo
         List<Inventario> historialDelUsuario = new ArrayList<>();
 
-        if (historialCompleto != null) {
+        if (historialCompleto != null && username != null) {
+            // CORRECCIÓN: Normalizar ambos lados a minúsculas para comparación robusta.
+            // El servidor puede devolver "OPERARIO01" y localmente guardarmos "operario01".
+            String usernameLower = username.trim().toLowerCase();
+
             for (Inventario inv : historialCompleto) {
                 if (inv.getUsuarioCreacion() != null &&
-                        inv.getUsuarioCreacion().equalsIgnoreCase(username)) {
+                        inv.getUsuarioCreacion().trim().toLowerCase().equals(usernameLower)) {
                     historialDelUsuario.add(inv);
                 }
             }

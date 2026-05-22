@@ -12,6 +12,7 @@ import com.procesadoraperu.inventario.domain.repository.inventario.IInventarioRe
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import retrofit2.Response;
 
@@ -52,7 +53,10 @@ public class InventarioRepositoryImpl implements IInventarioRepository {
 
     @Override
     public void saveInventarioLocal(Inventario inventario) {
-        inventarioDao.insert(mapToEntity(inventario));
+        // Al guardar localmente, mapeamos y Room hará el insert.
+        // El mapper se encargará de asignarle el UUID si es nuevo.
+        InventarioEntity entity = mapToEntity(inventario);
+        inventarioDao.insert(entity);
     }
 
     @Override
@@ -86,8 +90,13 @@ public class InventarioRepositoryImpl implements IInventarioRepository {
             audit.ip          = d.getAuditClientInfo().getIp();
             audit.hostname    = d.getAuditClientInfo().getHostname();
             audit.userAgent   = d.getAuditClientInfo().getUserAgent();
-            audit.latitud     = d.getAuditClientInfo().getLatitud();
-            audit.longitud    = d.getAuditClientInfo().getLongitud();
+
+            String lat = d.getAuditClientInfo().getLatitud();
+            String lon = d.getAuditClientInfo().getLongitud();
+
+            audit.latitud = (lat != null && !lat.trim().isEmpty()) ? lat : null;
+            audit.longitud = (lon != null && !lon.trim().isEmpty()) ? lon : null;
+
             req.auditClientInfo = audit;
         }
         return req;
@@ -95,7 +104,15 @@ public class InventarioRepositoryImpl implements IInventarioRepository {
 
     private InventarioEntity mapToEntity(Inventario d) {
         InventarioEntity e = new InventarioEntity();
-        e.idInventario         = d.getIdInventario();
+
+        // ✔️ CORRECCIÓN: Si el modelo no trae ID (es un registro nuevo offline),
+        // le generamos un UUID alfanumérico estándar automáticamente.
+        if (d.getIdInventario() == null || d.getIdInventario().trim().isEmpty()) {
+            e.idInventario = UUID.randomUUID().toString();
+        } else {
+            e.idInventario = d.getIdInventario();
+        }
+
         e.idEmpresa            = (d.getIdEmpresa() != null) ? d.getIdEmpresa() : ID_EMPRESA;
         e.idSucursal           = d.getIdSucursal();
         e.sucursal             = d.getSucursal();
@@ -126,6 +143,7 @@ public class InventarioRepositoryImpl implements IInventarioRepository {
 
     private Inventario mapToDomain(InventarioEntity e) {
         Inventario d = new Inventario();
+
         d.setIdInventario(e.idInventario);
         d.setIdEmpresa(e.idEmpresa);
         d.setIdSucursal(e.idSucursal);

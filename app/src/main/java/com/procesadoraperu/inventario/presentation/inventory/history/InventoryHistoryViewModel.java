@@ -12,6 +12,7 @@ import com.procesadoraperu.inventario.domain.usecase.inventario.ConsultarHistori
 import com.procesadoraperu.inventario.domain.usecase.usuario.GetActiveUserUseCase;
 
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -49,6 +50,22 @@ public class InventoryHistoryViewModel extends ViewModel {
     public void cargarHistorialHoy() {
         String hoy = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
         cargarHistorial(hoy, hoy);
+    }
+
+    /** ✔️ NUEVO MÉTODO: Carga el historial de los últimos 3 meses exactos */
+    public void cargarHistorialUltimos3Meses() {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+        Calendar calendar = Calendar.getInstance();
+
+        // 1. Obtener la fecha de hoy (Fecha Fin)
+        String fechaFin = sdf.format(calendar.getTime());
+
+        // 2. Restar exactamente 3 meses al calendario (Fecha Inicio)
+        calendar.add(Calendar.MONTH, -3);
+        String fechaInicio = sdf.format(calendar.getTime());
+
+        // 3. Ejecutar la búsqueda
+        cargarHistorial(fechaInicio, fechaFin);
     }
 
     public void cargarHistorial(String fechaInicio, String fechaFin) {

@@ -8,8 +8,8 @@
         <item name="colorAccent">@color/pp_green_accent</item>
         <item name="colorOnPrimary">@color/pp_white</item>
         <item name="colorSurface">@color/pp_white</item>
-        <item name="colorOnSurface">@color/pp_text_dark</item>
-        <item name="android:windowBackground">@color/pp_gray</item>
+        <item name="colorOnSurface">@color/pp_text_primary</item>
+        <item name="android:windowBackground">@color/pp_background</item>
         <item name="android:statusBarColor">@color/pp_green_dark</item>
         <item name="android:navigationBarColor">@color/pp_white</item>
     </style>

@@ -2,16 +2,12 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- Permisos de red -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
 
-    <!-- Permisos de ubicación -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 
-    <!-- Cámara para escaneo de código de barras -->
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-feature android:name="android.hardware.camera" android:required="false" />
     <uses-feature android:name="android.hardware.camera.autofocus" android:required="false" />
@@ -20,31 +16,34 @@
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
-        android:icon="@mipmap/ic_launcher"
-        android:label="@string/app_name"
-        android:roundIcon="@mipmap/ic_launcher_round"
-        android:supportsRtl="true"
+        android:icon="@drawable/ic_launcher_playstore" android:label="@string/app_name"
+        android:roundIcon="@drawable/ic_launcher_playstore" android:supportsRtl="true"
         android:theme="@style/Theme.Inventario"
         android:usesCleartextTraffic="true"
         tools:targetApi="31">
 
-        <!-- ═══════════════════════════════════
-             PANTALLA DE INICIO — LOGIN
-             ═══════════════════════════════════ -->
         <activity
-            android:name=".presentation.auth.LoginActivity"
+            android:name=".presentation.splash.SplashActivity"
             android:exported="true"
-            android:windowSoftInputMode="adjustResize"
-            android:screenOrientation="portrait">
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.Inventario.Splash">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
 
-        <!-- ═══════════════════════════════════
-             SELECCIÓN DE UBICACIÓN
-             ═══════════════════════════════════ -->
+        <activity
+            android:name=".presentation.auth.LoginActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize"
+            android:screenOrientation="portrait" />
+
+        <activity
+            android:name=".presentation.legal.LegalActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
+
         <activity
             android:name=".presentation.selection.SucursalActivity"
             android:exported="false"
@@ -57,43 +56,28 @@
             android:screenOrientation="portrait"
             android:windowSoftInputMode="adjustResize" />
 
-        <!-- ═══════════════════════════════════
-             HOME PRINCIPAL (NavigationDrawer)
-             ═══════════════════════════════════ -->
         <activity
             android:name=".presentation.home.HomeActivity"
             android:exported="false"
             android:screenOrientation="portrait"
             android:launchMode="singleTop" />
 
-        <!-- ═══════════════════════════════════
-             TOMA DE INVENTARIO
-             ═══════════════════════════════════ -->
         <activity
             android:name=".presentation.inventory.take.TakeInventoryActivity"
             android:exported="false"
             android:screenOrientation="portrait"
             android:windowSoftInputMode="adjustResize" />
 
-        <!-- ═══════════════════════════════════
-             HISTORIAL DE INVENTARIOS
-             ═══════════════════════════════════ -->
         <activity
             android:name=".presentation.inventory.history.InventoryHistoryActivity"
             android:exported="false"
             android:screenOrientation="portrait" />
 
-        <!-- ═══════════════════════════════════
-             INVENTARIOS PENDIENTES
-             ═══════════════════════════════════ -->
         <activity
             android:name=".presentation.inventory.pending.PendingInventoryActivity"
             android:exported="false"
             android:screenOrientation="portrait" />
 
-        <!-- ═══════════════════════════════════
-             PERFIL DE USUARIO
-             ═══════════════════════════════════ -->
         <activity
             android:name=".presentation.profile.UserProfileActivity"
             android:exported="false"

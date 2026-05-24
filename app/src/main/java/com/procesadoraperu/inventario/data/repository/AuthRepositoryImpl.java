@@ -3,7 +3,8 @@ package com.procesadoraperu.inventario.data.repository;
 import android.content.Context;
 import android.content.SharedPreferences;
 
-import com.procesadoraperu.inventario.core.utils.JwtDecoder; // NUEVO: Importa tu decodificador
+import com.procesadoraperu.inventario.core.network.ApiClient;
+import com.procesadoraperu.inventario.core.utils.JwtDecoder;
 import com.procesadoraperu.inventario.data.local.dao.UsuarioDao;
 import com.procesadoraperu.inventario.data.local.entity.UsuarioEntity;
 import com.procesadoraperu.inventario.data.remote.api.AuthApi;
@@ -12,7 +13,7 @@ import com.procesadoraperu.inventario.data.remote.response.AuthDataResponse;
 import com.procesadoraperu.inventario.domain.model.auth.AuthToken;
 import com.procesadoraperu.inventario.domain.repository.auth.IAuthRepository;
 
-import org.json.JSONObject; // NUEVO
+import org.json.JSONObject;
 
 import retrofit2.Response;
 
@@ -37,31 +38,59 @@ public class AuthRepositoryImpl implements IAuthRepository {
         if (response.isSuccessful() && response.body() != null) {
             AuthDataResponse data = response.body();
 
-            // 1. Guardar el perfil real extrayendo datos del JWT
-            UsuarioEntity userEntity = new UsuarioEntity();
-            userEntity.username = username;
-
-            // CORRECCIÓN APLICADA: Extraemos los claims
-            JSONObject payload = JwtDecoder.decodePayload(data.accessToken);
-            if (payload != null) {
-                // "http://schemas..." es la ruta estándar de Microsoft IIS/Identity
-                userEntity.nombres = payload.optString("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name", "Operario");
-                userEntity.idCodigoGeneral = payload.optString("user_code", "");
-            } else {
-                userEntity.nombres = "Operario (Sin red)";
-                userEntity.idCodigoGeneral = "";
+            // CORRECCIÓN: Validar que el accessToken no sea nulo antes de continuar
+            if (data.accessToken == null || data.accessToken.isEmpty()) {
+                throw new Exception("El servidor no devolvió un token válido.");
             }
 
+            // Guardar el perfil del usuario
+            UsuarioEntity userEntity = new UsuarioEntity();
+            // CORRECCIÓN: Guardar siempre el username en minúsculas para evitar
+            // inconsistencias al comparar en el historial (equalsIgnoreCase)
+            userEntity.username = username.trim().toLowerCase();
+
+            JSONObject payload = JwtDecoder.decodePayload(data.accessToken);
+            if (payload != null) {
+                userEntity.nombres = payload.optString(
+                        "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name",
+                        username // Fallback al username si no hay nombre en el token
+                );
+                userEntity.idCodigoGeneral = payload.optString("user_code", "");
+            } else {
+                // CORRECCIÓN: Si el JWT no se puede leer, usamos el nombre que vino
+                // directamente en la respuesta del login (campo 'nombres')
+                userEntity.nombres = (data.nombres != null && !data.nombres.isEmpty())
+                        ? data.nombres : username;
+                userEntity.idCodigoGeneral = (data.idCodigoGeneral != null)
+                        ? data.idCodigoGeneral : "";
+            }
+
+            // CORRECCIÓN: Limpiar usuario anterior antes de insertar el nuevo
+            usuarioDao.deleteUsuario();
             usuarioDao.insert(userEntity);
 
-            // 2. Retornar el token puro para la capa de Dominio
             return new AuthToken(data.accessToken, data.refreshToken, data.expiresIn);
+
         } else {
-            throw new Exception("Credenciales incorrectas o error en el servidor");
+            // CORRECCIÓN: Extraer mensaje de error del servidor si está disponible
+            String errorBody = "";
+            if (response.errorBody() != null) {
+                try {
+                    errorBody = response.errorBody().string();
+                } catch (Exception ignored) {}
+            }
+
+            if (response.code() == 401) {
+                throw new Exception("Usuario o contraseña incorrectos.");
+            } else if (response.code() == 0) {
+                throw new Exception("Sin conexión al servidor. Verifica tu red.");
+            } else {
+                throw new Exception("Error del servidor (" + response.code() + ")."
+                        + (errorBody.isEmpty() ? "" : " " + errorBody));
+            }
         }
     }
 
-    // ... (El resto de tus métodos siguen exactamente igual) ...
     @Override
     public void register(String username, String password, String idCodigoGeneral, String nombres) throws Exception {
         throw new UnsupportedOperationException("El registro desde la app aún no está implementado.");
@@ -83,8 +112,15 @@ public class AuthRepositoryImpl implements IAuthRepository {
 
     @Override
     public void logout() {
+        // Limpiar credenciales de SharedPreferences
         prefs.edit().clear().apply();
+
+        // Limpiar perfil de usuario de la BD local
         usuarioDao.deleteUsuario();
+
+        // CORRECCIÓN: Resetear el singleton de Retrofit para que el próximo
+        // login construya un cliente HTTP limpio (sin tokens viejos en caché)
+        ApiClient.reset();
     }
 
     @Override

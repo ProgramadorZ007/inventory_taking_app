@@ -5,17 +5,30 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="@color/pp_gray">
+    android:background="@color/pp_gray"
+    android:fitsSystemWindows="true">
 
-    <!-- Toolbar -->
-    <androidx.appcompat.widget.Toolbar
-        android:id="@+id/toolbar"
+    <!--
+        CORRECCIÓN SAFE AREA:
+        Usamos AppBarLayout con fitsSystemWindows para que el Toolbar ocupe
+        correctamente el espacio de la barra de estado. Sin esto, el icono
+        de retroceso se solapaba con los íconos del sistema.
+    -->
+    <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
-        android:background="@color/pp_green"
-        android:elevation="6dp"
-        app:titleTextColor="@color/pp_white"
-        app:navigationIconTint="@color/pp_white"/>
+        android:layout_height="wrap_content"
+        android:fitsSystemWindows="true"
+        android:theme="@style/ThemeOverlay.MaterialComponents.Dark.ActionBar"
+        app:elevation="4dp">
+
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="@color/pp_green"
+            app:titleTextColor="@color/pp_white"
+            app:navigationIconTint="@color/pp_white"/>
+    </com.google.android.material.appbar.AppBarLayout>
 
     <!-- Progress bar de carga -->
     <ProgressBar

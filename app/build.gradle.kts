@@ -70,6 +70,8 @@ dependencies {
     // Librería de Lottie para la animación del Splash
     implementation(libs.lottie)
 
+    implementation("androidx.work:work-runtime:2.9.0")
+
     // Testing
     testImplementation(libs.junit)
     testImplementation("org.mockito:mockito-core:5.11.0")

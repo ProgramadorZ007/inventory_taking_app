@@ -1,5 +1,8 @@
 package com.procesadoraperu.inventario.domain.usecase.inventario;
 
+import android.content.Context;
+
+import com.procesadoraperu.inventario.core.sync.SyncScheduler;
 import com.procesadoraperu.inventario.domain.model.inventario.Inventario;
 import com.procesadoraperu.inventario.domain.model.log.LogIntegracion;
 import com.procesadoraperu.inventario.domain.provider.IAuditClientInfoProvider;
@@ -23,16 +26,19 @@ public class RegistrarInventarioUseCase {
     private final IInventarioRepository inventarioRepository;
     private final ILogRepository logRepository;
     private final IAuditClientInfoProvider auditProvider;
+    private final Context context;
 
     // Hilo de fondo exclusivo para este UseCase
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
 
     public RegistrarInventarioUseCase(IInventarioRepository inventarioRepository,
                                       ILogRepository logRepository,
-                                      IAuditClientInfoProvider auditProvider) {
+                                      IAuditClientInfoProvider auditProvider,
+                                      Context context) {
         this.inventarioRepository = inventarioRepository;
         this.logRepository = logRepository;
         this.auditProvider = auditProvider;
+        this.context              = context;
     }
 
     public void execute(Inventario inventario, OnRegistroCallback callback) {
@@ -92,7 +98,7 @@ public class RegistrarInventarioUseCase {
                 );
                 // (Acceso a Room - requiere estar fuera del MainThread)
                 logRepository.saveLogLocal(logError);
-
+                SyncScheduler.scheduleOnce(context);
                 callback.onGuardadoLocal();
             }
         } catch (Exception e) {

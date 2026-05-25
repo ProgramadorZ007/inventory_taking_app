@@ -1,10 +1,10 @@
 package com.procesadoraperu.inventario.core.sync;
 
 import android.content.Context;
+import android.util.Log;
 
 import androidx.work.BackoffPolicy;
 import androidx.work.Constraints;
-import androidx.work.Data;
 import androidx.work.ExistingWorkPolicy;
 import androidx.work.NetworkType;
 import androidx.work.OneTimeWorkRequest;
@@ -13,64 +13,60 @@ import androidx.work.WorkManager;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Utilidad para programar y cancelar el Worker de sincronización.
+ * Utilidad centralizada para programar la sincronización automática con WorkManager.
  *
  * USO:
- *   // Al guardar un inventario PENDIENTE:
- *   SyncScheduler.scheduleSyncWhenConnected(context, username);
+ *   - Al registrar un inventario PENDIENTE → SyncScheduler.scheduleOnce(context)
+ *   - Al detectar que volvió la red       → SyncScheduler.scheduleOnce(context)
+ *   - Al hacer login                       → SyncScheduler.scheduleOnce(context)
  *
- *   // Al cerrar sesión:
- *   SyncScheduler.cancelSync(context);
- *
- * WorkManager se encarga automáticamente de:
- *  - Esperar a que haya conexión (Constraints.CONNECTED)
- *  - Reintentar con backoff exponencial si falla
- *  - Persistir la tarea aunque el dispositivo se reinicie
+ * WorkManager garantiza que:
+ *   1. Solo se ejecuta cuando hay red disponible (constraint CONNECTED).
+ *   2. Si hay un trabajo ya encolado con la misma tag, no se duplica (KEEP policy).
+ *   3. Si la app se cierra o el dispositivo reinicia, el trabajo persiste.
  */
 public class SyncScheduler {
 
-    // Nombre único para evitar Workers duplicados
-    private static final String WORK_NAME = "sync_inventarios_pendientes";
+    private static final String TAG        = "SyncScheduler";
+    public  static final String WORK_NAME  = "sync_pending_inventarios";
+
+    private SyncScheduler() {}
 
     /**
-     * Registra una tarea de sincronización que se ejecutará tan pronto
-     * como el dispositivo tenga conexión a internet.
-     *
-     * Si ya existe una tarea pendiente con el mismo nombre, la MANTIENE
-     * (KEEP) para no cancelar la que ya estaba esperando conexión.
-     *
-     * @param context  contexto de la app (Application o Activity)
-     * @param username nombre del operario activo (para filtrar sus pendientes)
+     * Encola UN trabajo de sincronización que se ejecutará en cuanto haya red.
+     * Si ya hay uno encolado con el mismo nombre, lo respeta (no duplica).
      */
-    public static void scheduleSyncWhenConnected(Context context, String username) {
+    public static void scheduleOnce(Context context) {
         Constraints constraints = new Constraints.Builder()
                 .setRequiredNetworkType(NetworkType.CONNECTED)
                 .build();
 
-        Data inputData = new Data.Builder()
-                .putString(SyncInventarioWorker.KEY_USERNAME, username)
-                .build();
-
-        OneTimeWorkRequest syncRequest = new OneTimeWorkRequest.Builder(SyncInventarioWorker.class)
+        OneTimeWorkRequest request = new OneTimeWorkRequest.Builder(SyncPendingWorker.class)
                 .setConstraints(constraints)
-                .setInputData(inputData)
-                // Backoff exponencial: reintenta a los 30s, 1m, 2m, 4m...
-                .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 30, TimeUnit.SECONDS)
+                .setBackoffCriteria(
+                        BackoffPolicy.EXPONENTIAL,
+                        30, TimeUnit.SECONDS   // 30s → 60s → 120s … (máx 5h por WorkManager)
+                )
+                .addTag(WORK_NAME)
                 .build();
 
-        WorkManager.getInstance(context)
+        WorkManager.getInstance(context.getApplicationContext())
                 .enqueueUniqueWork(
                         WORK_NAME,
-                        ExistingWorkPolicy.KEEP,   // no cancelar si ya hay uno esperando
-                        syncRequest
+                        ExistingWorkPolicy.KEEP,   // No reemplazar si ya hay uno esperando
+                        request
                 );
+
+        Log.d(TAG, "Trabajo de sincronización encolado (se ejecutará cuando haya red).");
     }
 
     /**
-     * Cancela cualquier tarea de sincronización pendiente.
-     * Llamar al cerrar sesión.
+     * Cancela cualquier trabajo de sincronización pendiente.
+     * Útil al hacer logout para no sincronizar con otra sesión.
      */
-    public static void cancelSync(Context context) {
-        WorkManager.getInstance(context).cancelUniqueWork(WORK_NAME);
+    public static void cancel(Context context) {
+        WorkManager.getInstance(context.getApplicationContext())
+                .cancelUniqueWork(WORK_NAME);
+        Log.d(TAG, "Trabajo de sincronización cancelado.");
     }
 }

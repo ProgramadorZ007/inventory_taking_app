@@ -11,17 +11,19 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.procesadoraperu.inventario.R;
 import com.procesadoraperu.inventario.domain.model.inventario.Inventario;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
-public class InventoryHistoryAdapter
-        extends RecyclerView.Adapter<InventoryHistoryAdapter.ViewHolder> {
+public class InventoryHistoryAdapter extends RecyclerView.Adapter<InventoryHistoryAdapter.ViewHolder> {
 
     public interface OnItemClickListener {
-        void onClick(Inventario inventario);
+        void onClick(Inventario inv);
     }
 
-    private List<Inventario> items = new ArrayList<>();
+    private final List<Inventario> items = new ArrayList<>();
     private final OnItemClickListener listener;
 
     public InventoryHistoryAdapter(OnItemClickListener listener) {
@@ -29,37 +31,59 @@ public class InventoryHistoryAdapter
     }
 
     public void setList(List<Inventario> list) {
-        this.items = (list != null) ? list : new ArrayList<>();
+        items.clear();
+        if (list != null) items.addAll(list);
         notifyDataSetChanged();
     }
 
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View v = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.item_inventory, parent, false);
-        return new ViewHolder(v);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_inventory, parent, false);
+        return new ViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Inventario inv = items.get(position);
 
-        holder.tvProducto.setText(inv.getProducto() != null ? inv.getProducto() : "—");
-        holder.tvCodigo.setText("Cód: " + (inv.getIdProducto() != null ? inv.getIdProducto() : "—"));
+        holder.tvProducto.setText(inv.getProducto() != null ? inv.getProducto().toUpperCase() : "—");
+        holder.tvCodigo.setText("Código: " + (inv.getIdProducto() != null ? inv.getIdProducto() : "—"));
 
-        String unidad = inv.getUnidadMedida() != null ? inv.getUnidadMedida() : "";
-        holder.tvCantidad.setText("Contado: " + formatNum(inv.getCantidad()) + " " + unidad);
-        holder.tvStock.setText("Sistema: " + formatNum(inv.getStock()));
+        String unidad = inv.getUnidadMedida() != null ? inv.getUnidadMedida() : "UND";
+        holder.tvCantidadContada.setText(formatNum(inv.getCantidad()) + " " + unidad);
+        holder.tvStockSistema.setText(formatNum(inv.getStock()) + " " + unidad);
 
-        // Fecha
-        String fecha = inv.getFechaCreacion() != null
+        // Fecha y Hora
+        String fechaRaw = inv.getFechaCreacion() != null
                 ? inv.getFechaCreacion() : inv.getFechaRegistroLocal();
-        if (fecha != null && fecha.contains("T")) {
-            fecha = fecha.replace("T", "  ");
-            if (fecha.length() > 19) fecha = fecha.substring(0, 19);
+        
+        if (fechaRaw != null) {
+            try {
+                // Limpieza básica si viene con T
+                String cleanedDate = fechaRaw.replace("T", " ");
+                if (cleanedDate.contains(".")) {
+                    cleanedDate = cleanedDate.substring(0, cleanedDate.lastIndexOf("."));
+                }
+                
+                SimpleDateFormat sdfSource = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
+                Date date = sdfSource.parse(cleanedDate);
+                
+                if (date != null) {
+                    holder.tvFecha.setText(new SimpleDateFormat("dd MMM yyyy", Locale.getDefault()).format(date));
+                    holder.tvHora.setText(new SimpleDateFormat("hh:mm a", Locale.getDefault()).format(date).toUpperCase());
+                } else {
+                    holder.tvFecha.setText(fechaRaw);
+                    holder.tvHora.setText("");
+                }
+            } catch (Exception e) {
+                holder.tvFecha.setText(fechaRaw);
+                holder.tvHora.setText("");
+            }
+        } else {
+            holder.tvFecha.setText("—");
+            holder.tvHora.setText("");
         }
-        holder.tvFecha.setText(fecha != null ? fecha : "—");
 
         holder.itemView.setOnClickListener(v -> {
             if (listener != null) listener.onClick(inv);
@@ -77,15 +101,16 @@ public class InventoryHistoryAdapter
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder {
-        TextView tvProducto, tvCodigo, tvCantidad, tvStock, tvFecha;
+        TextView tvProducto, tvCodigo, tvCantidadContada, tvStockSistema, tvFecha, tvHora;
 
         ViewHolder(@NonNull View itemView) {
             super(itemView);
-            tvProducto = itemView.findViewById(R.id.tvProducto);
-            tvCodigo   = itemView.findViewById(R.id.tvCodigo);
-            tvCantidad = itemView.findViewById(R.id.tvCantidad);
-            tvStock    = itemView.findViewById(R.id.tvStock);
-            tvFecha    = itemView.findViewById(R.id.tvFecha);
+            tvProducto        = itemView.findViewById(R.id.tvProducto);
+            tvCodigo          = itemView.findViewById(R.id.tvCodigo);
+            tvCantidadContada = itemView.findViewById(R.id.tvCantidadContada);
+            tvStockSistema    = itemView.findViewById(R.id.tvStockSistema);
+            tvFecha           = itemView.findViewById(R.id.tvFecha);
+            tvHora            = itemView.findViewById(R.id.tvHora);
         }
     }
 }

@@ -57,4 +57,32 @@
     <string name="error_generico">Ocurrió un error inesperado.</string>
     <string name="loading">Cargando…</string>
     <string name="no_data">—</string>
+
+    <!-- Splash -->
+    <string name="splash_brand">Procesadora Perú</string>
+    <string name="splash_date">Desde el 22 de septiembre de 1999</string>
+    <string name="splash_full_name">Procesadora Perú S.A.C.</string>
+    <string name="splash_slogan">Gestión de Inventario</string>
+    <string name="splash_version">Versión 2.0</string>
+
+    <!-- Legal -->
+    <string name="legal_terms_title">Términos y Condiciones</string>
+    <string name="legal_privacy_title">Política de Privacidad</string>
+    <string name="legal_terms_subtitle">Lee atentamente los siguientes términos antes de usar la aplicación.</string>
+    <string name="legal_privacy_subtitle">Información sobre cómo protegemos y manejamos tus datos.</string>
+    <string name="legal_last_update">Última actualización</string>
+    <string name="legal_date">Mayo 2026</string>
+
+    <!-- Home New UI -->
+    <string name="home_hero_title">Toma de Inventario</string>
+    <string name="home_hero_desc">Escanea o ingresa el código del producto para registrar el conteo físico de inventario.</string>
+    <string name="home_btn_iniciar">INICIAR TOMA</string>
+    <string name="home_label_registros">Mis Registros</string>
+    <string name="home_label_pendientes">Pendientes</string>
+    <string name="home_label_offline">App funciona sin internet</string>
+    <string name="home_desc_offline">Los registros pendientes se envían automáticamente al recuperar la conexión.</string>
+    <string name="home_label_resumen">Resumen del día</string>
+    <string name="home_label_productos_reg">Productos Registrados</string>
+    <string name="home_label_ultimo_envio">Último envío</string>
+
 </resources>

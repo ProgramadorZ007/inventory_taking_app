@@ -19,4 +19,11 @@
 
     <color name="pp_divider">#DFE1E6</color>
 
+    <!-- Splash New Design -->
+    <color name="pp_splash_orange">#C2763D</color>
+    <color name="pp_vibrant_orange">#F0801C</color>
+    <color name="pp_splash_text_green">#1B5E20</color>
+    <color name="pp_splash_text_green_light">#43A047</color>
+    <color name="pp_splash_bg_light">#F5F8F2</color>
+
 </resources>

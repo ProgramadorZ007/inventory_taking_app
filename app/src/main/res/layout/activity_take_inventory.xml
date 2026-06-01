@@ -8,29 +8,49 @@
     android:background="@color/pp_background">
 
     <com.google.android.material.appbar.AppBarLayout
-        android:id="@+id/appBar"
+        android:id="@+id/appbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:elevation="4dp">
+        android:background="@color/pp_splash_text_green"
+        app:elevation="0dp">
 
-        <com.google.android.material.appbar.MaterialToolbar
+        <androidx.appcompat.widget.Toolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            android:background="@color/pp_green"
-            app:title="Toma de Inventario"
-            app:titleCentered="true"
-            app:titleTextColor="@color/pp_white"
             app:navigationIcon="@drawable/ic_back"
-            app:navigationIconTint="@color/pp_white"/>
+            app:navigationIconTint="@color/pp_white">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Escanear Producto"
+                    android:textColor="@color/pp_white"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:fontFamily="sans-serif-medium" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="QR / Código de barras"
+                    android:textColor="#BBFFFFFF"
+                    android:textSize="12sp" />
+            </LinearLayout>
+        </androidx.appcompat.widget.Toolbar>
     </com.google.android.material.appbar.AppBarLayout>
 
     <androidx.core.widget.NestedScrollView
-        android:id="@+id/scrollContent"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:fillViewport="true"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
+        android:scrollbars="none"
+        android:fillViewport="true">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -38,13 +58,131 @@
             android:orientation="vertical"
             android:padding="20dp">
 
+            <!-- ── HERO CARD (SCANNER) ────────────────────────────────── -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                style="@style/Widget.Material3.CardView.Elevated"
+                app:cardCornerRadius="24dp"
+                app:cardElevation="6dp"
+                app:strokeWidth="0dp"
+                android:layout_marginBottom="24dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@color/pp_splash_text_green"
+                    android:padding="20dp"
+                    android:orientation="vertical">
+
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content">
+
+                        <FrameLayout
+                            android:id="@+id/flScanner"
+                            android:layout_width="140dp"
+                            android:layout_height="140dp"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent"
+                            app:layout_constraintBottom_toBottomOf="parent">
+
+                            <ImageView
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:src="@drawable/ic_scanner_frame"
+                                android:alpha="0.4"
+                                android:contentDescription="@null" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="📦"
+                                android:textSize="70sp"
+                                android:layout_gravity="center" />
+
+                            <View
+                                android:layout_width="match_parent"
+                                android:layout_height="2dp"
+                                android:layout_gravity="center"
+                                android:background="#8000FF00" />
+                        </FrameLayout>
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:layout_marginStart="16dp"
+                            app:layout_constraintStart_toEndOf="@id/flScanner"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintTop_toTopOf="parent"
+                            app:layout_constraintBottom_toBottomOf="parent">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Escanea el código"
+                                android:textColor="@color/pp_white"
+                                android:textSize="20sp"
+                                android:textStyle="bold"
+                                android:fontFamily="sans-serif-medium" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Escanea un código QR o de barras para obtener información del producto rápidamente."
+                                android:textColor="#CCFFFFFF"
+                                android:textSize="13sp"
+                                android:layout_marginTop="8dp" />
+
+                        </LinearLayout>
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnEscanear"
+                        android:layout_width="match_parent"
+                        android:layout_height="56dp"
+                        android:layout_marginTop="20dp"
+                        android:text="ESCANEAR AHORA"
+                        android:textColor="@color/pp_splash_text_green"
+                        android:textSize="15sp"
+                        android:textStyle="bold"
+                        app:backgroundTint="@color/pp_white"
+                        app:cornerRadius="16dp"
+                        app:iconGravity="textStart"
+                        app:iconPadding="8dp" />
+
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- ── MANUAL DIVIDER ────────────────────────────────────── -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center"
+                android:layout_marginBottom="24dp">
+                <View android:layout_width="0dp" android:layout_height="1dp" android:layout_weight="1" android:background="#DDD" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text=" O INGRESA EL CÓDIGO MANUALMENTE "
+                    android:textColor="@color/pp_text_secondary"
+                    android:textSize="11sp"
+                    android:textStyle="bold"
+                    android:letterSpacing="0.05"/>
+                <View android:layout_width="0dp" android:layout_height="1dp" android:layout_weight="1" android:background="#DDD" />
+            </LinearLayout>
+
+            <!-- ── MANUAL SEARCH BOX ────────────────────────────────── -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
                 app:cardCornerRadius="20dp"
-                android:layout_marginBottom="20dp"
-                app:cardBackgroundColor="@color/pp_surface">
+                app:cardElevation="2dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="#EEE"
+                app:cardBackgroundColor="@color/pp_white"
+                android:layout_marginBottom="24dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -52,39 +190,34 @@
                     android:orientation="vertical"
                     android:padding="20dp">
 
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnEscanear"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        style="@style/Widget.Inventario.Button"
-                        android:text="Escanear Código QR / Barras"
-                        app:icon="@drawable/ic_camera"
-                        android:layout_marginBottom="20dp"/>
-
                     <com.google.android.material.textfield.TextInputLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:hint="Código manual"
+                        android:hint="Código del producto"
                         style="@style/Widget.Inventario.TextInputLayout"
                         app:startIconDrawable="@drawable/ic_barcode"
-                        android:layout_marginBottom="12dp">
+                        app:endIconMode="clear_text"
+                        android:layout_marginBottom="16dp">
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/etCodigoManual"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:inputType="text"
-                            android:imeOptions="actionSearch"
-                            android:textColor="@color/pp_text_primary"/>
+                            android:textColor="@color/pp_text_primary" />
                     </com.google.android.material.textfield.TextInputLayout>
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnBuscarManual"
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        style="@style/Widget.Material3.Button.TonalButton"
-                        android:text="Buscar Producto"
-                        android:textColor="@color/pp_green"/>
+                        android:layout_height="56dp"
+                        android:text="BUSCAR PRODUCTO"
+                        android:textColor="@color/pp_white"
+                        android:textStyle="bold"
+                        app:backgroundTint="@color/pp_splash_text_green"
+                        app:cornerRadius="16dp"
+                        app:icon="@drawable/ic_search"
+                        app:iconPadding="8dp" />
 
                     <ProgressBar
                         android:id="@+id/progressBuscar"
@@ -92,92 +225,195 @@
                         android:layout_height="32dp"
                         android:layout_gravity="center"
                         android:layout_marginTop="12dp"
-                        android:indeterminateTint="@color/pp_green"
+                        android:indeterminateTint="@color/pp_splash_text_green"
                         android:visibility="gone"/>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
+            <!-- ── PRODUCT RESULT CARD ──────────────────────────────── -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/cardProducto"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                style="@style/Widget.Material3.CardView.Elevated"
-                app:cardCornerRadius="20dp"
-                app:cardBackgroundColor="@color/pp_surface"
+                app:cardCornerRadius="24dp"
+                app:cardElevation="4dp"
+                app:strokeWidth="0dp"
+                app:cardBackgroundColor="@color/pp_white"
                 android:visibility="gone">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="20dp">
+                    android:padding="24dp">
 
-                    <TextView
-                        android:id="@+id/tvNombreProducto"
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content">
+
+                        <FrameLayout
+                            android:id="@+id/flProductIcon"
+                            android:layout_width="56dp"
+                            android:layout_height="56dp"
+                            android:background="@drawable/bg_icon_circle"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent">
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="📦"
+                                android:textSize="28sp"
+                                android:layout_gravity="center" />
+                        </FrameLayout>
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:layout_marginStart="16dp"
+                            app:layout_constraintStart_toEndOf="@id/flProductIcon"
+                            app:layout_constraintEnd_toStartOf="@+id/llFoundBadge"
+                            app:layout_constraintTop_toTopOf="parent">
+
+                            <TextView
+                                android:id="@+id/tvNombreProducto"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="AGUA EN BIDON"
+                                android:textColor="@color/pp_text_dark"
+                                android:textSize="18sp"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:id="@+id/tvIdProducto"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Código: 252600200007"
+                                android:textColor="@color/pp_text_secondary"
+                                android:textSize="14sp"
+                                android:layout_marginTop="2dp" />
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:id="@+id/llFoundBadge"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:background="@drawable/bg_found_badge"
+                            android:paddingHorizontal="10dp"
+                            android:paddingVertical="6dp"
+                            android:gravity="center"
+                            android:orientation="horizontal"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintTop_toTopOf="parent">
+
+                            <ImageView
+                                android:layout_width="14dp"
+                                android:layout_height="14dp"
+                                android:src="@drawable/ic_search_check"
+                                app:tint="@color/pp_splash_text_green" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Producto\nencontrado"
+                                android:textColor="@color/pp_splash_text_green"
+                                android:textSize="9sp"
+                                android:textStyle="bold"
+                                android:layout_marginStart="6dp"
+                                android:lineHeight="10dp"
+                                android:gravity="center"/>
+                        </LinearLayout>
+
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:background="#F0F0F0"
+                        android:layout_marginVertical="20dp" />
+
+                    <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Nombre del Producto"
-                        android:textSize="20sp"
-                        android:textStyle="bold"
-                        android:textColor="@color/pp_text_primary"
-                        android:layout_marginBottom="4dp"/>
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:baselineAligned="false"
+                        android:layout_marginBottom="24dp">
 
-                    <TextView
-                        android:id="@+id/tvIdProducto"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="Código: 000"
-                        android:textColor="@color/pp_text_secondary"
-                        android:layout_marginBottom="16dp"/>
+                        <FrameLayout
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            android:background="@drawable/bg_icon_circle">
+                            <ImageView
+                                android:layout_width="20dp"
+                                android:layout_height="20dp"
+                                android:layout_gravity="center"
+                                android:src="@drawable/ic_inventory"
+                                app:tint="@color/pp_splash_text_green" />
+                        </FrameLayout>
 
-                    <com.google.android.material.divider.MaterialDivider
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginBottom="16dp"/>
-
-                    <TextView
-                        android:id="@+id/tvStockSistema"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Stock actual: 0.0"
-                        android:textStyle="bold"
-                        android:textColor="@color/pp_green"
-                        android:background="@color/pp_green_light"
-                        android:paddingHorizontal="12dp"
-                        android:paddingVertical="4dp"
-                        android:layout_marginBottom="24dp"/>
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical"
+                            android:layout_marginStart="12dp">
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Unidad de medida"
+                                android:textColor="@color/pp_text_secondary"
+                                android:textSize="12sp" />
+                            <TextView
+                                android:id="@+id/tvStockSistema"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="UND"
+                                android:textColor="@color/pp_splash_text_green"
+                                android:textSize="18sp"
+                                android:textStyle="bold" />
+                        </LinearLayout>
+                    </LinearLayout>
 
                     <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/tilCantidadContada"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:hint="Cantidad contada"
                         style="@style/Widget.Inventario.TextInputLayout"
-                        android:layout_marginBottom="20dp">
+                        app:suffixText="UND"
+                        app:suffixTextColor="@color/pp_splash_text_green"
+                        android:layout_marginBottom="24dp">
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/etCantidadContada"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:inputType="numberDecimal"
-                            android:textSize="18sp"
+                            android:textSize="22sp"
                             android:textStyle="bold"
-                            android:textColor="@color/pp_text_primary"/>
+                            android:textColor="@color/pp_text_dark" />
                     </com.google.android.material.textfield.TextInputLayout>
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnRegistrar"
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        style="@style/Widget.Inventario.Button"
-                        android:text="REGISTRAR CONTEO"/>
+                        android:layout_height="60dp"
+                        android:text="REGISTRAR CONTEO"
+                        android:textStyle="bold"
+                        app:icon="@drawable/ic_clipboard_check"
+                        app:iconTint="@color/pp_white"
+                        app:iconPadding="12dp"
+                        android:backgroundTint="@color/pp_splash_text_green"
+                        app:cornerRadius="16dp" />
 
                     <ProgressBar
                         android:id="@+id/progressRegistrar"
                         android:layout_width="32dp"
                         android:layout_height="32dp"
                         android:layout_gravity="center"
-                        android:layout_marginTop="12dp"
-                        android:indeterminateTint="@color/pp_green"
+                        android:layout_marginTop="16dp"
+                        android:indeterminateTint="@color/pp_splash_text_green"
                         android:visibility="gone"/>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>

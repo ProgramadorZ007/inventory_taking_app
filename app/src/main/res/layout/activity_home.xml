@@ -1,68 +1,74 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-    activity_home.xml
-    - android:id="@+id/drawerLayoutRoot" agregado para referencia en Snackbar
-    - fitsSystemWindows en el DrawerLayout para respetar barra de estado
-    - ScrollView en el contenido principal
--->
 <androidx.drawerlayout.widget.DrawerLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/drawerLayoutRoot"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:fitsSystemWindows="true">
+    android:layout_height="match_parent">
 
-    <!-- ════════════════════════════════════
-         CONTENIDO PRINCIPAL
-         ════════════════════════════════════ -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        android:background="@color/pp_gray"
-        android:fitsSystemWindows="true">
+        android:background="#F4F5F7">
 
-        <!-- ── Toolbar ──────────────────────────────────────────────────────── -->
-        <androidx.appcompat.widget.Toolbar
-            android:id="@+id/toolbar"
+        <!-- ── Toolbar / Header ── -->
+        <com.google.android.material.appbar.AppBarLayout
+            android:id="@+id/appbar"
             android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            android:background="@color/pp_green"
-            android:elevation="6dp">
+            android:layout_height="wrap_content"
+            android:background="@color/pp_splash_text_green"
+            app:elevation="4dp">
 
-            <LinearLayout
+            <androidx.appcompat.widget.Toolbar
+                android:id="@+id/toolbar"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:layout_marginStart="4dp"
-                android:gravity="center_vertical">
+                android:minHeight="?attr/actionBarSize"
+                android:paddingVertical="8dp"
+                app:navigationIcon="@drawable/ic_menu"
+                app:navigationIconTint="@color/pp_white">
 
-                <TextView
-                    android:text="Inventario PP"
-                    android:textColor="@color/pp_white"
-                    android:textSize="17sp"
-                    android:textStyle="bold"
-                    android:fontFamily="sans-serif-medium"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"/>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginEnd="16dp">
 
-                <TextView
-                    android:id="@+id/tvToolbarSubtitle"
-                    android:text="Cargando ubicación…"
-                    android:textColor="#CCffffff"
-                    android:textSize="11sp"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"/>
-            </LinearLayout>
-        </androidx.appcompat.widget.Toolbar>
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Inventario PP"
+                        android:textColor="@color/pp_white"
+                        android:textSize="18sp"
+                        android:textStyle="bold"
+                        android:fontFamily="sans-serif-medium" />
 
-        <!-- ── Contenido scrollable ─────────────────────────────────────────── -->
+                    <TextView
+                        android:id="@+id/tvToolbarSubtitle"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="CARGANDO UBICACIÓN..."
+                        android:textColor="#CCFFFFFF"
+                        android:textSize="10sp"
+                        android:textAllCaps="true"
+                        android:letterSpacing="0.02"
+                        android:lineSpacingExtra="2dp"
+                        android:maxLines="2"
+                        android:ellipsize="end" />
+                </LinearLayout>
+
+            </androidx.appcompat.widget.Toolbar>
+        </com.google.android.material.appbar.AppBarLayout>
+
+        <!-- ── Main Content ────────────────────────────────────────────── -->
         <ScrollView
             android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:fillViewport="true">
+            android:layout_height="match_parent"
+            android:fillViewport="true"
+            android:scrollbars="none">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -70,215 +76,384 @@
                 android:orientation="vertical"
                 android:padding="16dp">
 
-                <!-- ── HERO CARD ─────────────────────────────────────────────── -->
-                <androidx.cardview.widget.CardView
+                <!-- ── Hero Card (Toma de Inventario) ────────────────────── -->
+                <com.google.android.material.card.MaterialCardView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    app:cardCornerRadius="20dp"
-                    app:cardElevation="8dp"
+                    app:cardCornerRadius="24dp"
+                    app:cardElevation="6dp"
+                    app:strokeWidth="0dp"
                     android:layout_marginBottom="20dp">
 
-                    <LinearLayout
+                    <androidx.constraintlayout.widget.ConstraintLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:background="@color/pp_green"
-                        android:padding="28dp"
-                        android:orientation="vertical"
-                        android:gravity="center">
+                        android:background="@color/pp_splash_text_green"
+                        android:padding="20dp">
 
-                        <TextView
-                            android:text="📦"
-                            android:textSize="52sp"
-                            android:gravity="center"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginBottom="14dp"/>
+                        <!-- Decorative dots pattern -->
+                        <ImageView
+                            android:layout_width="60dp"
+                            android:layout_height="60dp"
+                            android:src="@drawable/ic_dots"
+                            android:alpha="0.2"
+                            app:layout_constraintTop_toTopOf="parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            android:layout_marginTop="-10dp"
+                            android:layout_marginStart="-10dp"
+                            android:contentDescription="@null" />
 
-                        <TextView
-                            android:text="Toma de Inventario"
-                            android:textColor="@color/pp_white"
-                            android:textSize="22sp"
-                            android:textStyle="bold"
-                            android:fontFamily="sans-serif-medium"
-                            android:gravity="center"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginBottom="6dp"/>
+                        <ImageView
+                            android:layout_width="100dp"
+                            android:layout_height="100dp"
+                            android:src="@drawable/logo_sin_fondo"
+                            android:alpha="0.1"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            android:layout_marginBottom="-20dp"
+                            android:layout_marginEnd="-20dp"
+                            android:contentDescription="@null" />
 
-                        <TextView
-                            android:text="Escanea o ingresa el código del producto para registrar el conteo físico"
-                            android:textColor="#CCFFFFFF"
-                            android:textSize="13sp"
-                            android:gravity="center"
-                            android:layout_width="match_parent"
+                        <!-- Scanner Frame and Box -->
+                        <FrameLayout
+                            android:id="@+id/flScanner"
+                            android:layout_width="120dp"
+                            android:layout_height="120dp"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent">
+
+                            <ImageView
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:src="@drawable/ic_scanner_frame"
+                                android:alpha="0.4"
+                                android:contentDescription="@null" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="📦"
+                                android:textSize="60sp"
+                                android:layout_gravity="center" />
+
+                            <View
+                                android:layout_width="match_parent"
+                                android:layout_height="1.5dp"
+                                android:layout_gravity="center"
+                                android:background="#8000FF00" />
+                        </FrameLayout>
+
+                        <LinearLayout
+                            android:layout_width="0dp"
                             android:layout_height="wrap_content"
-                            android:layout_marginBottom="24dp"/>
+                            android:orientation="vertical"
+                            android:layout_marginStart="16dp"
+                            app:layout_constraintStart_toEndOf="@id/flScanner"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintTop_toTopOf="@id/flScanner"
+                            app:layout_constraintBottom_toBottomOf="@id/flScanner">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Toma de\nInventario"
+                                android:textColor="@color/pp_white"
+                                android:textSize="22sp"
+                                android:textStyle="bold"
+                                android:fontFamily="sans-serif-medium" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Escanea o ingresa el código del producto para registrar el conteo físico de inventario."
+                                android:textColor="#CCFFFFFF"
+                                android:textSize="12sp"
+                                android:layout_marginTop="8dp" />
+                        </LinearLayout>
 
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/btnRealizarToma"
-                            android:layout_width="wrap_content"
+                            android:layout_width="match_parent"
                             android:layout_height="52dp"
+                            android:layout_marginTop="20dp"
                             android:text="INICIAR TOMA"
-                            android:textSize="14sp"
+                            android:textColor="@color/pp_splash_text_green"
                             android:textStyle="bold"
-                            android:paddingStart="36dp"
-                            android:paddingEnd="36dp"
+                            android:textSize="15sp"
                             app:backgroundTint="@color/pp_white"
-                            android:textColor="@color/pp_green"
-                            app:cornerRadius="26dp"
-                            android:elevation="3dp"/>
+                            app:cornerRadius="16dp"
+                            app:layout_constraintTop_toBottomOf="@id/flScanner" />
 
-                    </LinearLayout>
-                </androidx.cardview.widget.CardView>
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+                </com.google.android.material.card.MaterialCardView>
 
-                <!-- ── Accesos rápidos ──────────────────────────────────────── -->
-                <TextView
-                    android:text="Accesos rápidos"
-                    android:textSize="13sp"
-                    android:textColor="@color/pp_text_secondary"
-                    android:textStyle="bold"
-                    android:fontFamily="sans-serif-medium"
-                    android:letterSpacing="0.08"
-                    android:layout_width="wrap_content"
+                <!-- ── Quick Access Title ────────────────────────────────── -->
+                <RelativeLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="10dp"
-                    android:layout_marginStart="2dp"/>
+                    android:layout_marginBottom="12dp">
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+                        <View
+                            android:layout_width="4dp"
+                            android:layout_height="16dp"
+                            android:background="@color/pp_splash_text_green" />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Accesos rápidos"
+                            android:textSize="16sp"
+                            android:textColor="@color/pp_text_dark"
+                            android:textStyle="bold"
+                            android:layout_marginStart="10dp"
+                            android:fontFamily="sans-serif-medium"/>
+                    </LinearLayout>
+                </RelativeLayout>
 
+                <!-- ── Quick Access Grid ─────────────────────────────────── -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
+                    android:baselineAligned="false"
                     android:weightSum="2"
-                    android:layout_marginBottom="12dp">
+                    android:layout_marginBottom="16dp">
 
-                    <!-- Card Historial -->
-                    <androidx.cardview.widget.CardView
+                    <!-- Mis Registros -->
+                    <com.google.android.material.card.MaterialCardView
                         android:id="@+id/cardHistorial"
                         android:layout_width="0dp"
-                        android:layout_height="110dp"
+                        android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:layout_marginEnd="8dp"
-                        app:cardCornerRadius="16dp"
-                        app:cardElevation="3dp"
+                        app:cardCornerRadius="24dp"
+                        app:cardElevation="2dp"
+                        app:strokeWidth="0dp"
                         app:cardBackgroundColor="@color/pp_white"
                         android:clickable="true"
                         android:focusable="true"
                         android:foreground="?attr/selectableItemBackground">
 
-                        <LinearLayout
+                        <RelativeLayout
                             android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:orientation="vertical"
-                            android:gravity="center"
-                            android:padding="12dp">
+                            android:layout_height="wrap_content"
+                            android:padding="16dp">
 
-                            <TextView android:text="📋" android:textSize="30sp"
-                                android:layout_width="wrap_content" android:layout_height="wrap_content"/>
-                            <TextView android:text="Mis Registros"
-                                android:textSize="13sp" android:textStyle="bold"
-                                android:textColor="@color/pp_text_dark" android:gravity="center"
-                                android:layout_width="wrap_content" android:layout_height="wrap_content"
-                                android:layout_marginTop="6dp"/>
-                            <TextView android:text="Ver inventarios de hoy"
-                                android:textSize="10sp" android:textColor="@color/pp_text_secondary"
-                                android:gravity="center"
-                                android:layout_width="wrap_content" android:layout_height="wrap_content"
-                                android:layout_marginTop="2dp"/>
-                        </LinearLayout>
-                    </androidx.cardview.widget.CardView>
+                            <FrameLayout
+                                android:id="@+id/flHistorialIcon"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content">
+                                <ImageView
+                                    android:id="@+id/ivHistorialIcon"
+                                    android:layout_width="48dp"
+                                    android:layout_height="48dp"
+                                    android:src="@drawable/ic_clipboard_check" />
+                                <View
+                                    android:layout_width="14dp"
+                                    android:layout_height="14dp"
+                                    android:layout_gravity="bottom|end"
+                                    android:background="@drawable/bg_icon_circle"
+                                    android:backgroundTint="#2E7D32"
+                                    android:translationX="-2dp"
+                                    android:translationY="-2dp"/>
+                            </FrameLayout>
 
-                    <!-- Card Pendientes -->
-                    <androidx.cardview.widget.CardView
+                            <TextView
+                                android:id="@+id/tvHistorialTitle"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_toEndOf="@id/flHistorialIcon"
+                                android:layout_marginStart="10dp"
+                                android:text="Mis\nRegistros"
+                                android:textSize="14sp"
+                                android:textStyle="bold"
+                                android:textColor="@color/pp_text_dark" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_below="@id/tvHistorialTitle"
+                                android:layout_toEndOf="@id/flHistorialIcon"
+                                android:layout_marginStart="10dp"
+                                android:text="Ver inventarios\nde hoy"
+                                android:textSize="10.5sp"
+                                android:textColor="@color/pp_text_secondary"
+                                android:layout_marginTop="2dp" />
+
+                            <ImageView
+                                android:layout_width="24dp"
+                                android:layout_height="24dp"
+                                android:src="@drawable/ic_chevron_right"
+                                android:background="@drawable/bg_icon_circle"
+                                android:backgroundTint="#F0F5F0"
+                                android:padding="6dp"
+                                app:tint="@color/pp_splash_text_green"
+                                android:layout_alignParentEnd="true"
+                                android:layout_marginTop="80dp"
+                                android:contentDescription="@null" />
+                        </RelativeLayout>
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <!-- Pendientes -->
+                    <com.google.android.material.card.MaterialCardView
                         android:id="@+id/cardPendientes"
                         android:layout_width="0dp"
-                        android:layout_height="110dp"
+                        android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:layout_marginStart="8dp"
-                        app:cardCornerRadius="16dp"
-                        app:cardElevation="3dp"
+                        app:cardCornerRadius="24dp"
+                        app:cardElevation="2dp"
+                        app:strokeWidth="0dp"
                         app:cardBackgroundColor="@color/pp_white"
                         android:clickable="true"
                         android:focusable="true"
                         android:foreground="?attr/selectableItemBackground">
 
-                        <LinearLayout
+                        <RelativeLayout
                             android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:orientation="vertical"
-                            android:gravity="center"
-                            android:padding="12dp">
+                            android:layout_height="wrap_content"
+                            android:padding="16dp">
 
-                            <TextView android:text="⏳" android:textSize="30sp"
-                                android:layout_width="wrap_content" android:layout_height="wrap_content"/>
-                            <TextView android:text="Pendientes"
-                                android:textSize="13sp" android:textStyle="bold"
-                                android:textColor="@color/pp_warning" android:gravity="center"
-                                android:layout_width="wrap_content" android:layout_height="wrap_content"
-                                android:layout_marginTop="6dp"/>
-                            <TextView android:text="Sin conexión"
-                                android:textSize="10sp" android:textColor="@color/pp_text_secondary"
-                                android:gravity="center"
-                                android:layout_width="wrap_content" android:layout_height="wrap_content"
-                                android:layout_marginTop="2dp"/>
-                        </LinearLayout>
-                    </androidx.cardview.widget.CardView>
+                            <FrameLayout
+                                android:id="@+id/flPendientesIcon"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content">
+                                <ImageView
+                                    android:id="@+id/ivPendientesIcon"
+                                    android:layout_width="48dp"
+                                    android:layout_height="48dp"
+                                    android:src="@drawable/ic_hourglass_warning" />
+                                <View
+                                    android:layout_width="14dp"
+                                    android:layout_height="14dp"
+                                    android:layout_gravity="bottom|end"
+                                    android:background="@drawable/bg_icon_circle"
+                                    android:backgroundTint="#C2763D"
+                                    android:translationX="-2dp"
+                                    android:translationY="-2dp"/>
+                            </FrameLayout>
+
+                            <TextView
+                                android:id="@+id/tvPendientesTitle"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_toEndOf="@id/flPendientesIcon"
+                                android:layout_marginStart="10dp"
+                                android:text="Pendientes"
+                                android:textSize="14sp"
+                                android:textStyle="bold"
+                                android:textColor="@color/pp_text_dark" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_below="@id/tvPendientesTitle"
+                                android:layout_toEndOf="@id/flPendientesIcon"
+                                android:layout_marginStart="10dp"
+                                android:text="Sin conexión"
+                                android:textSize="10.5sp"
+                                android:textColor="@color/pp_text_secondary"
+                                android:layout_marginTop="2dp" />
+
+                            <ImageView
+                                android:layout_width="24dp"
+                                android:layout_height="24dp"
+                                android:src="@drawable/ic_chevron_right"
+                                android:background="@drawable/bg_icon_circle"
+                                android:backgroundTint="#FFF5F0"
+                                android:padding="6dp"
+                                app:tint="@color/pp_splash_orange"
+                                android:layout_alignParentEnd="true"
+                                android:layout_marginTop="80dp"
+                                android:contentDescription="@null" />
+                        </RelativeLayout>
+                    </com.google.android.material.card.MaterialCardView>
                 </LinearLayout>
 
-                <!-- ── Info offline ────────────────────────────────────────── -->
-                <androidx.cardview.widget.CardView
+                <!-- ── Offline Banner ────────────────────────────────────── -->
+                <com.google.android.material.card.MaterialCardView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    app:cardCornerRadius="12dp"
+                    app:cardCornerRadius="20dp"
                     app:cardElevation="2dp"
-                    app:cardBackgroundColor="@color/pp_green_light">
+                    app:strokeWidth="0dp"
+                    app:cardBackgroundColor="@color/pp_white">
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal"
-                        android:padding="16dp"
+                        android:padding="20dp"
                         android:gravity="center_vertical">
 
-                        <TextView android:text="ℹ️" android:textSize="20sp"
-                            android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:layout_marginEnd="12dp"/>
+                        <FrameLayout
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
+                            android:background="@drawable/bg_icon_circle"
+                            android:backgroundTint="#F1F8E9">
+                            <ImageView
+                                android:layout_width="24dp"
+                                android:layout_height="24dp"
+                                android:layout_gravity="center"
+                                android:src="@drawable/ic_pending"
+                                app:tint="@color/pp_splash_text_green"
+                                android:contentDescription="@null" />
+                        </FrameLayout>
 
                         <LinearLayout
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:orientation="vertical">
+                            android:orientation="vertical"
+                            android:layout_marginStart="16dp">
 
-                            <TextView android:text="App funciona sin internet"
-                                android:textSize="13sp" android:textStyle="bold"
-                                android:textColor="@color/pp_green_dark"
-                                android:layout_width="wrap_content" android:layout_height="wrap_content"/>
                             <TextView
-                                android:text="Los registros pendientes se envían automáticamente al recuperar la conexión"
-                                android:textSize="11sp" android:textColor="@color/pp_green"
-                                android:layout_width="wrap_content" android:layout_height="wrap_content"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="App funciona sin internet"
+                                android:textSize="15sp"
+                                android:textStyle="bold"
+                                android:textColor="@color/pp_splash_text_green"/>
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="Los registros pendientes se envían automáticamente al recuperar la conexión."
+                                android:textSize="12sp"
+                                android:textColor="@color/pp_text_secondary"
                                 android:layout_marginTop="2dp"/>
                         </LinearLayout>
+
+                        <!-- Tiny barcode decoration -->
+                        <ImageView
+                            android:layout_width="50dp"
+                            android:layout_height="50dp"
+                            android:src="@drawable/ic_barcode"
+                            android:alpha="0.1"
+                            android:rotation="15"
+                            android:contentDescription="@null" />
+
                     </LinearLayout>
-                </androidx.cardview.widget.CardView>
+                </com.google.android.material.card.MaterialCardView>
 
             </LinearLayout>
         </ScrollView>
     </LinearLayout>
 
-    <!-- ════════════════════════════════════
-         NAVIGATION DRAWER
-         ════════════════════════════════════ -->
+    <!-- Navigation Drawer -->
     <com.google.android.material.navigation.NavigationView
         android:id="@+id/nav_view"
-        android:layout_width="300dp"
+        android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:layout_gravity="start"
         android:fitsSystemWindows="true"
+        android:background="@color/pp_white"
         app:headerLayout="@layout/nav_header_main"
         app:menu="@menu/nav_menu"
-        app:itemIconTint="@null"
-        app:itemTextColor="@color/pp_text_dark"
-        app:itemIconSize="24dp"/>
+        app:itemBackground="@android:color/transparent"
+        app:itemIconTint="@color/pp_splash_text_green"
+        app:itemTextColor="@color/pp_text_dark" />
 
 </androidx.drawerlayout.widget.DrawerLayout>

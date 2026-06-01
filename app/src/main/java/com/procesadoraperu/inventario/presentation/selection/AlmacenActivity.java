@@ -4,11 +4,16 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -24,32 +29,46 @@ public class AlmacenActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        EdgeToEdge.enable(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_seleccion);
 
+        // Manejo de Insets
+        View mainContainer = findViewById(R.id.main_selection_container);
+        ViewCompat.setOnApplyWindowInsetsListener(mainContainer, (v, insets) -> {
+            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
+            return WindowInsetsCompat.CONSUMED;
+        });
+
+        initViews();
+        setupViewModel();
+    }
+
+    private void initViews() {
         TextView tvTitulo = findViewById(R.id.tvTituloSeleccion);
         EditText etBuscar = findViewById(R.id.etBuscar);
         RecyclerView recyclerView = findViewById(R.id.recyclerViewOpciones);
+        androidx.appcompat.widget.Toolbar toolbar = findViewById(R.id.toolbarSeleccion);
+
+        setSupportActionBar(toolbar);
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            getSupportActionBar().setDisplayShowTitleEnabled(false);
+        }
+        toolbar.setNavigationOnClickListener(v -> finish());
 
         tvTitulo.setText("Seleccionar Almacén");
 
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         adapter = new AlmacenAdapter(almacen -> {
-            // Al hacer clic, guardamos el almacén y vamos al HOME
             viewModel.guardarAlmacenSeleccionado(almacen);
             Intent intent = new Intent(this, HomeActivity.class);
-            // Limpiamos el historial de pantallas para que no pueda retroceder al login
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(intent);
+            overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
         });
         recyclerView.setAdapter(adapter);
-
-        ViewModelFactory factory = new ViewModelFactory(this);
-        viewModel = new ViewModelProvider(this, factory).get(SelectionViewModel.class);
-
-        viewModel.getAlmacenes().observe(this, almacenes -> {
-            adapter.setList(almacenes);
-        });
 
         etBuscar.addTextChangedListener(new TextWatcher() {
             @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
@@ -58,9 +77,17 @@ public class AlmacenActivity extends AppCompatActivity {
             }
             @Override public void afterTextChanged(Editable s) {}
         });
+    }
 
-        // AVISO: Aquí debes pasar el ID de la sucursal activa.
-        // Por ahora lo puedes sacar de SharedPreferences directamente o pasarlo por Intent.
+    private void setupViewModel() {
+        ViewModelFactory factory = new ViewModelFactory(this);
+        viewModel = new ViewModelProvider(this, factory).get(SelectionViewModel.class);
+
+        viewModel.getAlmacenes().observe(this, almacenes -> adapter.setList(almacenes));
+        viewModel.getErrorMessage().observe(this, error -> {
+            if (error != null) Toast.makeText(this, error, Toast.LENGTH_SHORT).show();
+        });
+
         String idSucursalActiva = getSharedPreferences("app_prefs", MODE_PRIVATE).getString("ACTIVE_SUCURSAL_ID", "");
         viewModel.cargarAlmacenes(idSucursalActiva);
     }

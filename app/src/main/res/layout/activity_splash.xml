@@ -1,51 +1,172 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout
+<androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/pp_green">
+    android:background="@drawable/fondo">
 
+    <!-- Decorative Top Right Dots -->
+    <ImageView
+        android:id="@+id/ivDotsTop"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/ic_dots"
+        android:layout_marginTop="60dp"
+        android:layout_marginStart="24dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        android:alpha="0.4"
+        android:contentDescription="@null" />
+
+    <!-- Placeholder for Background Curve (Top Left) -->
+    <View
+        android:id="@+id/vCurveTop"
+        android:layout_width="200dp"
+        android:layout_height="300dp"
+        android:background="@drawable/circle_background"
+        android:backgroundTint="#0A00875A"
+        android:translationX="-100dp"
+        android:translationY="-100dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <!-- Main Content Wrapper -->
     <LinearLayout
+        android:id="@+id/llMainContent"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="center"
+        android:gravity="center"
         android:orientation="vertical"
-        android:gravity="center">
+        android:padding="24dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintVertical_bias="0.45">
 
         <ImageView
-            android:id="@+id/ivLogoAnimado"
-            android:layout_width="200dp"
-            android:layout_height="200dp"
-            android:src="@drawable/logo_pp_blanco"
-            android:scaleType="fitCenter" />
+            android:id="@+id/ivLogoSplash"
+            android:layout_width="160dp"
+            android:layout_height="160dp"
+            android:src="@drawable/logo_sin_fondo"
+            android:scaleType="fitCenter"
+            android:contentDescription="@string/app_name" />
+
+        <TextView
+            android:id="@+id/tvBrand"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/splash_brand"
+            android:textColor="@color/pp_splash_text_green"
+            android:textSize="32sp"
+            android:textStyle="bold"
+            android:fontFamily="sans-serif-medium"
+            android:layout_marginTop="12dp" />
+
+        <LinearLayout
+            android:id="@+id/llDate"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:layout_marginTop="8dp">
+            <View android:layout_width="20dp" android:layout_height="1.5dp" android:background="@color/pp_splash_text_green" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/splash_date"
+                android:textColor="@color/pp_splash_text_green"
+                android:textSize="13sp"
+                android:alpha="0.8" />
+            <View android:layout_width="20dp" android:layout_height="1.5dp" android:background="@color/pp_splash_text_green" />
+        </LinearLayout>
+
+        <ImageView
+            android:id="@+id/ivLeafCenter"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:src="@drawable/ic_leaf_small"
+            app:tint="@color/pp_splash_text_green"
+            android:layout_marginTop="32dp"
+            android:alpha="0.7"
+            android:contentDescription="@null" />
+
+        <TextView
+            android:id="@+id/tvFullName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/splash_full_name"
+            android:textColor="@color/pp_splash_text_green"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:layout_marginTop="32dp" />
+
+        <TextView
+            android:id="@+id/tvSlogan"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/splash_slogan"
+            android:textColor="@color/pp_text_secondary"
+            android:textSize="17sp"
+            android:letterSpacing="0.02"
+            android:layout_marginTop="4dp" />
+
+        <View
+            android:id="@+id/vLineAccent"
+            android:layout_width="70dp"
+            android:layout_height="3.5dp"
+            android:background="@color/pp_splash_orange"
+            android:layout_marginTop="16dp" />
+
+    </LinearLayout>
+
+    <!-- Bottom Version Info -->
+    <LinearLayout
+        android:id="@+id/llVersionInfo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:layout_marginBottom="40dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <ImageView
+            android:layout_width="18dp"
+            android:layout_height="18dp"
+            android:src="@drawable/ic_leaf_small"
+            app:tint="@color/pp_splash_text_green"
+            android:alpha="0.4"
+            android:contentDescription="@null" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Procesadora Perú S.A.C."
-            android:textColor="@color/pp_white"
-            android:textSize="26sp"
-            android:textStyle="bold"
-            android:fontFamily="sans-serif-medium"
-            android:layout_marginTop="24dp" /> <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Gestión Inteligente de Inventario"
-        android:textColor="#CCFFFFFF"
-        android:textSize="16sp"
-        android:letterSpacing="0.05"
-        android:layout_marginTop="8dp" />
+            android:text="@string/splash_version"
+            android:textColor="@color/pp_text_secondary"
+            android:textSize="13sp"
+            android:layout_marginHorizontal="10dp" />
 
+        <ImageView
+            android:layout_width="18dp"
+            android:layout_height="18dp"
+            android:src="@drawable/ic_leaf_small"
+            app:tint="@color/pp_splash_text_green"
+            android:alpha="0.4"
+            android:contentDescription="@null" />
     </LinearLayout>
 
-    <TextView
+    <!-- Decorative Bottom Right Dots -->
+    <ImageView
+        android:id="@+id/ivDotsBottom"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="bottom|center_horizontal"
-        android:layout_marginBottom="48dp"
-        android:text="Versión 2.0"
-        android:textColor="#88FFFFFF"
-        android:textSize="12sp" />
+        android:src="@drawable/ic_dots"
+        android:layout_marginEnd="24dp"
+        app:layout_constraintBottom_toTopOf="@id/llVersionInfo"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginBottom="100dp"
+        android:alpha="0.3"
+        android:contentDescription="@null" />
 
-</FrameLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -3,6 +3,7 @@ package com.procesadoraperu.inventario.presentation.selection;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -46,6 +47,9 @@ public class AlmacenAdapter extends RecyclerView.Adapter<AlmacenAdapter.AlmacenV
 
         holder.tvTitle.setText(almacen.getDescripcion());
         holder.tvSubtitle.setText("Cód. Almacén: " + almacen.getIdAlmacen());
+        
+        // Icono para almacén
+        holder.ivType.setImageResource(R.drawable.ic_warehouse);
 
         holder.itemView.setOnClickListener(v -> {
             if (listener != null) {
@@ -62,11 +66,13 @@ public class AlmacenAdapter extends RecyclerView.Adapter<AlmacenAdapter.AlmacenV
     static class AlmacenViewHolder extends RecyclerView.ViewHolder {
         TextView tvTitle;
         TextView tvSubtitle;
+        ImageView ivType;
 
         public AlmacenViewHolder(@NonNull View itemView) {
             super(itemView);
             tvTitle = itemView.findViewById(R.id.tvTitle);
             tvSubtitle = itemView.findViewById(R.id.tvSubtitle);
+            ivType = itemView.findViewById(R.id.ivSelectionType);
         }
     }
 }

@@ -46,31 +46,36 @@ public class HomeActivity extends AppCompatActivity
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        EdgeToEdge.enable(this); // 1. Habilitar pantalla completa
+        EdgeToEdge.enable(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
+
+        // Forzamos que los iconos de la barra de estado sean blancos sobre el fondo verde
+        if (getWindow() != null) {
+            new androidx.core.view.WindowInsetsControllerCompat(getWindow(), getWindow().getDecorView())
+                    .setAppearanceLightStatusBars(false);
+        }
 
         drawerLayout = findViewById(R.id.drawerLayoutRoot);
         rootView = drawerLayout;
 
-        // 2. Gestionar Insets para Toolbar y Drawer
+        // Manejo de Insets para pantalla completa (Edge-to-Edge)
         ViewCompat.setOnApplyWindowInsetsListener(drawerLayout, (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, 0, systemBars.right, 0); // No padding vertical aquí
-            return insets;
+            
+            // Aplicamos padding al AppBar para que no choque con la status bar
+            findViewById(R.id.appbar).setPadding(0, systemBars.top, 0, 0);
+            
+            // Los lados y el fondo se manejan en el contenedor raíz si es necesario
+            v.setPadding(systemBars.left, 0, systemBars.right, systemBars.bottom);
+            
+            return WindowInsetsCompat.CONSUMED;
         });
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         if (getSupportActionBar() != null) getSupportActionBar().setTitle("");
         tvToolbarSubtitle = findViewById(R.id.tvToolbarSubtitle);
-
-        // Ajustar padding superior del toolbar para que no choque con la status bar
-        ViewCompat.setOnApplyWindowInsetsListener(toolbar, (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(v.getPaddingLeft(), systemBars.top, v.getPaddingRight(), v.getPaddingBottom());
-            return insets;
-        });
 
         NavigationView navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);

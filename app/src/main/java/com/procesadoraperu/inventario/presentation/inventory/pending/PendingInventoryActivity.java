@@ -7,8 +7,12 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -30,16 +34,32 @@ public class PendingInventoryActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        EdgeToEdge.enable(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_pending_inventory);
+
+        // Forzamos que los iconos de la barra de estado sean blancos
+        if (getWindow() != null) {
+            new androidx.core.view.WindowInsetsControllerCompat(getWindow(), getWindow().getDecorView())
+                    .setAppearanceLightStatusBars(false);
+        }
+
+        // Manejo de Insets para pantalla completa
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.pending_root), (v, insets) -> {
+            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+            findViewById(R.id.appbar).setPadding(0, systemBars.top, 0, 0);
+            v.setPadding(systemBars.left, 0, systemBars.right, systemBars.bottom);
+            return WindowInsetsCompat.CONSUMED;
+        });
 
         // ── Toolbar ───────────────────────────────────────────────────────────
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         if (getSupportActionBar() != null) {
-            getSupportActionBar().setTitle("Registros Pendientes");
+            getSupportActionBar().setDisplayShowTitleEnabled(false);
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
+        toolbar.setNavigationOnClickListener(v -> finish());
 
         // ── Vistas ────────────────────────────────────────────────────────────
         progressBar    = findViewById(R.id.progressBar);
@@ -73,10 +93,13 @@ public class PendingInventoryActivity extends AppCompatActivity {
             adapter.setList(lista);
             boolean vacio = (lista == null || lista.isEmpty());
             tvEmpty.setVisibility(vacio ? View.VISIBLE : View.GONE);
-            btnSincronizar.setVisibility(vacio ? View.GONE : View.VISIBLE);
-            tvContador.setVisibility(vacio ? View.GONE : View.VISIBLE);
-            int count = vacio ? 0 : lista.size();
-            tvContador.setText(count + " registro(s) pendiente(s) de sincronizar");
+            findViewById(R.id.cardSyncBanner).setVisibility(vacio ? View.GONE : View.VISIBLE);
+            findViewById(R.id.llHeaderPendientes).setVisibility(vacio ? View.GONE : View.VISIBLE);
+            
+            if (!vacio) {
+                int count = lista.size();
+                tvContador.setText(count + " registro(s) pendiente(s) de sincronizar");
+            }
         });
 
         viewModel.getSyncResultMessage().observe(this, msg -> {

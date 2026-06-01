@@ -42,6 +42,7 @@ public class TakeInventoryActivity extends AppCompatActivity {
 
     private MaterialCardView cardProducto;
     private TextView tvNombreProducto, tvIdProducto, tvStockSistema;
+    private com.google.android.material.textfield.TextInputLayout tilCantidadContada;
     private TextInputEditText etCantidadContada;
     private MaterialButton btnRegistrar;
     private ProgressBar progressRegistrar;
@@ -65,13 +66,23 @@ public class TakeInventoryActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_take_inventory);
 
-        // ✔️ AQUÍ ESTÁ LA SOLUCIÓN DEL SCROLL: Escucha el teclado (IME)
+        // Forzamos que los iconos de la barra de estado sean blancos sobre el fondo verde oscuro
+        if (getWindow() != null) {
+            new androidx.core.view.WindowInsetsControllerCompat(getWindow(), getWindow().getDecorView())
+                    .setAppearanceLightStatusBars(false);
+        }
+
+        // ✔️ MANEJO DE INSETS: El color verde sube hasta la barra de estado
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.take_inventory_container), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             Insets ime = insets.getInsets(WindowInsetsCompat.Type.ime());
 
-            // Aplica el padding de la barra de estado arriba y el teclado abajo
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, Math.max(systemBars.bottom, ime.bottom));
+            // 1. El AppBarLayout recibirá el padding superior para que el texto no choque con la hora/iconos
+            findViewById(R.id.appbar).setPadding(0, systemBars.top, 0, 0);
+
+            // 2. El contenedor raíz solo maneja los lados y el teclado (abajo)
+            v.setPadding(systemBars.left, 0, systemBars.right, Math.max(systemBars.bottom, ime.bottom));
+
             return WindowInsetsCompat.CONSUMED;
         });
 
@@ -95,6 +106,7 @@ public class TakeInventoryActivity extends AppCompatActivity {
         tvNombreProducto = findViewById(R.id.tvNombreProducto);
         tvIdProducto     = findViewById(R.id.tvIdProducto);
         tvStockSistema   = findViewById(R.id.tvStockSistema);
+        tilCantidadContada = findViewById(R.id.tilCantidadContada);
         etCantidadContada = findViewById(R.id.etCantidadContada);
         btnRegistrar     = findViewById(R.id.btnRegistrar);
         progressRegistrar = findViewById(R.id.progressRegistrar);
@@ -176,9 +188,12 @@ public class TakeInventoryActivity extends AppCompatActivity {
         tvNombreProducto.setText(producto.getDescripcion() != null
                 ? producto.getDescripcion() : "Sin descripción");
         tvIdProducto.setText("Código: " + producto.getIdProducto());
-        tvStockSistema.setText("Stock sistema: "
-                + producto.getStock().toPlainString()
-                + " " + (producto.getIdMedida() != null ? producto.getIdMedida() : ""));
+        
+        // REQUISITO: Mostrar solo la unidad de medida, ocultando el stock del sistema
+        String unidad = (producto.getIdMedida() != null) ? producto.getIdMedida() : "UND";
+        tvStockSistema.setText(unidad);
+        tilCantidadContada.setSuffixText(unidad);
+
         cardProducto.setVisibility(View.VISIBLE);
         etCantidadContada.requestFocus();
     }

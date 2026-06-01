@@ -48,6 +48,14 @@ public class SucursalActivity extends AppCompatActivity {
         TextView tvTitulo = findViewById(R.id.tvTituloSeleccion);
         EditText etBuscar = findViewById(R.id.etBuscar);
         RecyclerView recyclerView = findViewById(R.id.recyclerViewOpciones);
+        androidx.appcompat.widget.Toolbar toolbar = findViewById(R.id.toolbarSeleccion);
+
+        setSupportActionBar(toolbar);
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            getSupportActionBar().setDisplayShowTitleEnabled(false);
+        }
+        toolbar.setNavigationOnClickListener(v -> finish());
 
         tvTitulo.setText("Seleccionar Sucursal");
 

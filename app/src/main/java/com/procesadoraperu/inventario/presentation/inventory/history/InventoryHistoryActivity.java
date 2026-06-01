@@ -7,8 +7,12 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -25,16 +29,31 @@ public class InventoryHistoryActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        EdgeToEdge.enable(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_inventory_history);
+
+        // Forzamos que los iconos de la barra de estado sean blancos sobre el fondo verde oscuro
+        if (getWindow() != null) {
+            new androidx.core.view.WindowInsetsControllerCompat(getWindow(), getWindow().getDecorView())
+                    .setAppearanceLightStatusBars(false);
+        }
+
+        // Manejo de Insets para que el color verde suba pero el texto no se mezcle con la hora/batería
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.history_root), (v, insets) -> {
+            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+            findViewById(R.id.appbar).setPadding(0, systemBars.top, 0, 0);
+            v.setPadding(systemBars.left, 0, systemBars.right, systemBars.bottom);
+            return WindowInsetsCompat.CONSUMED;
+        });
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         if (getSupportActionBar() != null) {
-            // ✔️ CORRECCIÓN: Actualizamos el título para reflejar el nuevo rango de tiempo
-            getSupportActionBar().setTitle("Historial Trimestral");
+            getSupportActionBar().setDisplayShowTitleEnabled(false);
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
+        toolbar.setNavigationOnClickListener(v -> finish());
 
         progressBar = findViewById(R.id.progressBar);
         tvEmpty     = findViewById(R.id.tvEmpty);
@@ -60,7 +79,7 @@ public class InventoryHistoryActivity extends AppCompatActivity {
             if (error != null) Toast.makeText(this, error, Toast.LENGTH_LONG).show();
         });
 
-        // ✔️ CORRECCIÓN: Llamamos al nuevo método que carga los últimos 3 meses
+        // Llamamos al método que carga los últimos 3 meses
         viewModel.cargarHistorialUltimos3Meses();
     }
 

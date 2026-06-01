@@ -1,175 +1,298 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView
+<FrameLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/main_login_container"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@color/pp_green"
-    android:fillViewport="true">
+    android:layout_height="match_parent">
 
-    <LinearLayout
+    <ImageView
         android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:src="@drawable/fondo"
+        android:scaleType="centerCrop"
+        android:contentDescription="@null" />
+
+    <!-- Decorative Dots (Top Left) -->
+    <ImageView
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:gravity="center_horizontal"
-        android:paddingHorizontal="32dp"
-        android:paddingBottom="40dp">
+        android:src="@drawable/ic_dots"
+        android:layout_marginTop="60dp"
+        android:layout_marginStart="24dp"
+        android:alpha="0.3"
+        android:contentDescription="@null" />
 
-        <View
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:layout_weight="1"/>
+    <!-- Decorative Dots (Bottom Right) -->
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_dots"
+            android:layout_gravity="bottom|end"
+            android:layout_marginBottom="180dp"
+            android:layout_marginEnd="24dp"
+            android:alpha="0.3"
+            android:contentDescription="@null" />
+    </FrameLayout>
 
-        <LinearLayout
+    <ScrollView
+        android:id="@+id/main_login_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true"
+        android:scrollbars="none">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:gravity="center"
-            android:layout_marginBottom="40dp">
+            android:paddingBottom="24dp">
 
-            <ImageView
-                android:id="@+id/ivLogoLogin"
-                android:layout_width="120dp"
-                android:layout_height="120dp"
-                android:src="@drawable/logo_pp_blanco"
-                android:scaleType="fitCenter"
-                android:layout_marginBottom="16dp"/>
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Procesadora Perú S.A.C."
-                android:textColor="@color/pp_white"
-                android:textSize="24sp"
-                android:textStyle="bold"
-                android:gravity="center"/>
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Gestión de Inventario"
-                android:textColor="#CCFFFFFF"
-                android:textSize="16sp"
-                android:layout_marginTop="4dp"/>
-        </LinearLayout>
-
-        <com.google.android.material.card.MaterialCardView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:cardCornerRadius="24dp"
-            app:cardElevation="0dp"
-            app:cardBackgroundColor="@color/pp_surface">
-
+            <!-- Middle Container for Header and Card to be centered together -->
             <LinearLayout
+                android:id="@+id/llCenterContent"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="24dp">
+                android:gravity="center"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toTopOf="@id/llFooter"
+                app:layout_constraintVertical_bias="0.45">
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="¡Bienvenido!"
-                    android:textColor="@color/pp_text_primary"
-                    android:textSize="22sp"
-                    android:textStyle="bold"
-                    android:layout_marginBottom="8dp"/>
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Ingresa tus credenciales para continuar"
-                    android:textColor="@color/pp_text_secondary"
-                    android:textSize="14sp"
-                    android:layout_marginBottom="24dp"/>
-
-                <com.google.android.material.textfield.TextInputLayout
+                <!-- Header Section -->
+                <LinearLayout
+                    android:id="@+id/llHeader"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="@string/hint_usuario"
-                    style="@style/Widget.Inventario.TextInputLayout"
-                    app:startIconDrawable="@drawable/ic_person"
-                    android:layout_marginBottom="16dp">
+                    android:gravity="center"
+                    android:orientation="vertical">
 
-                    <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/etUsername"
+                    <ImageView
+                        android:id="@+id/ivLogoLogin"
+                        android:layout_width="90dp"
+                        android:layout_height="90dp"
+                        android:src="@drawable/logo_sin_fondo"
+                        android:scaleType="fitCenter"
+                        android:contentDescription="@string/app_name" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp"
+                        android:text="@string/splash_full_name"
+                        android:textColor="@color/pp_splash_text_green"
+                        android:textSize="26sp"
+                        android:textStyle="bold"
+                        android:fontFamily="sans-serif-medium" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:text="@string/splash_slogan"
+                        android:textColor="@color/pp_splash_text_green_light"
+                        android:textSize="18sp"
+                        android:alpha="0.8" />
+
+                    <View
+                        android:layout_width="60dp"
+                        android:layout_height="3.5dp"
+                        android:layout_marginTop="16dp"
+                        android:background="@color/pp_splash_orange" />
+
+                </LinearLayout>
+
+                <!-- Login Card -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cvLogin"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="32dp"
+                    android:layout_marginTop="24dp"
+                    app:cardCornerRadius="28dp"
+                    app:cardElevation="8dp"
+                    app:cardBackgroundColor="@color/pp_white">
+
+                    <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:inputType="text"
-                        android:textColor="@color/pp_text_primary"/>
-                </com.google.android.material.textfield.TextInputLayout>
+                        android:orientation="vertical"
+                        android:padding="28dp">
 
-                <com.google.android.material.textfield.TextInputLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:hint="@string/hint_password"
-                    style="@style/Widget.Inventario.TextInputLayout"
-                    app:startIconDrawable="@drawable/ic_logout"
-                    app:passwordToggleEnabled="true"
-                    android:layout_marginBottom="24dp">
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical"
+                            android:layout_marginBottom="24dp">
 
-                    <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/etPassword"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:inputType="textPassword"
-                        android:textColor="@color/pp_text_primary"/>
-                </com.google.android.material.textfield.TextInputLayout>
+                            <FrameLayout
+                                android:layout_width="54dp"
+                                android:layout_height="54dp"
+                                android:background="@drawable/bg_leaf_circle">
+                                <ImageView
+                                    android:layout_width="28dp"
+                                    android:layout_height="28dp"
+                                    android:layout_gravity="center"
+                                    android:src="@drawable/ic_leaf_small"
+                                    app:tint="@color/pp_splash_text_green"
+                                    android:contentDescription="@null" />
+                            </FrameLayout>
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnLogin"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    style="@style/Widget.Inventario.Button"
-                    android:text="@string/btn_ingresar"/>
+                            <LinearLayout
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:orientation="vertical"
+                                android:layout_marginStart="16dp">
 
-                <ProgressBar
-                    android:id="@+id/progressBarLogin"
-                    android:layout_width="40dp"
-                    android:layout_height="40dp"
-                    android:layout_gravity="center"
-                    android:layout_marginTop="16dp"
-                    android:visibility="gone"/>
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="¡Bienvenido!"
+                                    android:textColor="@color/pp_splash_text_green"
+                                    android:textSize="24sp"
+                                    android:textStyle="bold" />
 
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Ingresa tus credenciales para continuar"
+                                    android:textColor="@color/pp_text_secondary"
+                                    android:textSize="14sp" />
+                            </LinearLayout>
+                        </LinearLayout>
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:hint="@string/hint_usuario"
+                            style="@style/Widget.Inventario.TextInputLayout"
+                            app:startIconDrawable="@drawable/ic_person"
+                            app:startIconTint="@color/pp_splash_text_green"
+                            android:layout_marginBottom="16dp">
+
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/etUsername"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:inputType="text"
+                                android:textColor="@color/pp_text_primary" />
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                        <!-- Password Field -->
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:hint="@string/hint_password"
+                            style="@style/Widget.Inventario.TextInputLayout"
+                            app:startIconDrawable="@drawable/ic_lock"
+                            app:startIconTint="@color/pp_splash_text_green"
+                            app:passwordToggleEnabled="true"
+                            app:passwordToggleTint="@color/pp_text_secondary"
+                            android:layout_marginBottom="24dp">
+
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/etPassword"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:inputType="textPassword"
+                                android:textColor="@color/pp_text_primary" />
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnLogin"
+                            android:layout_width="match_parent"
+                            android:layout_height="60dp"
+                            style="@style/Widget.Inventario.Button"
+                            android:text="@string/btn_ingresar"
+                            android:backgroundTint="@color/pp_splash_text_green"
+                            app:cornerRadius="16dp" />
+
+                        <ProgressBar
+                            android:id="@+id/progressBarLogin"
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            android:layout_gravity="center"
+                            android:layout_marginTop="16dp"
+                            android:visibility="gone" />
+
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
             </LinearLayout>
-        </com.google.android.material.card.MaterialCardView>
 
-        <View
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:layout_weight="1.5"/>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center"
-            android:layout_marginTop="24dp">
-
-            <TextView
-                android:id="@+id/tvTerminos"
+            <!-- Footer Section -->
+            <LinearLayout
+                android:id="@+id/llFooter"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Términos"
-                android:textColor="@color/pp_white"
-                android:textStyle="bold"
-                android:padding="12dp"/>
+                android:orientation="horizontal"
+                android:gravity="center"
+                android:layout_marginTop="32dp"
+                android:layout_marginBottom="16dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent">
 
-            <View
-                android:layout_width="1dp"
-                android:layout_height="14dp"
-                android:background="#66FFFFFF"/>
+                <LinearLayout
+                    android:id="@+id/llTerminosContainer"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center"
+                    android:padding="8dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:background="?attr/selectableItemBackground">
+                    <ImageView
+                        android:layout_width="16dp"
+                        android:layout_height="16dp"
+                        android:src="@drawable/ic_terms"
+                        app:tint="@color/pp_white"
+                        android:contentDescription="@null" />
+                    <TextView
+                        android:id="@+id/tvTerminos"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Términos"
+                        android:textColor="@color/pp_white"
+                        android:textSize="13sp"
+                        android:layout_marginStart="6dp" />
+                </LinearLayout>
 
-            <TextView
-                android:id="@+id/tvPrivacidad"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Privacidad"
-                android:textColor="@color/pp_white"
-                android:textStyle="bold"
-                android:padding="12dp"/>
-        </LinearLayout>
+                <View
+                    android:layout_width="1dp"
+                    android:layout_height="16dp"
+                    android:background="#80FFFFFF"
+                    android:layout_marginHorizontal="8dp" />
 
-    </LinearLayout>
-</ScrollView>
+                <LinearLayout
+                    android:id="@+id/llPrivacidadContainer"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center"
+                    android:padding="8dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:background="?attr/selectableItemBackground">
+                    <ImageView
+                        android:layout_width="16dp"
+                        android:layout_height="16dp"
+                        android:src="@drawable/ic_privacy"
+                        app:tint="@color/pp_white"
+                        android:contentDescription="@null" />
+                    <TextView
+                        android:id="@+id/tvPrivacidad"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Privacidad"
+                        android:textColor="@color/pp_white"
+                        android:textSize="13sp"
+                        android:layout_marginStart="6dp" />
+                </LinearLayout>
+            </LinearLayout>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </ScrollView>
+</FrameLayout>

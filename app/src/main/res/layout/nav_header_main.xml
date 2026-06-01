@@ -1,34 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="200dp"
-    android:background="@color/pp_green"
+    android:layout_height="220dp"
+    android:background="@color/pp_splash_text_green"
     android:orientation="vertical"
     android:padding="24dp"
     android:gravity="bottom">
 
-    <!-- ID CORREGIDO: tvNavAvatar para que coincida con tu HomeActivity -->
+    <!-- Avatar Circle with Initial -->
     <TextView
         android:id="@+id/tvNavAvatar"
-        android:layout_width="56dp"
-        android:layout_height="56dp"
+        android:layout_width="64dp"
+        android:layout_height="64dp"
         android:text="O"
-        android:textColor="@color/pp_green"
-        android:textSize="24sp"
+        android:textColor="@color/pp_splash_text_green"
+        android:textSize="28sp"
         android:textStyle="bold"
         android:gravity="center"
         android:background="@drawable/shape_circle_white"
-        android:layout_marginBottom="12dp"/>
+        android:layout_marginBottom="16dp"
+        android:elevation="4dp"/>
 
     <TextView
         android:id="@+id/tvNavNombre"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Cargando..."
+        android:text="Nombre del Usuario"
         android:textColor="@color/pp_white"
-        android:textSize="17sp"
+        android:textSize="18sp"
         android:textStyle="bold"
+        android:fontFamily="sans-serif-medium"
         android:ellipsize="end"
         android:maxLines="1"/>
 
@@ -36,18 +39,22 @@
         android:id="@+id/tvNavSucursal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="—"
+        android:text="Sede Principal"
         android:textColor="#CCFFFFFF"
         android:textSize="13sp"
-        android:layout_marginTop="3dp"/>
+        android:layout_marginTop="4dp"
+        android:textAllCaps="true"
+        android:letterSpacing="0.02"/>
 
     <TextView
         android:id="@+id/tvNavAlmacen"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="—"
-        android:textColor="#AAFFFFFF"
+        android:text="Almacén de Materiales"
+        android:textColor="#99FFFFFF"
         android:textSize="12sp"
-        android:layout_marginTop="2dp"/>
+        android:layout_marginTop="2dp"
+        android:ellipsize="end"
+        android:maxLines="1"/>
 
 </LinearLayout>

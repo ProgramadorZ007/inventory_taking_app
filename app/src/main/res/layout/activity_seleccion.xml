@@ -5,68 +5,83 @@
     android:id="@+id/main_selection_container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/pp_background"
-    android:fitsSystemWindows="true">
+    android:background="@color/pp_background">
 
-    <!-- CORRECCIÓN SAFE AREA: fitsSystemWindows en AppBarLayout -->
+    <!-- Header Section -->
     <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/appbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:fitsSystemWindows="true"
-        app:elevation="0dp">
+        android:background="@color/pp_splash_text_green"
+        app:elevation="4dp">
 
-        <com.google.android.material.appbar.MaterialToolbar
+        <androidx.appcompat.widget.Toolbar
             android:id="@+id/toolbarSeleccion"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            app:titleTextColor="@color/pp_text_primary">
+            app:navigationIconTint="@color/pp_white">
 
             <TextView
                 android:id="@+id/tvTituloSeleccion"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Seleccionar"
-                android:textSize="20sp"
+                android:textColor="@color/pp_white"
+                android:textSize="18sp"
                 android:textStyle="bold"
-                android:textColor="@color/pp_text_primary"/>
-        </com.google.android.material.appbar.MaterialToolbar>
+                android:fontFamily="sans-serif-medium" />
+        </androidx.appcompat.widget.Toolbar>
 
+        <!-- Modern Search Bar -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginHorizontal="16dp"
-            android:layout_marginBottom="16dp"
-            app:cardCornerRadius="12dp"
+            android:layout_height="54dp"
+            android:layout_marginHorizontal="20dp"
+            android:layout_marginBottom="24dp"
+            app:cardCornerRadius="16dp"
             app:cardElevation="2dp"
-            app:strokeWidth="0dp">
+            app:strokeWidth="0dp"
+            app:cardBackgroundColor="@color/pp_white">
 
-            <com.google.android.material.textfield.TextInputLayout
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                app:hintEnabled="false"
-                app:startIconDrawable="@drawable/ic_search"
-                app:startIconTint="@color/pp_text_secondary"
-                app:boxBackgroundMode="none">
+                android:layout_height="match_parent"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingHorizontal="16dp">
 
-                <com.google.android.material.textfield.TextInputEditText
+                <ImageView
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:src="@drawable/ic_search"
+                    app:tint="@color/pp_splash_text_green"
+                    android:contentDescription="@null" />
+
+                <EditText
                     android:id="@+id/etBuscar"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_marginStart="12dp"
+                    android:background="@android:color/transparent"
                     android:hint="@string/hint_buscar"
                     android:inputType="text"
-                    android:paddingVertical="12dp"
-                    android:background="@android:color/transparent"
-                    android:textColor="@color/pp_text_primary"/>
-            </com.google.android.material.textfield.TextInputLayout>
+                    android:textSize="15sp"
+                    android:textColor="@color/pp_text_dark"
+                    android:textColorHint="@color/pp_text_secondary"
+                    android:imeOptions="actionSearch" />
+            </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
     </com.google.android.material.appbar.AppBarLayout>
 
+    <!-- List -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerViewOpciones"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:clipToPadding="false"
-        android:padding="8dp"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior"/>
+        android:paddingTop="12dp"
+        android:paddingBottom="40dp"
+        android:paddingHorizontal="8dp"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

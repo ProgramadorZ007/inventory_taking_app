@@ -29,6 +29,9 @@ public class ApiClient {
         retrofit = null;
     }
 
+    // Interceptor para pruebas (mock)
+    public static Interceptor mockInterceptor = null;
+
     public static Retrofit getClient(Context context) {
         if (retrofit == null) {
             synchronized (ApiClient.class) {
@@ -61,14 +64,19 @@ public class ApiClient {
                         }
                     };
 
-                    OkHttpClient okHttpClient = new OkHttpClient.Builder()
+                    OkHttpClient.Builder clientBuilder = new OkHttpClient.Builder()
                             .addInterceptor(loggingInterceptor)
                             .addInterceptor(authInterceptor)
                             .authenticator(new TokenAuthenticator(context))
                             .connectTimeout(30, TimeUnit.SECONDS)
                             .readTimeout(30, TimeUnit.SECONDS)
-                            .writeTimeout(30, TimeUnit.SECONDS)
-                            .build();
+                            .writeTimeout(30, TimeUnit.SECONDS);
+
+                    if (mockInterceptor != null) {
+                        clientBuilder.addInterceptor(mockInterceptor);
+                    }
+
+                    OkHttpClient okHttpClient = clientBuilder.build();
 
                     retrofit = new Retrofit.Builder()
                             .baseUrl(BASE_URL)

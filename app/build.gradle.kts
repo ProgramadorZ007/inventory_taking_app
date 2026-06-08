@@ -77,3 +77,10 @@ dependencies {
     androidTestImplementation(libs.espresso.core)
     androidTestImplementation(libs.espresso.contrib)
 }
+
+tasks.withType<Test> {
+    testLogging {
+        events("passed", "failed", "skipped")
+        showStandardStreams = true
+    }
+}

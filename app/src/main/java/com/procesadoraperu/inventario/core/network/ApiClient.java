@@ -66,6 +66,7 @@ public class ApiClient {
 
                     Interceptor firebasePerfInterceptor = chain -> {
                         Request request = chain.request();
+                        android.util.Log.d("FIREBASE_PERF", "Midiendo: " + request.url());
                         HttpMetric metric = FirebasePerformance.getInstance()
                                 .newHttpMetric(request.url().toString(), request.method());
                         metric.start();
@@ -79,6 +80,7 @@ public class ApiClient {
                             }
                         } finally {
                             metric.stop();
+                            android.util.Log.d("FIREBASE_PERF", "Métrica enviada para: " + request.url());
                         }
                         return response;
                     };
@@ -86,7 +88,7 @@ public class ApiClient {
                     OkHttpClient okHttpClient = new OkHttpClient.Builder()
                             .addInterceptor(loggingInterceptor)
                             .addInterceptor(authInterceptor)
-                            .addInterceptor(firebasePerfInterceptor)
+                            .addNetworkInterceptor(firebasePerfInterceptor)  // 👈 cambiar addInterceptor por addNetworkInterceptor
                             .authenticator(new TokenAuthenticator(context))
                             .connectTimeout(30, TimeUnit.SECONDS)
                             .readTimeout(30, TimeUnit.SECONDS)

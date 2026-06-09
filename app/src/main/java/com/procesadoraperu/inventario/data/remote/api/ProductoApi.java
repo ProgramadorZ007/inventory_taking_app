@@ -14,10 +14,11 @@ import retrofit2.http.Query; // Importante
 
 public interface ProductoApi {
 
+    // ✔️ CORREGIDO: Ahora espera una List<ProductoEntity> en lugar de un objeto único
     @POST("/api/nisira/producto-stock")
-    Call<BaseResponse<ProductoEntity>> getProductoStock(@Body ProductoStockRequest request);
+    Call<BaseResponse<List<ProductoEntity>>> getProductoStock(@Body ProductoStockRequest request);
 
-    // CORREGIDO: GET con parámetros de consulta (?idGrupoPro=...&idSubGrupoPro=...)
+    // GET con parámetros de consulta (?idGrupoPro=...&idSubGrupoPro=...)
     @GET("/api/nisira/productos")
     Call<BaseResponse<List<ProductoEntity>>> getAllProductos(
             @Query("idGrupoPro") String idGrupo,

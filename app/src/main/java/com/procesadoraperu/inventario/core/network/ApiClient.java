@@ -13,6 +13,9 @@ import okhttp3.Response;
 import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
+import com.google.firebase.perf.FirebasePerformance;
+import com.google.firebase.perf.metrics.HttpMetric;
+
 
 public class ApiClient {
 
@@ -61,9 +64,29 @@ public class ApiClient {
                         }
                     };
 
+                    Interceptor firebasePerfInterceptor = chain -> {
+                        Request request = chain.request();
+                        HttpMetric metric = FirebasePerformance.getInstance()
+                                .newHttpMetric(request.url().toString(), request.method());
+                        metric.start();
+                        Response response = null;
+                        try {
+                            response = chain.proceed(request);
+                            metric.setHttpResponseCode(response.code());
+                            metric.setResponseContentType(response.header("Content-Type"));
+                            if (response.body() != null) {
+                                metric.setResponsePayloadSize(response.body().contentLength());
+                            }
+                        } finally {
+                            metric.stop();
+                        }
+                        return response;
+                    };
+
                     OkHttpClient okHttpClient = new OkHttpClient.Builder()
                             .addInterceptor(loggingInterceptor)
                             .addInterceptor(authInterceptor)
+                            .addInterceptor(firebasePerfInterceptor)
                             .authenticator(new TokenAuthenticator(context))
                             .connectTimeout(30, TimeUnit.SECONDS)
                             .readTimeout(30, TimeUnit.SECONDS)

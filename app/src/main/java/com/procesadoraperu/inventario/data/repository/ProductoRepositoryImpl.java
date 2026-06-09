@@ -31,11 +31,14 @@ public class ProductoRepositoryImpl implements IProductoRepository {
         ProductoStockRequest request = new ProductoStockRequest(idSucursal, idAlmacen, idProducto);
 
         // 2. Ejecutamos la petición POST
-        Response<BaseResponse<ProductoEntity>> response = productoApi.getProductoStock(request).execute();
+        Response<BaseResponse<List<ProductoEntity>>> response = productoApi.getProductoStock(request).execute();
 
         if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
-            ProductoEntity entity = response.body().getData();
-            return mapToDomain(entity);
+            List<ProductoEntity> lista = response.body().getData();
+            if (lista != null && !lista.isEmpty()) {
+                return mapToDomain(lista.get(0));
+            }
+            throw new Exception("Producto no encontrado.");
         } else {
             throw new Exception("Error al consultar el stock del producto en el servidor.");
         }

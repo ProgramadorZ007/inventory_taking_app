@@ -17,6 +17,7 @@
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
+        android:name=".InventarioApp"
         android:icon="@drawable/ic_launcher_playstore" android:label="@string/app_name"
         android:roundIcon="@drawable/ic_launcher_playstore" android:supportsRtl="true"
         android:theme="@style/Theme.Inventario"

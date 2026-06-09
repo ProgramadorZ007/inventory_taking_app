@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "341326916035",
+    "project_id": "procesadora-peru-sac",
+    "storage_bucket": "procesadora-peru-sac.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:341326916035:android:346d5fe4f87c54c649b576",
+        "android_client_info": {
+          "package_name": "com.procesadoraperu.inventario"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD4LQgz8_PqEeD-8EU3ITbGrORJfOdisTE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

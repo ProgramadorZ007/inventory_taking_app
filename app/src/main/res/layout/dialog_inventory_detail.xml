@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    app:cardCornerRadius="28dp"
+    app:cardElevation="0dp"
+    app:strokeWidth="0dp"
+    app:cardBackgroundColor="@color/pp_white">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- Header -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/pp_splash_text_green"
+            android:padding="24dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <FrameLayout
+                android:layout_width="60dp"
+                android:layout_height="60dp"
+                android:background="@drawable/bg_icon_circle"
+                android:backgroundTint="#22FFFFFF">
+                <ImageView
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:layout_gravity="center"
+                    android:src="@drawable/ic_inventory"
+                    app:tint="@color/pp_white"
+                    android:contentDescription="@null" />
+            </FrameLayout>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginStart="16dp">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Detalle del registro"
+                    android:textColor="@color/pp_white"
+                    android:textSize="20sp"
+                    android:textStyle="bold"
+                    android:fontFamily="sans-serif-medium" />
+                <TextView
+                    android:id="@+id/tvDialogSubtitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Nombre del Producto"
+                    android:textColor="#CCFFFFFF"
+                    android:textSize="15sp" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Body Content -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="20dp">
+
+            <!-- Row 1: Code and Unit -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:weightSum="2">
+                <!-- Card Código -->
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="8dp"
+                    app:cardCornerRadius="12dp"
+                    app:strokeWidth="1dp"
+                    app:strokeColor="#F0F0F0"
+                    app:cardBackgroundColor="@color/pp_white"
+                    app:cardElevation="0dp">
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:padding="12dp"
+                        android:gravity="center_vertical">
+                        <ImageView android:layout_width="20dp" android:layout_height="20dp" android:src="@drawable/ic_barcode" app:tint="@color/pp_splash_text_green" android:contentDescription="@null"/>
+                        <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="vertical" android:layout_marginStart="8dp">
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Código" android:textSize="10sp" android:textColor="@color/pp_text_secondary"/>
+                            <TextView android:id="@+id/tvDetailCodigo" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="000" android:textStyle="bold" android:textColor="@color/pp_text_dark"/>
+                        </LinearLayout>
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+                <!-- Card Unidad -->
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="8dp"
+                    app:cardCornerRadius="12dp"
+                    app:strokeWidth="1dp"
+                    app:strokeColor="#F0F0F0"
+                    app:cardBackgroundColor="@color/pp_white"
+                    app:cardElevation="0dp">
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:padding="12dp"
+                        android:gravity="center_vertical">
+                        <ImageView android:layout_width="20dp" android:layout_height="20dp" android:src="@drawable/ic_leaf_small" app:tint="@color/pp_splash_text_green" android:contentDescription="@null"/>
+                        <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="vertical" android:layout_marginStart="8dp">
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Unidad de medida" android:textSize="10sp" android:textColor="@color/pp_text_secondary"/>
+                            <TextView android:id="@+id/tvDetailUnidad" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="UND" android:textStyle="bold" android:textColor="@color/pp_text_dark"/>
+                        </LinearLayout>
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+            </LinearLayout>
+
+            <!-- Row 2: Stock and Count -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:orientation="horizontal"
+                android:weightSum="2">
+                <!-- Card Sistema -->
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="8dp"
+                    app:cardCornerRadius="16dp"
+                    app:cardBackgroundColor="#F9FBF7"
+                    app:cardElevation="0dp">
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:padding="16dp" android:gravity="center" android:orientation="vertical">
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Stock sistema" android:textColor="@color/pp_splash_text_green" android:textSize="12sp"/>
+                        <TextView android:id="@+id/tvDetailStockSistema" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="0.0" android:textSize="24sp" android:textStyle="bold" android:textColor="@color/pp_splash_text_green"/>
+                        <TextView android:id="@+id/tvDetailUnidadStock" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="UND" android:textSize="11sp" android:textColor="@color/pp_text_secondary"/>
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+                <!-- Card Contado -->
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="8dp"
+                    app:cardCornerRadius="16dp"
+                    app:cardBackgroundColor="#F1F8E9"
+                    app:cardElevation="0dp">
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:padding="16dp" android:gravity="center" android:orientation="vertical">
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Cantidad contada" android:textColor="@color/pp_splash_text_green" android:textSize="12sp"/>
+                        <TextView android:id="@+id/tvDetailCantidadContada" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="0.0" android:textSize="24sp" android:textStyle="bold" android:textColor="@color/pp_splash_text_green"/>
+                        <TextView android:id="@+id/tvDetailUnidadContado" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="UND" android:textSize="11sp" android:textColor="@color/pp_text_secondary"/>
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+            </LinearLayout>
+
+            <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#EEE" android:layout_marginVertical="20dp" />
+
+            <!-- Warehouse, Branch, User, Date -->
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:paddingHorizontal="8dp">
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center_vertical" android:layout_marginBottom="16dp">
+                    <ImageView android:layout_width="24dp" android:layout_height="24dp" android:src="@drawable/ic_warehouse" app:tint="@color/pp_splash_text_green" android:contentDescription="@null"/>
+                    <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="vertical" android:layout_marginStart="16dp">
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Almacén" android:textSize="11sp" android:textColor="@color/pp_text_secondary"/>
+                        <TextView android:id="@+id/tvDetailAlmacen" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Nombre Almacén" android:textStyle="bold" android:textColor="@color/pp_text_dark" android:textSize="14sp"/>
+                    </LinearLayout>
+                </LinearLayout>
+
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center_vertical" android:layout_marginBottom="16dp">
+                    <ImageView android:layout_width="24dp" android:layout_height="24dp" android:src="@drawable/ic_branch" app:tint="@color/pp_splash_text_green" android:contentDescription="@null"/>
+                    <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="vertical" android:layout_marginStart="16dp">
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Sucursal" android:textSize="11sp" android:textColor="@color/pp_text_secondary"/>
+                        <TextView android:id="@+id/tvDetailSucursal" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Nombre Sucursal" android:textStyle="bold" android:textColor="@color/pp_text_dark" android:textSize="14sp"/>
+                    </LinearLayout>
+                </LinearLayout>
+
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:baselineAligned="false" android:weightSum="2">
+                    <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center_vertical">
+                        <ImageView android:layout_width="24dp" android:layout_height="24dp" android:src="@drawable/ic_person" app:tint="@color/pp_splash_text_green" android:contentDescription="@null"/>
+                        <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="vertical" android:layout_marginStart="12dp">
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Registrado por" android:textSize="10sp" android:textColor="@color/pp_text_secondary"/>
+                            <TextView android:id="@+id/tvDetailUser" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="USER" android:textStyle="bold" android:textColor="@color/pp_text_dark" android:textSize="13sp"/>
+                        </LinearLayout>
+                    </LinearLayout>
+                    <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center_vertical">
+                        <ImageView android:layout_width="24dp" android:layout_height="24dp" android:src="@drawable/ic_calendar" app:tint="@color/pp_splash_text_green" android:contentDescription="@null"/>
+                        <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="vertical" android:layout_marginStart="12dp">
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Fecha y hora" android:textSize="10sp" android:textColor="@color/pp_text_secondary"/>
+                            <TextView android:id="@+id/tvDetailDateTime" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="00/00/0000 00:00" android:textStyle="bold" android:textColor="@color/pp_text_dark" android:textSize="11sp"/>
+                        </LinearLayout>
+                    </LinearLayout>
+                </LinearLayout>
+            </LinearLayout>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnDetailCerrar"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_marginTop="32dp"
+                android:text="Cerrar"
+                android:textStyle="bold"
+                app:backgroundTint="@color/pp_splash_text_green"
+                app:cornerRadius="16dp" />
+        </LinearLayout>
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>

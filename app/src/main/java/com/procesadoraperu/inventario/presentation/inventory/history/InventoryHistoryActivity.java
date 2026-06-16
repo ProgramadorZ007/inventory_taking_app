@@ -1,5 +1,7 @@
 package com.procesadoraperu.inventario.presentation.inventory.history;
 
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
@@ -8,6 +10,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.graphics.Insets;
@@ -17,8 +20,14 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.procesadoraperu.inventario.R;
+import com.procesadoraperu.inventario.domain.model.inventario.Inventario;
 import com.procesadoraperu.inventario.presentation.ViewModelFactory;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 
 public class InventoryHistoryActivity extends AppCompatActivity {
 
@@ -83,25 +92,58 @@ public class InventoryHistoryActivity extends AppCompatActivity {
         viewModel.cargarHistorialUltimos3Meses();
     }
 
-    private void mostrarDetalle(
-            com.procesadoraperu.inventario.domain.model.inventario.Inventario inv) {
-        String detalle =
-                "Producto: " + inv.getProducto() + "\n" +
-                        "Código: "   + inv.getIdProducto() + "\n" +
-                        "U.M.: "     + inv.getUnidadMedida() + "\n\n" +
-                        "Stock sistema: "   + inv.getStock() + "\n" +
-                        "Cantidad contada: " + inv.getCantidad() + "\n\n" +
-                        "Almacén: "  + inv.getAlmacen() + "\n" +
-                        "Sucursal: " + inv.getSucursal() + "\n" +
-                        "Registrado por: " + inv.getUsuarioCreacion() + "\n" +
-                        "Fecha: " + (inv.getFechaCreacion() != null
-                        ? inv.getFechaCreacion().replace("T", " ") : "—");
+    private void mostrarDetalle(Inventario inv) {
+        View dialogView = getLayoutInflater().inflate(R.layout.dialog_inventory_detail, null);
+        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this)
+                .setView(dialogView)
+                .setCancelable(true);
 
-        new com.google.android.material.dialog.MaterialAlertDialogBuilder(this)
-                .setTitle("Detalle del registro")
-                .setMessage(detalle)
-                .setPositiveButton("Cerrar", null)
-                .show();
+        AlertDialog dialog = builder.create();
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        }
+
+        // Poblar datos
+        ((TextView) dialogView.findViewById(R.id.tvDialogSubtitle)).setText(inv.getProducto());
+        ((TextView) dialogView.findViewById(R.id.tvDetailCodigo)).setText(inv.getIdProducto());
+        
+        String unidad = (inv.getUnidadMedida() != null) ? inv.getUnidadMedida() : "UND";
+        ((TextView) dialogView.findViewById(R.id.tvDetailUnidad)).setText(unidad);
+        ((TextView) dialogView.findViewById(R.id.tvDetailUnidadStock)).setText(unidad);
+        ((TextView) dialogView.findViewById(R.id.tvDetailUnidadContado)).setText(unidad);
+
+        ((TextView) dialogView.findViewById(R.id.tvDetailStockSistema)).setText(formatNum(inv.getStock()));
+        ((TextView) dialogView.findViewById(R.id.tvDetailCantidadContada)).setText(formatNum(inv.getCantidad()));
+
+        ((TextView) dialogView.findViewById(R.id.tvDetailAlmacen)).setText(inv.getAlmacen());
+        ((TextView) dialogView.findViewById(R.id.tvDetailSucursal)).setText(inv.getSucursal());
+        ((TextView) dialogView.findViewById(R.id.tvDetailUser)).setText(inv.getUsuarioCreacion());
+
+        // Formateo de Fecha y Hora
+        String fechaRaw = inv.getFechaCreacion() != null ? inv.getFechaCreacion() : inv.getFechaRegistroLocal();
+        if (fechaRaw != null) {
+            try {
+                String cleanedDate = fechaRaw.replace("T", " ");
+                if (cleanedDate.contains(".")) cleanedDate = cleanedDate.substring(0, cleanedDate.lastIndexOf("."));
+                SimpleDateFormat sdfSource = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
+                Date date = sdfSource.parse(cleanedDate);
+                if (date != null) {
+                    String formatted = new SimpleDateFormat("dd MMM yyyy", Locale.getDefault()).format(date) + " • " +
+                                     new SimpleDateFormat("hh:mm a", Locale.getDefault()).format(date).toUpperCase();
+                    ((TextView) dialogView.findViewById(R.id.tvDetailDateTime)).setText(formatted);
+                }
+            } catch (Exception e) {
+                ((TextView) dialogView.findViewById(R.id.tvDetailDateTime)).setText(fechaRaw);
+            }
+        }
+
+        dialogView.findViewById(R.id.btnDetailCerrar).setOnClickListener(v -> dialog.dismiss());
+        dialog.show();
+    }
+
+    private String formatNum(double val) {
+        if (val == Math.floor(val) && !Double.isInfinite(val)) return String.valueOf((int) val);
+        return String.valueOf(val);
     }
 
     @Override

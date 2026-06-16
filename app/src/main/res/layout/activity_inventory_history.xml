@@ -1,103 +1,63 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/history_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/pp_background">
+    android:orientation="vertical"
+    android:background="@color/pp_gray"
+    android:fitsSystemWindows="true">
 
+    <!--
+        CORRECCIÓN SAFE AREA:
+        Usamos AppBarLayout con fitsSystemWindows para que el Toolbar ocupe
+        correctamente el espacio de la barra de estado. Sin esto, el icono
+        de retroceso se solapaba con los íconos del sistema.
+    -->
     <com.google.android.material.appbar.AppBarLayout
-        android:id="@+id/appbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/pp_splash_text_green"
+        android:fitsSystemWindows="true"
+        android:theme="@style/ThemeOverlay.MaterialComponents.Dark.ActionBar"
         app:elevation="4dp">
 
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:minHeight="?attr/actionBarSize"
-            android:paddingVertical="8dp"
-            app:navigationIcon="@drawable/ic_back"
-            app:navigationIconTint="@color/pp_white">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:layout_marginStart="8dp"
-                android:layout_marginEnd="16dp">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Historial Trimestral"
-                    android:textColor="@color/pp_white"
-                    android:textSize="18sp"
-                    android:textStyle="bold"
-                    android:fontFamily="sans-serif-medium" />
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Consulta los registros de conteo de los últimos 90 días"
-                    android:textColor="#CCFFFFFF"
-                    android:textSize="10sp"
-                    android:textAllCaps="true"
-                    android:letterSpacing="0.02"
-                    android:lineSpacingExtra="2dp"
-                    android:maxLines="2"
-                    android:ellipsize="end" />
-            </LinearLayout>
-        </androidx.appcompat.widget.Toolbar>
+            android:layout_height="?attr/actionBarSize"
+            android:background="@color/pp_green"
+            app:titleTextColor="@color/pp_white"
+            app:navigationIconTint="@color/pp_white"/>
     </com.google.android.material.appbar.AppBarLayout>
 
-    <androidx.core.widget.NestedScrollView
+    <!-- Progress bar de carga -->
+    <ProgressBar
+        android:id="@+id/progressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:indeterminateTint="@color/pp_green"
+        android:visibility="gone"
+        android:layout_margin="16dp"/>
+
+    <!-- Mensaje de lista vacía -->
+    <TextView
+        android:id="@+id/tvEmpty"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="No hay registros para el día de hoy.\n\nRealiza tu primera toma de inventario con el botón del inicio."
+        android:textColor="@color/pp_text_secondary"
+        android:textSize="15sp"
+        android:gravity="center"
+        android:padding="32dp"
+        android:visibility="gone"/>
+
+    <!-- Lista de inventarios -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior"
-        android:scrollbars="none"
-        android:fillViewport="true">
+        android:clipToPadding="false"
+        android:padding="8dp"/>
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="8dp">
-
-            <!-- Progress bar de carga -->
-            <ProgressBar
-                android:id="@+id/progressBar"
-                android:layout_width="32dp"
-                android:layout_height="32dp"
-                android:layout_gravity="center"
-                android:indeterminateTint="@color/pp_splash_text_green"
-                android:visibility="gone"
-                android:layout_margin="24dp"/>
-
-            <!-- Mensaje de lista vacía -->
-            <TextView
-                android:id="@+id/tvEmpty"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="No hay registros para los últimos 90 días."
-                android:textColor="@color/pp_text_secondary"
-                android:textSize="15sp"
-                android:gravity="center"
-                android:padding="32dp"
-                android:visibility="gone"/>
-
-            <!-- Lista de inventarios -->
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/recyclerView"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:nestedScrollingEnabled="false"
-                android:clipToPadding="false"/>
-
-        </LinearLayout>
-    </androidx.core.widget.NestedScrollView>
-
-</androidx.coordinatorlayout.widget.CoordinatorLayout>
+</LinearLayout>

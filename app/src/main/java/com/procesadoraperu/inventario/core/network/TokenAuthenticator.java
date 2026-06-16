@@ -23,102 +23,109 @@ import okhttp3.Response;
 import okhttp3.Route;
 
 /**
- * Autenticador inteligente para la gestión de expiración de Tokens.
+ * Autenticador para la gestión de expiración de Tokens.
  *
- * Esta clase implementa la interfaz {@link Authenticator} de OkHttp. Se dispara
- * automáticamente cuando el servidor responde con un error HTTP 401 (Unauthorized).
- * Su función es intentar renovar el Access Token de forma transparente para el usuario.
+ * Se implementa la interfaz Authenticator de OkHttp para interceptar las respuestas 
+ * del servidor. Se ejecuta automáticamente al recibir un código HTTP 401 (Unauthorized),
+ * indicando que el Access Token ha caducado.
  */
 public class TokenAuthenticator implements Authenticator {
 
+    // Se almacena el contexto para la navegación y acceso al almacenamiento local.
     private final Context context;
+    // Referencia a SharedPreferences para acceder y persistir los tokens de sesión.
     private final SharedPreferences prefs;
 
     /**
-     * Constructor del autenticador.
-     *
-     * @param context Contexto necesario para manejar SharedPreferences y navegación.
+     * Constructor.
+     * Se inicializan las dependencias requeridas para el manejo de sesión.
      */
     public TokenAuthenticator(Context context) {
         this.context = context;
+        // Se instancia el acceso al archivo de preferencias en modo privado.
         this.prefs = context.getSharedPreferences("auth_prefs", Context.MODE_PRIVATE);
     }
 
     /**
-     * Método de intercepción de errores de autenticación.
-     *
-     * Si la petición original falla por token expirado, este método detiene el flujo,
-     * solicita un nuevo token al servidor y reintenta la petición original con
-     * las nuevas credenciales.
+     * Método de intercepción principal.
+     * Se captura la petición fallida, se ejecuta el proceso de renovación de token de forma 
+     * bloqueante y se reintenta la petición original con las nuevas credenciales.
      */
     @Nullable
     @Override
     public Request authenticate(@Nullable Route route, @NonNull Response response) throws IOException {
 
-        // 1. VALIDACIÓN DE DISPARO:
-        // Solo actuamos si el error es 401.
-        // Evitamos bucles infinitos si la propia petición de refresco falla.
+        // 1. VALIDACIÓN DE ESTADO:
+        // Se verifica que el código de error sea estrictamente 401.
+        // También se comprueba que la petición fallida no sea la propia llamada a "/refresh-token".
+        // Esto evita un bucle infinito si el servidor rechaza el Refresh Token.
         if (response.code() != 401 || response.request().url().encodedPath().contains("/refresh-token")) {
             return null;
         }
 
-        // 2. RECUPERACIÓN DEL REFRESH TOKEN:
+        // 2. RECUPERACIÓN DE CREDENCIALES:
+        // Se obtiene el Refresh Token almacenado localmente.
         String refreshToken = prefs.getString("REFRESH_TOKEN", null);
 
+        // Si no existe un Refresh Token válido, el usuario debe volver a autenticarse.
         if (refreshToken == null || refreshToken.isEmpty()) {
             logoutAndNavigateToLogin();
             return null;
         }
 
-        // 3. RENOVACIÓN SÍNCRONA:
-        // Se realiza una llamada bloqueante al servidor para obtener un nuevo par de tokens.
+        // 3. RENOVACIÓN DE TOKENS:
+        // Se ejecuta la petición de renovación.
         String newAccessToken = fetchNewToken(refreshToken);
 
+        // Se verifica el resultado de la renovación.
         if (newAccessToken != null) {
-            // ÉXITO: Se reconstruye la petición que falló originalmente inyectando el nuevo token.
+            // Se reconstruye el Request original modificando únicamente el header de autorización
+            // con el nuevo Access Token obtenido.
             return response.request().newBuilder()
                     .header("Authorization", "Bearer " + newAccessToken)
                     .build();
         } else {
-            // FALLO CRÍTICO: El Refresh Token ya no es válido, se requiere login manual.
+            // Si la renovación falla (ej. Refresh Token caducado o inválido),
+            // se limpian los datos de sesión y se fuerza la navegación al Login.
             logoutAndNavigateToLogin();
             return null;
         }
     }
 
     /**
-     * Realiza la petición técnica al endpoint de renovación de Nisira.
-     *
-     * @param refreshToken El token de larga duración almacenado en el dispositivo.
-     * @return El nuevo Access Token en caso de éxito; null en caso contrario.
+     * Ejecuta una petición HTTP síncrona al endpoint de renovación de tokens.
      */
     private String fetchNewToken(String refreshToken) {
         try {
+            // Se instancia un cliente OkHttpClient independiente para esta operación.
             OkHttpClient client = new OkHttpClient();
             MediaType JSON = MediaType.parse("application/json; charset=utf-8");
 
-            // Construcción del cuerpo de la petición según el esquema esperado por la API
+            // Se construye el payload con el formato requerido por la API.
             String jsonBody = "{\"refreshToken\":\"" + refreshToken + "\"}";
             RequestBody body = RequestBody.create(jsonBody, JSON);
 
+            // Se genera el Request apuntando al endpoint de refresco.
             Request request = new Request.Builder()
                     .url(ApiClient.BASE_URL + "/api/auth/refresh-token")
                     .post(body)
                     .build();
 
-            // Ejecución síncrona de la llamada
+            // Se ejecuta la llamada de forma síncrona mediante .execute().
+            // Esto bloquea el hilo de OkHttp hasta recibir la respuesta.
             Response refreshResponse = client.newCall(request).execute();
 
+            // Se valida que el código HTTP sea de la familia 200 y que exista un body.
             if (refreshResponse.isSuccessful() && refreshResponse.body() != null) {
                 String responseString = refreshResponse.body().string();
                 JSONObject jsonObject = new JSONObject(responseString);
 
-                // Procesamiento de la respuesta (Formato estándar de API Nisira)
+                // Se verifica la estructura de la respuesta JSON.
                 if (jsonObject.has("accessToken") && jsonObject.has("refreshToken")) {
                     String newAccessToken = jsonObject.getString("accessToken");
                     String newRefreshToken = jsonObject.getString("refreshToken");
 
-                    // Persistencia de las nuevas credenciales
+                    // Se actualizan ambos tokens en SharedPreferences de forma persistente.
                     prefs.edit()
                             .putString("ACCESS_TOKEN", newAccessToken)
                             .putString("REFRESH_TOKEN", newRefreshToken)
@@ -128,24 +135,29 @@ public class TokenAuthenticator implements Authenticator {
                 }
             }
         } catch (Exception e) {
-            Log.e("TokenAuthenticator", "Error crítico en proceso de refresco de token", e);
+            // Se registra cualquier excepción (ej. TimeOut, JSONException) en el Logcat.
+            Log.e("TokenAuthenticator", "Error en la petición de refresco de token", e);
         }
         return null;
     }
 
     /**
-     * Realiza el cierre de sesión forzoso y redirige al usuario a la pantalla de entrada.
-     *
-     * Este método garantiza que, si la seguridad del usuario se ve comprometida
-     * o la sesión expira totalmente, la app regrese a un estado seguro.
+     * Limpia los datos de sesión locales y redirige a la pantalla principal.
      */
     private void logoutAndNavigateToLogin() {
-        // Limpieza de caché de credenciales
+        // Se borran todas las llaves persistidas en el archivo de preferencias.
         prefs.edit().clear().apply();
 
-        // Navegación con limpieza de historial (Evita que el usuario regrese con el botón atrás)
+        // Se instancia el Intent hacia la clase LoginActivity.
         Intent intent = new Intent(context, LoginActivity.class);
+        
+        // Se aplican los flags de navegación:
+        // - FLAG_ACTIVITY_NEW_TASK: Inicia la actividad en una nueva tarea.
+        // - FLAG_ACTIVITY_CLEAR_TASK: Limpia el backstack completo.
+        // Esto previene que el usuario regrese a actividades protegidas usando el botón físico "Atrás".
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        
+        // Se ejecuta el Intent para iniciar la actividad.
         context.startActivity(intent);
     }
 }

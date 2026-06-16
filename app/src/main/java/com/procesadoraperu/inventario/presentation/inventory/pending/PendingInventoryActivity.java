@@ -1,5 +1,7 @@
 package com.procesadoraperu.inventario.presentation.inventory.pending;
 
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
@@ -7,8 +9,13 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.EdgeToEdge;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -18,6 +25,10 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.procesadoraperu.inventario.R;
 import com.procesadoraperu.inventario.domain.model.inventario.Inventario;
 import com.procesadoraperu.inventario.presentation.ViewModelFactory;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 
 public class PendingInventoryActivity extends AppCompatActivity {
 
@@ -30,16 +41,32 @@ public class PendingInventoryActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        EdgeToEdge.enable(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_pending_inventory);
+
+        // Forzamos que los iconos de la barra de estado sean blancos
+        if (getWindow() != null) {
+            new androidx.core.view.WindowInsetsControllerCompat(getWindow(), getWindow().getDecorView())
+                    .setAppearanceLightStatusBars(false);
+        }
+
+        // Manejo de Insets para pantalla completa
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.pending_root), (v, insets) -> {
+            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+            findViewById(R.id.appbar).setPadding(0, systemBars.top, 0, 0);
+            v.setPadding(systemBars.left, 0, systemBars.right, systemBars.bottom);
+            return WindowInsetsCompat.CONSUMED;
+        });
 
         // ── Toolbar ───────────────────────────────────────────────────────────
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         if (getSupportActionBar() != null) {
-            getSupportActionBar().setTitle("Registros Pendientes");
+            getSupportActionBar().setDisplayShowTitleEnabled(false);
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
+        toolbar.setNavigationOnClickListener(v -> finish());
 
         // ── Vistas ────────────────────────────────────────────────────────────
         progressBar    = findViewById(R.id.progressBar);
@@ -73,10 +100,13 @@ public class PendingInventoryActivity extends AppCompatActivity {
             adapter.setList(lista);
             boolean vacio = (lista == null || lista.isEmpty());
             tvEmpty.setVisibility(vacio ? View.VISIBLE : View.GONE);
-            btnSincronizar.setVisibility(vacio ? View.GONE : View.VISIBLE);
-            tvContador.setVisibility(vacio ? View.GONE : View.VISIBLE);
-            int count = vacio ? 0 : lista.size();
-            tvContador.setText(count + " registro(s) pendiente(s) de sincronizar");
+            findViewById(R.id.cardSyncBanner).setVisibility(vacio ? View.GONE : View.VISIBLE);
+            findViewById(R.id.llHeaderPendientes).setVisibility(vacio ? View.GONE : View.VISIBLE);
+            
+            if (!vacio) {
+                int count = lista.size();
+                tvContador.setText(count + " registro(s) pendiente(s) de sincronizar");
+            }
         });
 
         viewModel.getSyncResultMessage().observe(this, msg -> {
@@ -106,21 +136,55 @@ public class PendingInventoryActivity extends AppCompatActivity {
     }
 
     private void mostrarDetalle(Inventario inv) {
-        String detalle =
-                "📦  Producto:  " + (inv.getProducto() != null ? inv.getProducto() : "—") + "\n" +
-                        "🔖  Código:  "   + (inv.getIdProducto() != null ? inv.getIdProducto() : "—") + "\n" +
-                        "🧮  Cantidad:  " + formatNum(inv.getCantidad()) + " " +
-                        (inv.getUnidadMedida() != null ? inv.getUnidadMedida() : "") + "\n" +
-                        "🏢  Almacén:  "  + (inv.getAlmacen() != null ? inv.getAlmacen() : "—") + "\n" +
-                        "🏭  Sucursal:  " + (inv.getSucursal() != null ? inv.getSucursal() : "—") + "\n\n" +
-                        "⏰  Registrado:  " + (inv.getFechaRegistroLocal() != null
-                        ? inv.getFechaRegistroLocal() : "—");
+        View dialogView = getLayoutInflater().inflate(R.layout.dialog_inventory_detail, null);
+        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this)
+                .setView(dialogView)
+                .setCancelable(true);
 
-        new MaterialAlertDialogBuilder(this)
-                .setTitle("Detalle del Pendiente")
-                .setMessage(detalle)
-                .setPositiveButton("Cerrar", null)
-                .show();
+        AlertDialog dialog = builder.create();
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        }
+
+        // Título personalizado para pendientes
+        ((TextView) dialogView.findViewById(R.id.tvDialogSubtitle)).setText(inv.getProducto());
+        
+        // Poblar datos generales
+        ((TextView) dialogView.findViewById(R.id.tvDetailCodigo)).setText(inv.getIdProducto());
+        
+        String unidad = (inv.getUnidadMedida() != null) ? inv.getUnidadMedida() : "UND";
+        ((TextView) dialogView.findViewById(R.id.tvDetailUnidad)).setText(unidad);
+        ((TextView) dialogView.findViewById(R.id.tvDetailUnidadStock)).setText(unidad);
+        ((TextView) dialogView.findViewById(R.id.tvDetailUnidadContado)).setText(unidad);
+
+        ((TextView) dialogView.findViewById(R.id.tvDetailStockSistema)).setText(formatNum(inv.getStock()));
+        ((TextView) dialogView.findViewById(R.id.tvDetailCantidadContada)).setText(formatNum(inv.getCantidad()));
+
+        // Detalles de ubicación y usuario
+        ((TextView) dialogView.findViewById(R.id.tvDetailAlmacen)).setText(inv.getAlmacen());
+        ((TextView) dialogView.findViewById(R.id.tvDetailSucursal)).setText(inv.getSucursal());
+        ((TextView) dialogView.findViewById(R.id.tvDetailUser)).setText(inv.getUsuarioCreacion());
+
+        // Formateo de Fecha y Hora
+        String fechaRaw = (inv.getFechaCreacion() != null) ? inv.getFechaCreacion() : inv.getFechaRegistroLocal();
+        if (fechaRaw != null) {
+            try {
+                String cleanedDate = fechaRaw.replace("T", " ");
+                if (cleanedDate.contains(".")) cleanedDate = cleanedDate.substring(0, cleanedDate.lastIndexOf("."));
+                SimpleDateFormat sdfSource = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
+                Date date = sdfSource.parse(cleanedDate);
+                if (date != null) {
+                    String formatted = new SimpleDateFormat("dd MMM yyyy", Locale.getDefault()).format(date) + " • " +
+                                     new SimpleDateFormat("hh:mm a", Locale.getDefault()).format(date).toUpperCase();
+                    ((TextView) dialogView.findViewById(R.id.tvDetailDateTime)).setText(formatted);
+                }
+            } catch (Exception e) {
+                ((TextView) dialogView.findViewById(R.id.tvDetailDateTime)).setText(fechaRaw);
+            }
+        }
+
+        dialogView.findViewById(R.id.btnDetailCerrar).setOnClickListener(v -> dialog.dismiss());
+        dialog.show();
     }
 
     private String formatNum(double val) {

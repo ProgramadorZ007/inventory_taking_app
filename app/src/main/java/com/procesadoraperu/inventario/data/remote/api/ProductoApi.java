@@ -8,20 +8,10 @@ import java.util.List;
 
 import retrofit2.Call;
 import retrofit2.http.Body;
-import retrofit2.http.GET;
 import retrofit2.http.POST;
-import retrofit2.http.Query; // Importante
 
 public interface ProductoApi {
 
-    // ✔️ CORREGIDO: Ahora espera una List<ProductoEntity> en lugar de un objeto único
     @POST("/api/nisira/producto-stock")
     Call<BaseResponse<List<ProductoEntity>>> getProductoStock(@Body ProductoStockRequest request);
-
-    // GET con parámetros de consulta (?idGrupoPro=...&idSubGrupoPro=...)
-    @GET("/api/nisira/productos")
-    Call<BaseResponse<List<ProductoEntity>>> getAllProductos(
-            @Query("idGrupoPro") String idGrupo,
-            @Query("idSubGrupoPro") String idSubGrupo
-    );
 }

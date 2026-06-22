@@ -2,22 +2,16 @@
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/history_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="@color/pp_gray"
-    android:fitsSystemWindows="true">
+    android:background="@color/pp_gray">
 
-    <!--
-        CORRECCIÓN SAFE AREA:
-        Usamos AppBarLayout con fitsSystemWindows para que el Toolbar ocupe
-        correctamente el espacio de la barra de estado. Sin esto, el icono
-        de retroceso se solapaba con los íconos del sistema.
-    -->
     <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/appbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:fitsSystemWindows="true"
         android:theme="@style/ThemeOverlay.MaterialComponents.Dark.ActionBar"
         app:elevation="4dp">
 
@@ -30,7 +24,6 @@
             app:navigationIconTint="@color/pp_white"/>
     </com.google.android.material.appbar.AppBarLayout>
 
-    <!-- Progress bar de carga -->
     <ProgressBar
         android:id="@+id/progressBar"
         android:layout_width="wrap_content"
@@ -40,7 +33,6 @@
         android:visibility="gone"
         android:layout_margin="16dp"/>
 
-    <!-- Mensaje de lista vacía -->
     <TextView
         android:id="@+id/tvEmpty"
         android:layout_width="match_parent"
@@ -52,7 +44,6 @@
         android:padding="32dp"
         android:visibility="gone"/>
 
-    <!-- Lista de inventarios -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView"
         android:layout_width="match_parent"

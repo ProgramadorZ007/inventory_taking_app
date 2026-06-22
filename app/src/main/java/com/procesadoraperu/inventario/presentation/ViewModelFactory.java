@@ -102,8 +102,7 @@ public class ViewModelFactory implements ViewModelProvider.Factory {
         );
 
         IProductoRepository prodRepo = new ProductoRepositoryImpl(
-                retrofit.create(ProductoApi.class),
-                db.productoDao()
+                retrofit.create(ProductoApi.class)
         );
 
         ILogRepository logRepo = new LogRepositoryImpl(db.logDao());

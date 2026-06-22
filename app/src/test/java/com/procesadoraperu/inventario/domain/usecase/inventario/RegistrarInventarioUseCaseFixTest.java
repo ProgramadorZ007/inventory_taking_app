@@ -1,5 +1,7 @@
 package com.procesadoraperu.inventario.domain.usecase.inventario;
 
+import android.content.Context;
+
 import com.procesadoraperu.inventario.domain.model.inventario.AuditClientInfo;
 import com.procesadoraperu.inventario.domain.model.inventario.Inventario;
 import com.procesadoraperu.inventario.domain.provider.IAuditClientInfoProvider;
@@ -52,8 +54,10 @@ public class RegistrarInventarioUseCaseFixTest {
         mockInventarioRepository = mock(IInventarioRepository.class);
         mockLogRepository = mock(ILogRepository.class);
         mockAuditProvider = mock(IAuditClientInfoProvider.class);
+        Context mockContext = mock(Context.class);
+        org.mockito.Mockito.when(mockContext.getApplicationContext()).thenReturn(mockContext);
         useCase = new RegistrarInventarioUseCase(
-                mockInventarioRepository, mockLogRepository, mockAuditProvider
+                mockInventarioRepository, mockLogRepository, mockAuditProvider, mockContext
         );
     }
 

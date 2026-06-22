@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
@@ -23,9 +24,11 @@ import androidx.core.view.WindowInsetsCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.google.android.material.button.MaterialButton;
 import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.snackbar.Snackbar;
 import com.procesadoraperu.inventario.R;
+import com.procesadoraperu.inventario.core.sync.SyncScheduler;
 import com.procesadoraperu.inventario.presentation.ViewModelFactory;
 import com.procesadoraperu.inventario.presentation.auth.LoginActivity;
 import com.procesadoraperu.inventario.presentation.inventory.history.InventoryHistoryActivity;
@@ -43,6 +46,8 @@ public class HomeActivity extends AppCompatActivity
 
     private TextView tvNavNombre, tvNavSucursal, tvNavAlmacen, tvNavAvatar;
     private TextView tvToolbarSubtitle;
+    private TextView tvCatalogCount;
+    private MaterialButton btnClearCatalog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -111,6 +116,9 @@ public class HomeActivity extends AppCompatActivity
         tvNavSucursal = headerView.findViewById(R.id.tvNavSucursal);
         tvNavAlmacen  = headerView.findViewById(R.id.tvNavAlmacen);
 
+        tvCatalogCount  = findViewById(R.id.tvCatalogCount);
+        btnClearCatalog = findViewById(R.id.btnClearCatalog);
+
         findViewById(R.id.btnRealizarToma).setOnClickListener(v ->
                 startActivity(new Intent(this, TakeInventoryActivity.class)));
 
@@ -120,6 +128,8 @@ public class HomeActivity extends AppCompatActivity
                 startActivity(new Intent(this, InventoryHistoryActivity.class)));
         if (cardPendientes != null) cardPendientes.setOnClickListener(v ->
                 startActivity(new Intent(this, PendingInventoryActivity.class)));
+
+        btnClearCatalog.setOnClickListener(v -> mostrarDialogoConfirmarLimpiar());
     }
 
     private void setupViewModel() {
@@ -138,10 +148,29 @@ public class HomeActivity extends AppCompatActivity
 
         viewModel.getLogoutSuccess().observe(this, success -> {
             if (Boolean.TRUE.equals(success)) {
+                // Cancelar sincronización automática al cerrar sesión
+                SyncScheduler.cancel(this);
+
                 Intent intent = new Intent(this, LoginActivity.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 startActivity(intent);
                 finish();
+            }
+        });
+
+        viewModel.getCatalogCount().observe(this, count -> {
+            if (count == null || count == 0) {
+                tvCatalogCount.setText("Sin catálogo offline");
+            } else {
+                tvCatalogCount.setText(count + " productos disponibles offline");
+            }
+        });
+
+        viewModel.getClearSuccess().observe(this, success -> {
+            if (Boolean.TRUE.equals(success)) {
+                Toast.makeText(this, "Catálogo limpiado exitosamente", Toast.LENGTH_SHORT).show();
+            } else if (success != null) {
+                Toast.makeText(this, "No se pudo limpiar el catálogo. Intenta de nuevo.", Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -190,9 +219,19 @@ public class HomeActivity extends AppCompatActivity
                 .show();
     }
 
+    private void mostrarDialogoConfirmarLimpiar() {
+        new AlertDialog.Builder(this)
+                .setTitle("Limpiar Catálogo")
+                .setMessage("Se eliminarán todos los datos del catálogo offline")
+                .setPositiveButton("Confirmar", (d, w) -> viewModel.clearCatalog())
+                .setNegativeButton("Cancelar", null)
+                .show();
+    }
+
     @Override
     protected void onResume() {
         super.onResume();
         viewModel.cargarDatosCabecera();
+        viewModel.loadCatalogCount();
     }
 }

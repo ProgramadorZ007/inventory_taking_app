@@ -21,6 +21,7 @@ import androidx.lifecycle.ViewModelProvider;
 
 import com.google.android.material.snackbar.Snackbar;
 import com.procesadoraperu.inventario.R;
+import com.procesadoraperu.inventario.core.sync.SyncScheduler;
 import com.procesadoraperu.inventario.presentation.ViewModelFactory;
 import com.procesadoraperu.inventario.presentation.home.HomeActivity;
 import com.procesadoraperu.inventario.presentation.legal.LegalActivity;
@@ -137,6 +138,9 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void navegarSiguiente() {
+        // Al iniciar sesión, programar sincronización de pendientes (si los hay)
+        SyncScheduler.scheduleOnce(this);
+
         SharedPreferences appPrefs = getSharedPreferences("app_prefs", MODE_PRIVATE);
         String idAlmacen = appPrefs.getString("ACTIVE_ALMACEN_ID", null);
         Intent intent = (idAlmacen != null)

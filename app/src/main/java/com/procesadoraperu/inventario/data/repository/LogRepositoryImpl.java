@@ -19,6 +19,9 @@ import java.util.List;
  */
 public class LogRepositoryImpl implements ILogRepository {
 
+    /** Máximo de registros de log permitidos en la tabla */
+    private static final int MAX_LOG_SIZE = 100;
+
     private final LogDao logDao;
 
     /**
@@ -31,12 +34,12 @@ public class LogRepositoryImpl implements ILogRepository {
 
     /**
      * Guarda un registro de auditoría de integración en la base de datos local.
+     * Si la tabla ya tiene 100 registros, elimina el más antiguo antes de insertar.
      * @param log Objeto del dominio con la información de la petición HTTP y respuesta del ERP.
      */
     @Override
     public void saveLogLocal(LogIntegracion log) {
-        // Mapea el objeto del dominio a una entidad de base de datos antes de insertar
-        logDao.insert(mapToEntity(log));
+        logDao.insertWithLimit(mapToEntity(log), MAX_LOG_SIZE);
     }
 
     /**

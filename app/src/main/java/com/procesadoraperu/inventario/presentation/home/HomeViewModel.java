@@ -11,6 +11,8 @@ import com.procesadoraperu.inventario.domain.repository.almacen.IAlmacenReposito
 import com.procesadoraperu.inventario.domain.repository.auth.IAuthRepository;
 import com.procesadoraperu.inventario.domain.repository.sucursal.ISucursalRepository;
 import com.procesadoraperu.inventario.domain.usecase.auth.LogoutUseCase;
+import com.procesadoraperu.inventario.domain.usecase.producto.ClearCatalogUseCase;
+import com.procesadoraperu.inventario.domain.usecase.producto.GetCatalogCountUseCase;
 import com.procesadoraperu.inventario.domain.usecase.usuario.GetActiveUserUseCase;
 
 import java.util.List;
@@ -24,11 +26,15 @@ public class HomeViewModel extends ViewModel {
     private final ISucursalRepository sucRepo;
     private final IAlmacenRepository almRepo;
     private final GetActiveUserUseCase getActiveUserUseCase;
+    private final GetCatalogCountUseCase getCatalogCountUseCase;
+    private final ClearCatalogUseCase clearCatalogUseCase;
 
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
 
     private final MutableLiveData<HeaderData> headerData   = new MutableLiveData<>();
     private final MutableLiveData<Boolean> logoutSuccess   = new MutableLiveData<>();
+    private final MutableLiveData<Integer> catalogCount    = new MutableLiveData<>();
+    private final MutableLiveData<Boolean> clearSuccess    = new MutableLiveData<>();
 
     // ── Data class para la cabecera ───────────────────────────────────────────
     public static class HeaderData {
@@ -47,16 +53,22 @@ public class HomeViewModel extends ViewModel {
                          IAuthRepository authRepo,
                          ISucursalRepository sucRepo,
                          IAlmacenRepository almRepo,
-                         GetActiveUserUseCase getActiveUserUseCase) {
-        this.logoutUseCase      = logoutUseCase;
-        this.authRepo           = authRepo;
-        this.sucRepo            = sucRepo;
-        this.almRepo            = almRepo;
-        this.getActiveUserUseCase = getActiveUserUseCase;
+                         GetActiveUserUseCase getActiveUserUseCase,
+                         GetCatalogCountUseCase getCatalogCountUseCase,
+                         ClearCatalogUseCase clearCatalogUseCase) {
+        this.logoutUseCase          = logoutUseCase;
+        this.authRepo               = authRepo;
+        this.sucRepo                = sucRepo;
+        this.almRepo                = almRepo;
+        this.getActiveUserUseCase   = getActiveUserUseCase;
+        this.getCatalogCountUseCase = getCatalogCountUseCase;
+        this.clearCatalogUseCase    = clearCatalogUseCase;
     }
 
     public LiveData<HeaderData> getHeaderData()   { return headerData; }
     public LiveData<Boolean> getLogoutSuccess()   { return logoutSuccess; }
+    public LiveData<Integer> getCatalogCount()    { return catalogCount; }
+    public LiveData<Boolean> getClearSuccess()    { return clearSuccess; }
 
     /**
      * Carga los datos del encabezado: usuario + sucursal activa + almacén activo.
@@ -112,6 +124,25 @@ public class HomeViewModel extends ViewModel {
 
         // Fallback: mostrar el ID de la sucursal si no hay descripción
         return "Sucursal " + idSucursal;
+    }
+
+    public void loadCatalogCount() {
+        executor.execute(() -> {
+            int count = getCatalogCountUseCase.execute();
+            catalogCount.postValue(count);
+        });
+    }
+
+    public void clearCatalog() {
+        executor.execute(() -> {
+            try {
+                clearCatalogUseCase.execute();
+                clearSuccess.postValue(true);
+            } catch (Exception e) {
+                clearSuccess.postValue(false);
+            }
+            loadCatalogCount();
+        });
     }
 
     public void cerrarSesion() {

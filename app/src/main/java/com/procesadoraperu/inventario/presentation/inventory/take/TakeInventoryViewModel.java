@@ -14,6 +14,7 @@ import com.procesadoraperu.inventario.domain.repository.sucursal.ISucursalReposi
 import com.procesadoraperu.inventario.domain.usecase.inventario.RegistrarInventarioUseCase;
 import com.procesadoraperu.inventario.domain.usecase.inventario.RegistrarInventarioUseCase.OnRegistroCallback;
 import com.procesadoraperu.inventario.domain.usecase.producto.ConsultarStockProductoUseCase;
+import com.procesadoraperu.inventario.domain.usecase.producto.LookupProductoLocalUseCase;
 import com.procesadoraperu.inventario.domain.usecase.usuario.GetActiveUserUseCase;
 
 import java.text.SimpleDateFormat;
@@ -26,6 +27,7 @@ import java.util.concurrent.Executors;
 public class TakeInventoryViewModel extends ViewModel {
 
     private final ConsultarStockProductoUseCase consultarStockUseCase;
+    private final LookupProductoLocalUseCase lookupProductoLocalUseCase;
     private final RegistrarInventarioUseCase registrarInventarioUseCase;
     private final GetActiveUserUseCase getActiveUserUseCase;
     private final ISucursalRepository sucRepo;
@@ -42,11 +44,13 @@ public class TakeInventoryViewModel extends ViewModel {
     public enum RegistroResult { SINCRONIZADO, GUARDADO_LOCAL, ERROR }
 
     public TakeInventoryViewModel(ConsultarStockProductoUseCase consultarStockUseCase,
+                                  LookupProductoLocalUseCase lookupProductoLocalUseCase,
                                   RegistrarInventarioUseCase registrarInventarioUseCase,
                                   GetActiveUserUseCase getActiveUserUseCase,
                                   ISucursalRepository sucRepo,
                                   IAlmacenRepository almRepo) {
         this.consultarStockUseCase = consultarStockUseCase;
+        this.lookupProductoLocalUseCase = lookupProductoLocalUseCase;
         this.registrarInventarioUseCase = registrarInventarioUseCase;
         this.getActiveUserUseCase = getActiveUserUseCase;
         this.sucRepo = sucRepo;
@@ -70,20 +74,27 @@ public class TakeInventoryViewModel extends ViewModel {
 
         executor.execute(() -> {
             try {
-                String idSucursal = sucRepo.getActiveSucursalId();
-                Almacen almacen = almRepo.getActiveAlmacen();
+                // Intentar búsqueda local primero (offline catalog)
+                Producto productoLocal = lookupProductoLocalUseCase.execute(idProducto.trim());
+                productoEncontrado.postValue(productoLocal);
+            } catch (Exception localEx) {
+                // Producto no encontrado localmente, intentar búsqueda online
+                try {
+                    String idSucursal = sucRepo.getActiveSucursalId();
+                    Almacen almacen = almRepo.getActiveAlmacen();
 
-                if (idSucursal == null || almacen == null) {
-                    errorMessage.postValue("Debes seleccionar una sucursal y almacén primero");
-                    return;
+                    if (idSucursal == null || almacen == null) {
+                        errorMessage.postValue("Debes seleccionar una sucursal y almacén primero");
+                        return;
+                    }
+
+                    Producto producto = consultarStockUseCase.execute(
+                            idSucursal, almacen.getIdAlmacen(), idProducto.trim()
+                    );
+                    productoEncontrado.postValue(producto);
+                } catch (Exception e) {
+                    errorMessage.postValue("Producto no encontrado: " + e.getMessage());
                 }
-
-                Producto producto = consultarStockUseCase.execute(
-                        idSucursal, almacen.getIdAlmacen(), idProducto.trim()
-                );
-                productoEncontrado.postValue(producto);
-            } catch (Exception e) {
-                errorMessage.postValue("Producto no encontrado: " + e.getMessage());
             } finally {
                 isLoadingProducto.postValue(false);
             }

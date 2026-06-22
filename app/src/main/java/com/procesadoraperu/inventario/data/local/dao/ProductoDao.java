@@ -25,6 +25,10 @@ public interface ProductoDao {
     @Query("DELETE FROM Producto")
     void deleteAll();
 
+    // Contar productos almacenados localmente
+    @Query("SELECT COUNT(*) FROM Producto")
+    int getProductCount();
+
     // Transacción limpia para sincronizar el catálogo
     @Transaction
     default void refreshCatalogo(List<ProductoEntity> productos) {

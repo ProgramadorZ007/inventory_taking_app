@@ -58,6 +58,9 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-livedata:$lifecycle_version")
     implementation("androidx.lifecycle:lifecycle-runtime:$lifecycle_version")
 
+    // WORKMANAGER (Sincronización automática en background)
+    implementation("androidx.work:work-runtime:2.9.0")
+
     // GPS / Ubicación
     implementation("com.google.android.gms:play-services-location:21.2.0")
 
@@ -74,12 +77,17 @@ dependencies {
     testImplementation(libs.junit)
     testImplementation("org.mockito:mockito-core:5.11.0")
     testImplementation("com.squareup.okhttp3:mockwebserver:4.12.0")
+    testImplementation("net.jqwik:jqwik:1.8.4")
+    testImplementation("org.junit.jupiter:junit-jupiter:5.10.2")
+    testImplementation("org.junit.vintage:junit-vintage-engine:5.10.2")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.10.2")
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
     androidTestImplementation(libs.espresso.contrib)
 }
 
 tasks.withType<Test> {
+    useJUnitPlatform()
     testLogging {
         events("passed", "failed", "skipped")
         showStandardStreams = true

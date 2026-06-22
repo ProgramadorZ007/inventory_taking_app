@@ -37,7 +37,11 @@ import com.procesadoraperu.inventario.domain.usecase.inventario.ConsultarHistori
 import com.procesadoraperu.inventario.domain.usecase.inventario.GetInventariosPendientesUseCase;
 import com.procesadoraperu.inventario.domain.usecase.inventario.RegistrarInventarioUseCase;
 import com.procesadoraperu.inventario.domain.usecase.inventario.SincronizarPendientesUseCase;
+import com.procesadoraperu.inventario.domain.usecase.producto.ClearCatalogUseCase;
 import com.procesadoraperu.inventario.domain.usecase.producto.ConsultarStockProductoUseCase;
+import com.procesadoraperu.inventario.domain.usecase.producto.DownloadCatalogUseCase;
+import com.procesadoraperu.inventario.domain.usecase.producto.GetCatalogCountUseCase;
+import com.procesadoraperu.inventario.domain.usecase.producto.LookupProductoLocalUseCase;
 import com.procesadoraperu.inventario.domain.usecase.sucursal.GetSucursalesUseCase;
 import com.procesadoraperu.inventario.domain.usecase.usuario.GetActiveUserUseCase;
 import com.procesadoraperu.inventario.presentation.auth.LoginViewModel;
@@ -102,7 +106,8 @@ public class ViewModelFactory implements ViewModelProvider.Factory {
         );
 
         IProductoRepository prodRepo = new ProductoRepositoryImpl(
-                retrofit.create(ProductoApi.class)
+                retrofit.create(ProductoApi.class),
+                db.productoDao()
         );
 
         ILogRepository logRepo = new LogRepositoryImpl(db.logDao());
@@ -119,7 +124,11 @@ public class ViewModelFactory implements ViewModelProvider.Factory {
         GetAlmacenesUseCase getAlmacenesUseCase             = new GetAlmacenesUseCase(almRepo);
         GetActiveUserUseCase getActiveUserUseCase           = new GetActiveUserUseCase(usuarioRepo);
         ConsultarStockProductoUseCase consultarStockUseCase = new ConsultarStockProductoUseCase(prodRepo);
-        RegistrarInventarioUseCase registrarInvUseCase      = new RegistrarInventarioUseCase(invRepo, logRepo, auditProvider);
+        DownloadCatalogUseCase downloadCatalogUseCase         = new DownloadCatalogUseCase(prodRepo);
+        LookupProductoLocalUseCase lookupProductoLocalUseCase = new LookupProductoLocalUseCase(prodRepo);
+        ClearCatalogUseCase clearCatalogUseCase               = new ClearCatalogUseCase(prodRepo);
+        GetCatalogCountUseCase getCatalogCountUseCase         = new GetCatalogCountUseCase(prodRepo);
+        RegistrarInventarioUseCase registrarInvUseCase      = new RegistrarInventarioUseCase(invRepo, logRepo, auditProvider, context);
         ConsultarHistorialUseCase consultarHistorialUseCase = new ConsultarHistorialUseCase(invRepo);
         GetInventariosPendientesUseCase getPendientesUC     = new GetInventariosPendientesUseCase(invRepo);
         SincronizarPendientesUseCase sincronizarUseCase     = new SincronizarPendientesUseCase(invRepo, logRepo);
@@ -130,15 +139,16 @@ public class ViewModelFactory implements ViewModelProvider.Factory {
 
         } else if (modelClass.isAssignableFrom(SelectionViewModel.class)) {
             return (T) new SelectionViewModel(
-                    getSucursalesUseCase, getAlmacenesUseCase, sucRepo, almRepo);
+                    getSucursalesUseCase, getAlmacenesUseCase, downloadCatalogUseCase, sucRepo, almRepo);
 
         } else if (modelClass.isAssignableFrom(HomeViewModel.class)) {
             return (T) new HomeViewModel(
-                    logoutUseCase, authRepo, sucRepo, almRepo, getActiveUserUseCase);
+                    logoutUseCase, authRepo, sucRepo, almRepo, getActiveUserUseCase,
+                    getCatalogCountUseCase, clearCatalogUseCase);
 
         } else if (modelClass.isAssignableFrom(TakeInventoryViewModel.class)) {
             return (T) new TakeInventoryViewModel(
-                    consultarStockUseCase, registrarInvUseCase, getActiveUserUseCase, sucRepo, almRepo);
+                    consultarStockUseCase, lookupProductoLocalUseCase, registrarInvUseCase, getActiveUserUseCase, sucRepo, almRepo);
 
         } else if (modelClass.isAssignableFrom(InventoryHistoryViewModel.class)) {
             return (T) new InventoryHistoryViewModel(

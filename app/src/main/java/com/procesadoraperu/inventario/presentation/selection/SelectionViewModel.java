@@ -4,11 +4,13 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
+import com.procesadoraperu.inventario.domain.model.DownloadResult;
 import com.procesadoraperu.inventario.domain.model.almacen.Almacen;
 import com.procesadoraperu.inventario.domain.model.sucursal.Sucursal;
 import com.procesadoraperu.inventario.domain.repository.almacen.IAlmacenRepository;
 import com.procesadoraperu.inventario.domain.repository.sucursal.ISucursalRepository;
 import com.procesadoraperu.inventario.domain.usecase.almacen.GetAlmacenesUseCase;
+import com.procesadoraperu.inventario.domain.usecase.producto.DownloadCatalogUseCase;
 import com.procesadoraperu.inventario.domain.usecase.sucursal.GetSucursalesUseCase;
 
 import java.util.ArrayList;
@@ -20,6 +22,7 @@ public class SelectionViewModel extends ViewModel {
 
     private final GetSucursalesUseCase getSucursalesUseCase;
     private final GetAlmacenesUseCase getAlmacenesUseCase;
+    private final DownloadCatalogUseCase downloadCatalogUseCase;
     private final ISucursalRepository sucursalRepo;
     private final IAlmacenRepository almacenRepo;
 
@@ -34,12 +37,18 @@ public class SelectionViewModel extends ViewModel {
     private final MutableLiveData<List<Almacen>> almacenes = new MutableLiveData<>();
     private final MutableLiveData<String> errorMessage = new MutableLiveData<>();
 
+    // Estado de descarga del catálogo
+    private final MutableLiveData<Boolean> isDownloading = new MutableLiveData<>(false);
+    private final MutableLiveData<DownloadResult> downloadResult = new MutableLiveData<>();
+
     public SelectionViewModel(GetSucursalesUseCase getSucursalesUseCase,
                               GetAlmacenesUseCase getAlmacenesUseCase,
+                              DownloadCatalogUseCase downloadCatalogUseCase,
                               ISucursalRepository sucursalRepo,
                               IAlmacenRepository almacenRepo) {
         this.getSucursalesUseCase = getSucursalesUseCase;
         this.getAlmacenesUseCase = getAlmacenesUseCase;
+        this.downloadCatalogUseCase = downloadCatalogUseCase;
         this.sucursalRepo = sucursalRepo;
         this.almacenRepo = almacenRepo;
     }
@@ -48,6 +57,8 @@ public class SelectionViewModel extends ViewModel {
     public LiveData<List<Sucursal>> getSucursales() { return sucursales; }
     public LiveData<List<Almacen>> getAlmacenes() { return almacenes; }
     public LiveData<String> getErrorMessage() { return errorMessage; }
+    public LiveData<Boolean> getIsDownloading() { return isDownloading; }
+    public LiveData<DownloadResult> getDownloadResult() { return downloadResult; }
 
     // ==========================================
     // LÓGICA SUCURSAL
@@ -115,5 +126,26 @@ public class SelectionViewModel extends ViewModel {
     public void guardarAlmacenSeleccionado(Almacen almacen) {
         // Guardamos el objeto completo en SharedPreferences a través del repositorio
         almacenRepo.saveActiveAlmacen(almacen);
+    }
+
+    // ==========================================
+    // LÓGICA DESCARGA DE CATÁLOGO
+    // ==========================================
+    public void downloadCatalogAndNavigate(String idSucursal, String idAlmacen) {
+        isDownloading.postValue(true);
+        executor.execute(() -> {
+            try {
+                int count = downloadCatalogUseCase.execute(idSucursal, idAlmacen);
+                if (count > 0) {
+                    downloadResult.postValue(DownloadResult.success(count));
+                } else {
+                    downloadResult.postValue(DownloadResult.empty());
+                }
+            } catch (Exception e) {
+                downloadResult.postValue(DownloadResult.error(e.getMessage()));
+            } finally {
+                isDownloading.postValue(false);
+            }
+        });
     }
 }

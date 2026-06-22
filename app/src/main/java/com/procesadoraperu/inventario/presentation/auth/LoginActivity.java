@@ -41,9 +41,19 @@ public class LoginActivity extends AppCompatActivity {
 
         // Verificar sesión existente antes de inflar la UI
         SharedPreferences authPrefs = getSharedPreferences("auth_prefs", MODE_PRIVATE);
-        if (authPrefs.getString("ACCESS_TOKEN", null) != null) {
-            navegarSiguiente();
-            return;
+        String accessToken = authPrefs.getString("ACCESS_TOKEN", null);
+        if (accessToken != null) {
+            // Verificar si el token aún es válido o si hay refresh token para renovar
+            boolean tokenValid = !com.procesadoraperu.inventario.core.utils.JwtDecoder.isTokenExpired(accessToken);
+            String refreshToken = authPrefs.getString("REFRESH_TOKEN", null);
+            boolean canRefresh = refreshToken != null && !refreshToken.isEmpty();
+
+            if (tokenValid || canRefresh) {
+                navegarSiguiente();
+                return;
+            }
+            // Si el token expiró y no hay refresh, limpiar sesión y mostrar login
+            authPrefs.edit().clear().apply();
         }
 
         setContentView(R.layout.activity_login);
@@ -116,7 +126,6 @@ public class LoginActivity extends AppCompatActivity {
                 Snackbar.make(findViewById(android.R.id.content), error, Snackbar.LENGTH_LONG)
                         .setBackgroundTint(getColor(R.color.pp_error))
                         .show();
-                viewModel.clearError();
             }
         });
 

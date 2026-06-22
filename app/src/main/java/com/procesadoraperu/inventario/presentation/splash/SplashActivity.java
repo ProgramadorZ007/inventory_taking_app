@@ -132,9 +132,20 @@ public class SplashActivity extends AppCompatActivity {
 
         Intent intent;
         if (accessToken != null) {
-            intent = (idAlmacen != null)
-                    ? new Intent(this, HomeActivity.class)
-                    : new Intent(this, SucursalActivity.class);
+            // Verificar si el token es válido o si hay refresh token para renovar
+            boolean tokenValid = !com.procesadoraperu.inventario.core.utils.JwtDecoder.isTokenExpired(accessToken);
+            String refreshToken = authPrefs.getString("REFRESH_TOKEN", null);
+            boolean canRefresh = refreshToken != null && !refreshToken.isEmpty();
+
+            if (tokenValid || canRefresh) {
+                intent = (idAlmacen != null)
+                        ? new Intent(this, HomeActivity.class)
+                        : new Intent(this, SucursalActivity.class);
+            } else {
+                // Token expirado y sin refresh → limpiar y enviar a login
+                authPrefs.edit().clear().apply();
+                intent = new Intent(this, LoginActivity.class);
+            }
         } else {
             intent = new Intent(this, LoginActivity.class);
         }

@@ -36,14 +36,17 @@ public class TokenAuthenticator implements Authenticator {
     // Referencia a SharedPreferences para acceder y persistir los tokens de sesión.
     private final SharedPreferences prefs;
 
+    // Lock para evitar múltiples refresh simultáneos ante peticiones concurrentes con 401
+    private static final Object REFRESH_LOCK = new Object();
+
     /**
      * Constructor.
      * Se inicializan las dependencias requeridas para el manejo de sesión.
      */
     public TokenAuthenticator(Context context) {
-        this.context = context;
+        this.context = context.getApplicationContext();
         // Se instancia el acceso al archivo de preferencias en modo privado.
-        this.prefs = context.getSharedPreferences("auth_prefs", Context.MODE_PRIVATE);
+        this.prefs = this.context.getSharedPreferences("auth_prefs", Context.MODE_PRIVATE);
     }
 
     /**
@@ -63,32 +66,49 @@ public class TokenAuthenticator implements Authenticator {
             return null;
         }
 
-        // 2. RECUPERACIÓN DE CREDENCIALES:
-        // Se obtiene el Refresh Token almacenado localmente.
-        String refreshToken = prefs.getString("REFRESH_TOKEN", null);
+        // 2. SINCRONIZACIÓN:
+        // Solo un hilo a la vez puede ejecutar el refresh. Los demás esperan y reusan el nuevo token.
+        synchronized (REFRESH_LOCK) {
+            // Verificar si otro hilo ya renovó el token mientras esperábamos
+            String currentToken = prefs.getString("ACCESS_TOKEN", null);
+            String failedToken = response.request().header("Authorization");
+            String failedTokenValue = (failedToken != null && failedToken.startsWith("Bearer "))
+                    ? failedToken.substring(7) : null;
 
-        // Si no existe un Refresh Token válido, el usuario debe volver a autenticarse.
-        if (refreshToken == null || refreshToken.isEmpty()) {
-            logoutAndNavigateToLogin();
-            return null;
-        }
+            // Si el token actual es diferente al que falló, otro hilo ya hizo el refresh
+            if (currentToken != null && !currentToken.equals(failedTokenValue)) {
+                return response.request().newBuilder()
+                        .header("Authorization", "Bearer " + currentToken)
+                        .build();
+            }
 
-        // 3. RENOVACIÓN DE TOKENS:
-        // Se ejecuta la petición de renovación.
-        String newAccessToken = fetchNewToken(refreshToken);
+            // 3. RECUPERACIÓN DE CREDENCIALES:
+            // Se obtiene el Refresh Token almacenado localmente.
+            String refreshToken = prefs.getString("REFRESH_TOKEN", null);
 
-        // Se verifica el resultado de la renovación.
-        if (newAccessToken != null) {
-            // Se reconstruye el Request original modificando únicamente el header de autorización
-            // con el nuevo Access Token obtenido.
-            return response.request().newBuilder()
-                    .header("Authorization", "Bearer " + newAccessToken)
-                    .build();
-        } else {
-            // Si la renovación falla (ej. Refresh Token caducado o inválido),
-            // se limpian los datos de sesión y se fuerza la navegación al Login.
-            logoutAndNavigateToLogin();
-            return null;
+            // Si no existe un Refresh Token válido, el usuario debe volver a autenticarse.
+            if (refreshToken == null || refreshToken.isEmpty()) {
+                logoutAndNavigateToLogin();
+                return null;
+            }
+
+            // 4. RENOVACIÓN DE TOKENS:
+            // Se ejecuta la petición de renovación.
+            String newAccessToken = fetchNewToken(refreshToken);
+
+            // Se verifica el resultado de la renovación.
+            if (newAccessToken != null) {
+                // Se reconstruye el Request original modificando únicamente el header de autorización
+                // con el nuevo Access Token obtenido.
+                return response.request().newBuilder()
+                        .header("Authorization", "Bearer " + newAccessToken)
+                        .build();
+            } else {
+                // Si la renovación falla (ej. Refresh Token caducado o inválido),
+                // se limpian los datos de sesión y se fuerza la navegación al Login.
+                logoutAndNavigateToLogin();
+                return null;
+            }
         }
     }
 
@@ -101,9 +121,11 @@ public class TokenAuthenticator implements Authenticator {
             OkHttpClient client = new OkHttpClient();
             MediaType JSON = MediaType.parse("application/json; charset=utf-8");
 
-            // Se construye el payload con el formato requerido por la API.
-            String jsonBody = "{\"refreshToken\":\"" + refreshToken + "\"}";
-            RequestBody body = RequestBody.create(jsonBody, JSON);
+            // Se construye el payload de forma segura usando JSONObject
+            // para evitar problemas con caracteres especiales en el token.
+            JSONObject jsonPayload = new JSONObject();
+            jsonPayload.put("refreshToken", refreshToken);
+            RequestBody body = RequestBody.create(jsonPayload.toString(), JSON);
 
             // Se genera el Request apuntando al endpoint de refresco.
             Request request = new Request.Builder()
@@ -129,6 +151,7 @@ public class TokenAuthenticator implements Authenticator {
                     prefs.edit()
                             .putString("ACCESS_TOKEN", newAccessToken)
                             .putString("REFRESH_TOKEN", newRefreshToken)
+                            .putLong("SESSION_SAVED_AT", System.currentTimeMillis())
                             .apply();
 
                     return newAccessToken;

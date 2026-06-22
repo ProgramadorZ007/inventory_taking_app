@@ -2,6 +2,7 @@ package com.procesadoraperu.inventario.data.repository;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.util.Log;
 
 import com.procesadoraperu.inventario.core.network.ApiClient;
 import com.procesadoraperu.inventario.core.utils.JwtDecoder;
@@ -38,9 +39,14 @@ public class AuthRepositoryImpl implements IAuthRepository {
         if (response.isSuccessful() && response.body() != null) {
             AuthDataResponse data = response.body();
 
-            // CORRECCIÓN: Validar que el accessToken no sea nulo antes de continuar
+            // Validar que el accessToken no sea nulo antes de continuar
             if (data.accessToken == null || data.accessToken.isEmpty()) {
                 throw new Exception("El servidor no devolvió un token válido.");
+            }
+
+            // Validar que el refreshToken no sea nulo para evitar fallos en renovación futura
+            if (data.refreshToken == null || data.refreshToken.isEmpty()) {
+                Log.w("AuthRepositoryImpl", "El servidor no devolvió un refreshToken. La sesión no se podrá renovar automáticamente.");
             }
 
             // Guardar el perfil del usuario
@@ -107,6 +113,7 @@ public class AuthRepositoryImpl implements IAuthRepository {
                 .putString("ACCESS_TOKEN", token.getAccessToken())
                 .putString("REFRESH_TOKEN", token.getRefreshToken())
                 .putInt("EXPIRES_IN", token.getExpiresIn())
+                .putLong("SESSION_SAVED_AT", System.currentTimeMillis())
                 .apply();
     }
 
@@ -137,6 +144,18 @@ public class AuthRepositoryImpl implements IAuthRepository {
 
     @Override
     public boolean isSessionActive() {
-        return prefs.getString("ACCESS_TOKEN", null) != null;
+        String accessToken = prefs.getString("ACCESS_TOKEN", null);
+        if (accessToken == null) {
+            return false;
+        }
+
+        // Verificar si el access token ha expirado
+        if (JwtDecoder.isTokenExpired(accessToken)) {
+            // El access token expiró, pero si hay refresh token aún podemos renovar
+            String refreshToken = prefs.getString("REFRESH_TOKEN", null);
+            return refreshToken != null && !refreshToken.isEmpty();
+        }
+
+        return true;
     }
 }

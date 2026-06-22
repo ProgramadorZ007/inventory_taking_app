@@ -36,6 +36,8 @@ public class ApiClient {
         if (retrofit == null) {
             synchronized (ApiClient.class) {
                 if (retrofit == null) {
+                    // Siempre usar ApplicationContext para evitar memory leaks
+                    final Context appContext = context.getApplicationContext();
 
                     HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor();
                     loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
@@ -50,7 +52,7 @@ public class ApiClient {
                                 return chain.proceed(originalRequest);
                             }
 
-                            SharedPreferences prefs = context.getSharedPreferences("auth_prefs", Context.MODE_PRIVATE);
+                            SharedPreferences prefs = appContext.getSharedPreferences("auth_prefs", Context.MODE_PRIVATE);
                             String token = prefs.getString("ACCESS_TOKEN", null);
 
                             Request.Builder requestBuilder = originalRequest.newBuilder();
@@ -67,7 +69,7 @@ public class ApiClient {
                     OkHttpClient.Builder clientBuilder = new OkHttpClient.Builder()
                             .addInterceptor(loggingInterceptor)
                             .addInterceptor(authInterceptor)
-                            .authenticator(new TokenAuthenticator(context))
+                            .authenticator(new TokenAuthenticator(appContext))
                             .connectTimeout(30, TimeUnit.SECONDS)
                             .readTimeout(30, TimeUnit.SECONDS)
                             .writeTimeout(30, TimeUnit.SECONDS);

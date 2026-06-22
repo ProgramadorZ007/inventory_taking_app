@@ -62,4 +62,28 @@ public class JwtDecoder {
             return null;
         }
     }
+
+    /**
+     * Verifica si un token JWT ha expirado basándose en el claim "exp".
+     *
+     * @param jwtToken El token de acceso completo.
+     * @return true si el token expiró o no se pudo leer; false si aún es válido.
+     */
+    public static boolean isTokenExpired(String jwtToken) {
+        JSONObject payload = decodePayload(jwtToken);
+        if (payload == null) {
+            return true;
+        }
+
+        // El claim "exp" es el timestamp en segundos desde epoch
+        long exp = payload.optLong("exp", 0);
+        if (exp == 0) {
+            // Si no tiene claim "exp", asumimos que no expira (servidor lo maneja)
+            return false;
+        }
+
+        // Comparar con la hora actual del dispositivo (en segundos)
+        long currentTimeSeconds = System.currentTimeMillis() / 1000;
+        return currentTimeSeconds >= exp;
+    }
 }

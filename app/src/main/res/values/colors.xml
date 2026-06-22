@@ -15,9 +15,15 @@
 
     <color name="pp_error">#DE350B</color>
     <color name="pp_warning">#FFAB00</color>
-    <color name="pp_warning_light">#FFF6E0</color> <color name="pp_gray">#EBECF0</color>
+    <color name="pp_warning_light">#FFF6E0</color>
+
+    <color name="pp_gray">#EBECF0</color>
 
     <color name="pp_divider">#DFE1E6</color>
+
+    <!-- White variants for overlays on dark backgrounds -->
+    <color name="pp_white_70">#B3FFFFFF</color>
+    <color name="pp_white_80">#CCFFFFFF</color>
 
     <!-- Splash New Design -->
     <color name="pp_splash_orange">#C2763D</color>

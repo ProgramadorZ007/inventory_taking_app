@@ -81,7 +81,7 @@
         android:clipToPadding="false"
         android:paddingTop="12dp"
         android:paddingBottom="40dp"
-        android:paddingHorizontal="8dp"
+        android:paddingHorizontal="4dp"
         app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 
     <!-- Overlay de descarga de catálogo -->

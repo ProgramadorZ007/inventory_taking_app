@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.cardview.widget.CardView
+<com.google.android.material.card.MaterialCardView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginHorizontal="16dp"
     android:layout_marginVertical="8dp"
-    app:cardCornerRadius="12dp"
+    app:cardCornerRadius="20dp"
     app:cardElevation="2dp"
+    app:strokeWidth="0dp"
     app:cardBackgroundColor="@color/pp_white"
     android:clickable="true"
     android:focusable="true"
@@ -20,16 +21,20 @@
         android:padding="16dp"
         android:gravity="center_vertical">
 
-        <!-- ── Icono visual de "Pendiente" ── -->
-        <TextView
-            android:layout_width="44dp"
-            android:layout_height="44dp"
-            android:text="⏳"
-            android:textSize="22sp"
-            android:gravity="center"
-            android:background="@drawable/shape_circle_white"
+        <!-- Icono visual de "Pendiente" -->
+        <FrameLayout
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="@drawable/bg_icon_circle"
             android:backgroundTint="@color/pp_warning_light"
-            android:layout_marginEnd="16dp"/>
+            android:layout_marginEnd="16dp">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="⏳"
+                android:textSize="22sp"
+                android:layout_gravity="center"/>
+        </FrameLayout>
 
         <LinearLayout
             android:layout_width="0dp"
@@ -37,7 +42,7 @@
             android:layout_weight="1"
             android:orientation="vertical">
 
-            <!-- ── Producto ── -->
+            <!-- Producto -->
             <TextView
                 android:id="@+id/tvProducto"
                 android:layout_width="match_parent"
@@ -49,7 +54,7 @@
                 android:maxLines="2"
                 android:ellipsize="end" />
 
-            <!-- ── Almacén ── -->
+            <!-- Almacén -->
             <TextView
                 android:id="@+id/tvAlmacen"
                 android:layout_width="match_parent"
@@ -66,18 +71,18 @@
                 android:layout_marginTop="6dp"
                 android:gravity="center_vertical">
 
-                <!-- ── Cantidad (En color naranja para destacar) ── -->
+                <!-- Cantidad -->
                 <TextView
                     android:id="@+id/tvCantidad"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="Cantidad: 0"
-                    android:textColor="@color/pp_warning"
+                    android:textColor="@color/pp_splash_orange"
                     android:textSize="14sp"
                     android:textStyle="bold" />
 
-                <!-- ── Fecha ── -->
+                <!-- Fecha -->
                 <TextView
                     android:id="@+id/tvFecha"
                     android:layout_width="wrap_content"
@@ -88,4 +93,4 @@
             </LinearLayout>
         </LinearLayout>
     </LinearLayout>
-</androidx.cardview.widget.CardView>
+</com.google.android.material.card.MaterialCardView>

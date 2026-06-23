@@ -237,64 +237,39 @@
                         android:focusable="true"
                         android:foreground="?attr/selectableItemBackground">
 
-                        <RelativeLayout
+                        <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
+                            android:orientation="vertical"
                             android:padding="16dp">
 
                             <FrameLayout
-                                android:id="@+id/flHistorialIcon"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content">
+                                android:layout_width="48dp"
+                                android:layout_height="48dp"
+                                android:layout_marginBottom="12dp">
                                 <ImageView
-                                    android:id="@+id/ivHistorialIcon"
                                     android:layout_width="48dp"
                                     android:layout_height="48dp"
-                                    android:src="@drawable/ic_clipboard_check" />
-                                <View
-                                    android:layout_width="14dp"
-                                    android:layout_height="14dp"
-                                    android:layout_gravity="bottom|end"
-                                    android:background="@drawable/bg_icon_circle"
-                                    android:backgroundTint="#2E7D32"
-                                    android:translationX="-2dp"
-                                    android:translationY="-2dp"/>
+                                    android:src="@drawable/ic_clipboard_check"
+                                    android:contentDescription="@null" />
                             </FrameLayout>
 
                             <TextView
-                                android:id="@+id/tvHistorialTitle"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:layout_toEndOf="@id/flHistorialIcon"
-                                android:layout_marginStart="10dp"
-                                android:text="Mis\nRegistros"
-                                android:textSize="14sp"
+                                android:text="Mis Registros"
+                                android:textSize="15sp"
                                 android:textStyle="bold"
                                 android:textColor="@color/pp_text_dark" />
 
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:layout_below="@id/tvHistorialTitle"
-                                android:layout_toEndOf="@id/flHistorialIcon"
-                                android:layout_marginStart="10dp"
-                                android:text="Ver inventarios\nde hoy"
-                                android:textSize="10.5sp"
+                                android:text="Ver inventarios de hoy"
+                                android:textSize="12sp"
                                 android:textColor="@color/pp_text_secondary"
-                                android:layout_marginTop="2dp" />
-
-                            <ImageView
-                                android:layout_width="24dp"
-                                android:layout_height="24dp"
-                                android:src="@drawable/ic_chevron_right"
-                                android:background="@drawable/bg_icon_circle"
-                                android:backgroundTint="#F0F5F0"
-                                android:padding="6dp"
-                                app:tint="@color/pp_splash_text_green"
-                                android:layout_alignParentEnd="true"
-                                android:layout_marginTop="80dp"
-                                android:contentDescription="@null" />
-                        </RelativeLayout>
+                                android:layout_marginTop="4dp" />
+                        </LinearLayout>
                     </com.google.android.material.card.MaterialCardView>
 
                     <!-- Pendientes -->
@@ -312,64 +287,39 @@
                         android:focusable="true"
                         android:foreground="?attr/selectableItemBackground">
 
-                        <RelativeLayout
+                        <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
+                            android:orientation="vertical"
                             android:padding="16dp">
 
                             <FrameLayout
-                                android:id="@+id/flPendientesIcon"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content">
+                                android:layout_width="48dp"
+                                android:layout_height="48dp"
+                                android:layout_marginBottom="12dp">
                                 <ImageView
-                                    android:id="@+id/ivPendientesIcon"
                                     android:layout_width="48dp"
                                     android:layout_height="48dp"
-                                    android:src="@drawable/ic_hourglass_warning" />
-                                <View
-                                    android:layout_width="14dp"
-                                    android:layout_height="14dp"
-                                    android:layout_gravity="bottom|end"
-                                    android:background="@drawable/bg_icon_circle"
-                                    android:backgroundTint="#C2763D"
-                                    android:translationX="-2dp"
-                                    android:translationY="-2dp"/>
+                                    android:src="@drawable/ic_hourglass_warning"
+                                    android:contentDescription="@null" />
                             </FrameLayout>
 
                             <TextView
-                                android:id="@+id/tvPendientesTitle"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:layout_toEndOf="@id/flPendientesIcon"
-                                android:layout_marginStart="10dp"
                                 android:text="Pendientes"
-                                android:textSize="14sp"
+                                android:textSize="15sp"
                                 android:textStyle="bold"
                                 android:textColor="@color/pp_text_dark" />
 
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:layout_below="@id/tvPendientesTitle"
-                                android:layout_toEndOf="@id/flPendientesIcon"
-                                android:layout_marginStart="10dp"
-                                android:text="Sin conexión"
-                                android:textSize="10.5sp"
+                                android:text="Registros sin conexión"
+                                android:textSize="12sp"
                                 android:textColor="@color/pp_text_secondary"
-                                android:layout_marginTop="2dp" />
-
-                            <ImageView
-                                android:layout_width="24dp"
-                                android:layout_height="24dp"
-                                android:src="@drawable/ic_chevron_right"
-                                android:background="@drawable/bg_icon_circle"
-                                android:backgroundTint="#FFF5F0"
-                                android:padding="6dp"
-                                app:tint="@color/pp_splash_orange"
-                                android:layout_alignParentEnd="true"
-                                android:layout_marginTop="80dp"
-                                android:contentDescription="@null" />
-                        </RelativeLayout>
+                                android:layout_marginTop="4dp" />
+                        </LinearLayout>
                     </com.google.android.material.card.MaterialCardView>
                 </LinearLayout>
 

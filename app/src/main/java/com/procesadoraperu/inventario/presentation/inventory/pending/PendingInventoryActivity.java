@@ -154,11 +154,19 @@ public class PendingInventoryActivity extends AppCompatActivity {
         
         String unidad = (inv.getUnidadMedida() != null) ? inv.getUnidadMedida() : "UND";
         ((TextView) dialogView.findViewById(R.id.tvDetailUnidad)).setText(unidad);
-        ((TextView) dialogView.findViewById(R.id.tvDetailUnidadStock)).setText(unidad);
         ((TextView) dialogView.findViewById(R.id.tvDetailUnidadContado)).setText(unidad);
 
-        ((TextView) dialogView.findViewById(R.id.tvDetailStockSistema)).setText(formatNum(inv.getStock()));
+        // Ocultar el stock del sistema — en pendientes solo interesa la cantidad digitada
+        View cardStockSistema = dialogView.findViewById(R.id.tvDetailStockSistema);
+        if (cardStockSistema != null && cardStockSistema.getParent() != null) {
+            // Ocultar toda la card de "Stock sistema" (el parent LinearLayout -> parent CardView)
+            View stockCard = (View) cardStockSistema.getParent().getParent();
+            if (stockCard != null) stockCard.setVisibility(View.GONE);
+        }
+
+        // Mostrar solo la cantidad contada
         ((TextView) dialogView.findViewById(R.id.tvDetailCantidadContada)).setText(formatNum(inv.getCantidad()));
+        ((TextView) dialogView.findViewById(R.id.tvDetailUnidadStock)).setText(unidad);
 
         // Detalles de ubicación y usuario
         ((TextView) dialogView.findViewById(R.id.tvDetailAlmacen)).setText(inv.getAlmacen());

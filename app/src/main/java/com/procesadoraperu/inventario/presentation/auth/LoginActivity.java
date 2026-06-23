@@ -23,7 +23,6 @@ import com.google.android.material.snackbar.Snackbar;
 import com.procesadoraperu.inventario.R;
 import com.procesadoraperu.inventario.core.sync.SyncScheduler;
 import com.procesadoraperu.inventario.presentation.ViewModelFactory;
-import com.procesadoraperu.inventario.presentation.home.HomeActivity;
 import com.procesadoraperu.inventario.presentation.legal.LegalActivity;
 import com.procesadoraperu.inventario.presentation.selection.SucursalActivity;
 
@@ -49,7 +48,14 @@ public class LoginActivity extends AppCompatActivity {
             boolean canRefresh = refreshToken != null && !refreshToken.isEmpty();
 
             if (tokenValid || canRefresh) {
-                navegarSiguiente();
+                // Sesión activa detectada: respetar ubicación guardada si existe
+                SharedPreferences appPrefs = getSharedPreferences("app_prefs", MODE_PRIVATE);
+                String idAlmacen = appPrefs.getString("ACTIVE_ALMACEN_ID", null);
+                Intent intent = (idAlmacen != null)
+                        ? new Intent(this, com.procesadoraperu.inventario.presentation.home.HomeActivity.class)
+                        : new Intent(this, SucursalActivity.class);
+                startActivity(intent);
+                finish();
                 return;
             }
             // Si el token expiró y no hay refresh, limpiar sesión y mostrar login
@@ -150,11 +156,9 @@ public class LoginActivity extends AppCompatActivity {
         // Al iniciar sesión, programar sincronización de pendientes (si los hay)
         SyncScheduler.scheduleOnce(this);
 
-        SharedPreferences appPrefs = getSharedPreferences("app_prefs", MODE_PRIVATE);
-        String idAlmacen = appPrefs.getString("ACTIVE_ALMACEN_ID", null);
-        Intent intent = (idAlmacen != null)
-                ? new Intent(this, HomeActivity.class)
-                : new Intent(this, SucursalActivity.class);
+        // Siempre navegar a la selección de sucursal/almacén tras login fresco
+        // para que el usuario confirme su ubicación de trabajo
+        Intent intent = new Intent(this, SucursalActivity.class);
         startActivity(intent);
         overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
         finish();

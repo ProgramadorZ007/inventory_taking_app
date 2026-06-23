@@ -151,6 +151,9 @@ public class HomeActivity extends AppCompatActivity
                 // Cancelar sincronización automática al cerrar sesión
                 SyncScheduler.cancel(this);
 
+                // Limpiar ubicación guardada para forzar selección en próximo login
+                getSharedPreferences("app_prefs", MODE_PRIVATE).edit().clear().apply();
+
                 Intent intent = new Intent(this, LoginActivity.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 startActivity(intent);

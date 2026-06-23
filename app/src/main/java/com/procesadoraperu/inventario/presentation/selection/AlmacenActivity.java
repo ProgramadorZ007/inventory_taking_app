@@ -136,38 +136,59 @@ public class AlmacenActivity extends AppCompatActivity {
     }
 
     private void showErrorDialog(String errorMessage) {
-        new AlertDialog.Builder(this)
-                .setTitle("Error de descarga")
-                .setMessage(errorMessage != null ? errorMessage : "Ocurrió un error al descargar el catálogo")
-                .setPositiveButton("Reintentar", (dialog, which) -> {
-                    dialog.dismiss();
-                    if (lastSelectedAlmacen != null) {
-                        viewModel.downloadCatalogAndNavigate(
-                                lastSelectedAlmacen.getIdSucursal(),
-                                lastSelectedAlmacen.getIdAlmacen()
-                        );
-                    }
-                })
-                .setNegativeButton("Continuar sin catálogo", (dialog, which) -> {
-                    dialog.dismiss();
-                    navigateToHome();
-                })
+        AlertDialog dialog = new AlertDialog.Builder(this, R.style.Theme_Inventario_Dialog)
                 .setCancelable(false)
-                .show();
+                .create();
+
+        View view = getLayoutInflater().inflate(R.layout.dialog_download_error, null);
+
+        TextView tvMessage = view.findViewById(R.id.tvDialogMessage);
+        if (errorMessage != null && !errorMessage.isEmpty()) {
+            tvMessage.setText(errorMessage);
+        }
+
+        view.findViewById(R.id.btnDialogRetry).setOnClickListener(v -> {
+            dialog.dismiss();
+            if (lastSelectedAlmacen != null) {
+                viewModel.downloadCatalogAndNavigate(
+                        lastSelectedAlmacen.getIdSucursal(),
+                        lastSelectedAlmacen.getIdAlmacen()
+                );
+            }
+        });
+
+        view.findViewById(R.id.btnDialogContinue).setOnClickListener(v -> {
+            dialog.dismiss();
+            navigateToHome();
+        });
+
+        dialog.setView(view);
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+        }
+        dialog.show();
     }
 
     private void showEmptyDialog() {
-        new AlertDialog.Builder(this)
-                .setTitle("Sin productos")
-                .setMessage("No se encontraron productos para este almacén")
-                .setPositiveButton("Continuar", (dialog, which) -> {
-                    dialog.dismiss();
-                    navigateToHome();
-                })
-                .setNegativeButton("Seleccionar otro", (dialog, which) -> {
-                    dialog.dismiss();
-                })
+        AlertDialog dialog = new AlertDialog.Builder(this, R.style.Theme_Inventario_Dialog)
                 .setCancelable(false)
-                .show();
+                .create();
+
+        View view = getLayoutInflater().inflate(R.layout.dialog_download_empty, null);
+
+        view.findViewById(R.id.btnEmptyContinue).setOnClickListener(v -> {
+            dialog.dismiss();
+            navigateToHome();
+        });
+
+        view.findViewById(R.id.btnEmptySelectOther).setOnClickListener(v -> {
+            dialog.dismiss();
+        });
+
+        dialog.setView(view);
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+        }
+        dialog.show();
     }
 }

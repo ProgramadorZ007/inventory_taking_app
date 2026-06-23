@@ -2,19 +2,20 @@ package com.procesadoraperu.inventario.data.local.entity;
 
 import androidx.annotation.NonNull;
 import androidx.room.Entity;
-import androidx.room.PrimaryKey;
 
-@Entity(tableName = "Almacen")
+@Entity(tableName = "Almacen", primaryKeys = {"idAlmacen", "idSucursal"})
 public class AlmacenEntity {
 
-    @PrimaryKey
     @NonNull
     public String idAlmacen;
 
+    @NonNull
     public String idSucursal;
+
     public String descripcion;
 
     public AlmacenEntity() {
         this.idAlmacen = "";
+        this.idSucursal = "";
     }
 }

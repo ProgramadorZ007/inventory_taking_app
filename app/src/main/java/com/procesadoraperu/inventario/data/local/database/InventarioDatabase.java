@@ -23,7 +23,8 @@ import com.procesadoraperu.inventario.data.local.entity.UsuarioEntity;
  * Base de datos SQLite local usando Room.
  * Permite que la app funcione completamente sin conexión a internet.
  *
- * Versión 5: Actualización del idInventario a String (UUID/Server ID).
+ * Versión 6: Clave primaria compuesta (idAlmacen, idSucursal) en Almacen
+ * para evitar que almacenes de diferentes sucursales se sobreescriban entre sí.
  * fallbackToDestructiveMigration() se usa para sobreescribir copias antiguas en los celulares.
  */
 @Database(
@@ -35,7 +36,7 @@ import com.procesadoraperu.inventario.data.local.entity.UsuarioEntity;
                 InventarioEntity.class,
                 LogEntity.class
         },
-        version = 5, // ✔️ CORRECCIÓN: Subimos la versión para forzar la recreación
+        version = 6,
         exportSchema = false
 )
 public abstract class InventarioDatabase extends RoomDatabase {
@@ -58,10 +59,10 @@ public abstract class InventarioDatabase extends RoomDatabase {
                     INSTANCE = Room.databaseBuilder(
                                     context.getApplicationContext(),
                                     InventarioDatabase.class,
-                                    "ppsac_inventario_v5.db" // ✔️ Renombramos la DB para más seguridad
+                                    "ppsac_inventario_v6.db"
                             )
-                            // Al subir la versión a 5, Room detecta el cambio de esquema
-                            // y ejecuta esta línea, destruyendo la vieja v4 conflictiva.
+                            // Al subir la versión a 6, Room detecta el cambio de esquema
+                            // y ejecuta esta línea, destruyendo la vieja v5.
                             .fallbackToDestructiveMigration()
                             .build();
                 }

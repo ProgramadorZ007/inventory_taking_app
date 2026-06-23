@@ -70,7 +70,7 @@ public class SelectionViewModel extends ViewModel {
                 listaOriginalSucursales = getSucursalesUseCase.execute(false);
                 sucursales.postValue(listaOriginalSucursales);
             } catch (Exception e) {
-                errorMessage.postValue("Error al cargar sucursales: " + e.getMessage());
+                errorMessage.postValue(obtenerMensajeAmigable("cargar las sucursales", e));
             }
         });
     }
@@ -104,7 +104,7 @@ public class SelectionViewModel extends ViewModel {
                 listaOriginalAlmacenes = getAlmacenesUseCase.execute(idSucursal, false);
                 almacenes.postValue(listaOriginalAlmacenes);
             } catch (Exception e) {
-                errorMessage.postValue("Error al cargar almacenes: " + e.getMessage());
+                errorMessage.postValue(obtenerMensajeAmigable("cargar los almacenes", e));
             }
         });
     }
@@ -142,10 +142,50 @@ public class SelectionViewModel extends ViewModel {
                     downloadResult.postValue(DownloadResult.empty());
                 }
             } catch (Exception e) {
-                downloadResult.postValue(DownloadResult.error(e.getMessage()));
+                downloadResult.postValue(DownloadResult.error(obtenerMensajeAmigable("descargar el catálogo", e)));
             } finally {
                 isDownloading.postValue(false);
             }
         });
+    }
+
+    // ===================================================================
+    // Traducción de errores técnicos a mensajes amigables para el usuario
+    // ===================================================================
+
+    private String obtenerMensajeAmigable(String accion, Exception e) {
+        if (e == null) return "No se pudo " + accion;
+
+        String msg = e.getMessage() != null ? e.getMessage().toLowerCase() : "";
+
+        if (esErrorDeConexion(e, msg)) {
+            return "Sin conexión a internet. Verifica tu conexión e inténtalo de nuevo.";
+        }
+
+        if (msg.contains("timeout") || msg.contains("timed out")) {
+            return "La conexión tardó demasiado. Verifica tu internet e inténtalo de nuevo.";
+        }
+
+        if (msg.contains("token") || msg.contains("unauthorized") || msg.contains("401")) {
+            return "Tu sesión ha expirado. Cierra sesión e inicia nuevamente.";
+        }
+
+        if (msg.contains("server") || msg.contains("500") || msg.contains("internal")) {
+            return "El servidor no está disponible en este momento. Inténtalo más tarde.";
+        }
+
+        return "No se pudo " + accion + ". Inténtalo de nuevo.";
+    }
+
+    private boolean esErrorDeConexion(Exception e, String msg) {
+        return e instanceof java.net.UnknownHostException
+                || e instanceof java.net.ConnectException
+                || e instanceof java.net.NoRouteToHostException
+                || msg.contains("unable to resolve host")
+                || msg.contains("failed to connect")
+                || msg.contains("no address associated")
+                || msg.contains("network is unreachable")
+                || msg.contains("connection refused")
+                || msg.contains("no internet");
     }
 }

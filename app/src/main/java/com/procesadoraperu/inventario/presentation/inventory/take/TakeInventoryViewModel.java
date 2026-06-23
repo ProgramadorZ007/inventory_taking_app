@@ -93,7 +93,7 @@ public class TakeInventoryViewModel extends ViewModel {
                     );
                     productoEncontrado.postValue(producto);
                 } catch (Exception e) {
-                    errorMessage.postValue("Producto no encontrado: " + e.getMessage());
+                    errorMessage.postValue(obtenerMensajeErrorBusqueda(e));
                 }
             } finally {
                 isLoadingProducto.postValue(false);
@@ -159,14 +159,14 @@ public class TakeInventoryViewModel extends ViewModel {
 
                     @Override
                     public void onError(Exception e) {
-                        errorMessage.postValue("Error inesperado: " + e.getMessage());
+                        errorMessage.postValue(obtenerMensajeErrorRegistro(e));
                         registroResult.postValue(RegistroResult.ERROR);
                         isRegistrando.postValue(false);
                     }
                 });
 
             } catch (Exception e) {
-                errorMessage.postValue("Error inesperado: " + e.getMessage());
+                errorMessage.postValue(obtenerMensajeErrorRegistro(e));
                 registroResult.postValue(RegistroResult.ERROR);
                 isRegistrando.postValue(false);
             }
@@ -197,5 +197,70 @@ public class TakeInventoryViewModel extends ViewModel {
         productoEncontrado.postValue(null);
         errorMessage.postValue(null);
         registroResult.postValue(null);
+    }
+
+    // ===================================================================
+    // Traducción de errores técnicos a mensajes amigables para el usuario
+    // ===================================================================
+
+    private String obtenerMensajeErrorBusqueda(Exception e) {
+        if (e == null) return "Producto no encontrado";
+
+        String msg = e.getMessage() != null ? e.getMessage().toLowerCase() : "";
+
+        // Sin conexión a internet
+        if (esErrorDeConexion(e, msg)) {
+            return "Sin conexión a internet. Descarga el catálogo para buscar productos sin conexión.";
+        }
+
+        // Timeout
+        if (msg.contains("timeout") || msg.contains("timed out")) {
+            return "La conexión tardó demasiado. Verifica tu internet e inténtalo de nuevo.";
+        }
+
+        // Producto no existe en el servidor
+        if (msg.contains("no se encontró") || msg.contains("no existe") || msg.contains("not found")) {
+            return "Producto no encontrado en este almacén. Verifica el código e inténtalo de nuevo.";
+        }
+
+        // Error del servidor
+        if (msg.contains("error al consultar") || msg.contains("server") || msg.contains("500")) {
+            return "El servidor no está disponible en este momento. Inténtalo más tarde.";
+        }
+
+        // Genérico: no exponer detalles técnicos
+        return "Producto no encontrado. Verifica el código o descarga el catálogo para búsqueda sin conexión.";
+    }
+
+    private String obtenerMensajeErrorRegistro(Exception e) {
+        if (e == null) return "No se pudo registrar el inventario";
+
+        String msg = e.getMessage() != null ? e.getMessage().toLowerCase() : "";
+
+        if (esErrorDeConexion(e, msg)) {
+            return "Sin conexión. El registro se guardará localmente y se enviará cuando tengas internet.";
+        }
+
+        if (msg.contains("timeout") || msg.contains("timed out")) {
+            return "La conexión tardó demasiado. El registro se guardó localmente.";
+        }
+
+        if (msg.contains("token") || msg.contains("unauthorized") || msg.contains("401")) {
+            return "Tu sesión ha expirado. Cierra sesión e inicia nuevamente.";
+        }
+
+        return "Ocurrió un error al registrar. Inténtalo de nuevo.";
+    }
+
+    private boolean esErrorDeConexion(Exception e, String msg) {
+        return e instanceof java.net.UnknownHostException
+                || e instanceof java.net.ConnectException
+                || e instanceof java.net.NoRouteToHostException
+                || msg.contains("unable to resolve host")
+                || msg.contains("failed to connect")
+                || msg.contains("no address associated")
+                || msg.contains("network is unreachable")
+                || msg.contains("connection refused")
+                || msg.contains("no internet");
     }
 }

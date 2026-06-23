@@ -194,7 +194,7 @@ public class InventarioRepositoryImpl implements IInventarioRepository {
                     d.getAuditClientInfo().getDispositivo();
 
             audit.ip =
-                    d.getAuditClientInfo().getIp();
+                    emptyToNull(d.getAuditClientInfo().getIp());
 
             audit.hostname =
                     d.getAuditClientInfo().getHostname();
@@ -202,11 +202,13 @@ public class InventarioRepositoryImpl implements IInventarioRepository {
             audit.userAgent =
                     d.getAuditClientInfo().getUserAgent();
 
+            // El servidor espera Nullable<Decimal> para lat/lon.
+            // Si no se obtuvo ubicación, enviar null en vez de string vacío.
             audit.latitud =
-                    d.getAuditClientInfo().getLatitud();
+                    emptyToNull(d.getAuditClientInfo().getLatitud());
 
             audit.longitud =
-                    d.getAuditClientInfo().getLongitud();
+                    emptyToNull(d.getAuditClientInfo().getLongitud());
 
             req.auditClientInfo = audit;
         }
@@ -343,5 +345,14 @@ public class InventarioRepositoryImpl implements IInventarioRepository {
         }
 
         return list;
+    }
+
+    /**
+     * Convierte un String vacío a null.
+     * Útil para campos que el servidor espera como Nullable<Decimal>:
+     * un string vacío ("") no es parseable como número, pero null sí es aceptado.
+     */
+    private String emptyToNull(String value) {
+        return (value == null || value.trim().isEmpty()) ? null : value;
     }
 }

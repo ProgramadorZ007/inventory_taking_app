@@ -1,8 +1,11 @@
 package com.procesadoraperu.inventario.presentation.inventory.take;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.location.LocationManager;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.view.inputmethod.EditorInfo;
 import android.view.View;
 import android.widget.ProgressBar;
@@ -10,6 +13,7 @@ import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
 import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -34,6 +38,7 @@ import com.procesadoraperu.inventario.presentation.ViewModelFactory;
 public class TakeInventoryActivity extends AppCompatActivity {
 
     private static final int REQUEST_CAMERA_PERMISSION = 100;
+    private static final int REQUEST_LOCATION_PERMISSION = 101;
 
     private TakeInventoryViewModel viewModel;
 
@@ -46,6 +51,17 @@ public class TakeInventoryActivity extends AppCompatActivity {
     private TextInputEditText etCantidadContada;
     private MaterialButton btnRegistrar;
     private ProgressBar progressRegistrar;
+
+    /* ── Launcher para volver de la pantalla de ajustes de ubicación ────── */
+    private final ActivityResultLauncher<Intent> locationSettingsLauncher =
+            registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+                // Al volver de ajustes, reintentar el registro si el GPS ya está activo
+                if (isGpsEnabled()) {
+                    ejecutarRegistro();
+                } else {
+                    mostrarSnackbar("La ubicación sigue desactivada. Actívala para registrar.", true);
+                }
+            });
 
     /* ── Escáner de código de barras / QR ─────────────────────────────────── */
     private final ActivityResultLauncher<ScanOptions> barcodeLauncher =
@@ -217,10 +233,74 @@ public class TakeInventoryActivity extends AppCompatActivity {
                 etCantidadContada.setError("La cantidad no puede ser negativa");
                 return;
             }
-            viewModel.registrarInventario(producto, cantidad);
+
+            // Verificar permiso de ubicación antes de registrar
+            if (!tienePermisoUbicacion()) {
+                solicitarPermisoUbicacion();
+                return;
+            }
+
+            // Verificar que el GPS esté activo
+            if (!isGpsEnabled()) {
+                mostrarDialogoActivarGps();
+                return;
+            }
+
+            ejecutarRegistro();
         } catch (NumberFormatException e) {
             etCantidadContada.setError("Formato inválido (use números)");
         }
+    }
+
+    /**
+     * Ejecuta el registro una vez que se verificó que hay permiso y GPS activo.
+     */
+    private void ejecutarRegistro() {
+        Producto producto = viewModel.getProductoEncontrado().getValue();
+        String cantidadStr = (etCantidadContada.getText() != null)
+                ? etCantidadContada.getText().toString().trim() : "";
+        if (producto == null || cantidadStr.isEmpty()) return;
+        try {
+            double cantidad = Double.parseDouble(cantidadStr);
+            viewModel.registrarInventario(producto, cantidad);
+        } catch (NumberFormatException ignored) {}
+    }
+
+    /* ── Verificación de ubicación ───────────────────────────────────────── */
+
+    private boolean tienePermisoUbicacion() {
+        return ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                == PackageManager.PERMISSION_GRANTED
+                || ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
+                == PackageManager.PERMISSION_GRANTED;
+    }
+
+    private boolean isGpsEnabled() {
+        LocationManager locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+        if (locationManager == null) return false;
+        return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
+                || locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+    }
+
+    private void solicitarPermisoUbicacion() {
+        ActivityCompat.requestPermissions(this,
+                new String[]{
+                        Manifest.permission.ACCESS_FINE_LOCATION,
+                        Manifest.permission.ACCESS_COARSE_LOCATION
+                }, REQUEST_LOCATION_PERMISSION);
+    }
+
+    private void mostrarDialogoActivarGps() {
+        new MaterialAlertDialogBuilder(this)
+                .setTitle("Ubicación desactivada")
+                .setMessage("Para registrar el inventario se necesita la ubicación activa. ¿Deseas activarla?")
+                .setPositiveButton("Activar", (d, w) -> {
+                    Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                    locationSettingsLauncher.launch(intent);
+                })
+                .setNegativeButton("Cancelar", null)
+                .setCancelable(false)
+                .show();
     }
 
     private void mostrarResultado(boolean exito, String mensaje) {
@@ -263,12 +343,24 @@ public class TakeInventoryActivity extends AppCompatActivity {
                                            @NonNull String[] permissions,
                                            @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == REQUEST_CAMERA_PERMISSION
-                && grantResults.length > 0
-                && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            lanzarEscaner();
-        } else {
-            mostrarSnackbar("Se necesita permiso de cámara para escanear", true);
+
+        if (requestCode == REQUEST_CAMERA_PERMISSION) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                lanzarEscaner();
+            } else {
+                mostrarSnackbar("Se necesita permiso de cámara para escanear", true);
+            }
+        } else if (requestCode == REQUEST_LOCATION_PERMISSION) {
+            if (grantResults.length > 0 && (grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
+                // Permiso concedido, verificar si el GPS está activo
+                if (isGpsEnabled()) {
+                    ejecutarRegistro();
+                } else {
+                    mostrarDialogoActivarGps();
+                }
+            } else {
+                mostrarSnackbar("Se necesita permiso de ubicación para registrar inventario", true);
+            }
         }
     }
 

@@ -23,11 +23,13 @@ public class AuthRepositoryImpl implements IAuthRepository {
     private final AuthApi authApi;
     private final UsuarioDao usuarioDao;
     private final SharedPreferences prefs;
+    private final SharedPreferences appPrefs;
 
     public AuthRepositoryImpl(AuthApi authApi, UsuarioDao usuarioDao, Context context) {
         this.authApi = authApi;
         this.usuarioDao = usuarioDao;
         this.prefs = context.getSharedPreferences("auth_prefs", Context.MODE_PRIVATE);
+        this.appPrefs = context.getSharedPreferences("app_prefs", Context.MODE_PRIVATE);
     }
 
     @Override
@@ -121,6 +123,9 @@ public class AuthRepositoryImpl implements IAuthRepository {
     public void logout() {
         // Limpiar credenciales de SharedPreferences
         prefs.edit().clear().apply();
+
+        // Limpiar ubicación activa (sucursal/almacén) para forzar selección en próximo login
+        appPrefs.edit().clear().apply();
 
         // Limpiar perfil de usuario de la BD local
         usuarioDao.deleteUsuario();

@@ -29,8 +29,9 @@ public class SelectionViewModel extends ViewModel {
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
 
     // Listas Originales (Para no volver a consultar a la BD al borrar el texto del buscador)
-    private List<Sucursal> listaOriginalSucursales = new ArrayList<>();
-    private List<Almacen> listaOriginalAlmacenes = new ArrayList<>();
+    // volatile para visibilidad entre hilos (escritura en executor, lectura en main)
+    private volatile List<Sucursal> listaOriginalSucursales = new ArrayList<>();
+    private volatile List<Almacen> listaOriginalAlmacenes = new ArrayList<>();
 
     // LiveData que escucha la interfaz (Activity)
     private final MutableLiveData<List<Sucursal>> sucursales = new MutableLiveData<>();
@@ -187,5 +188,11 @@ public class SelectionViewModel extends ViewModel {
                 || msg.contains("network is unreachable")
                 || msg.contains("connection refused")
                 || msg.contains("no internet");
+    }
+
+    @Override
+    protected void onCleared() {
+        super.onCleared();
+        executor.shutdown();
     }
 }

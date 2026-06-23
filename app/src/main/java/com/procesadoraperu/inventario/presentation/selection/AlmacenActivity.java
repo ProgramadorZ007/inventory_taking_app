@@ -124,7 +124,12 @@ public class AlmacenActivity extends AppCompatActivity {
             }
         });
 
-        String idSucursalActiva = getSharedPreferences("app_prefs", MODE_PRIVATE).getString("ACTIVE_SUCURSAL_ID", "");
+        String idSucursalActiva = getSharedPreferences("app_prefs", MODE_PRIVATE).getString("ACTIVE_SUCURSAL_ID", null);
+        if (idSucursalActiva == null || idSucursalActiva.isEmpty()) {
+            Toast.makeText(this, "Selecciona una sucursal primero", Toast.LENGTH_SHORT).show();
+            finish();
+            return;
+        }
         viewModel.cargarAlmacenes(idSucursalActiva);
     }
 

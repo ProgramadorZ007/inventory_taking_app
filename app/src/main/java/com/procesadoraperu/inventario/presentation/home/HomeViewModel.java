@@ -151,4 +151,10 @@ public class HomeViewModel extends ViewModel {
             logoutSuccess.postValue(true);
         });
     }
+
+    @Override
+    protected void onCleared() {
+        super.onCleared();
+        executor.shutdown();
+    }
 }

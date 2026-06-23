@@ -77,8 +77,14 @@ public class UserProfileViewModel extends ViewModel {
                         idAlmacenStr
                 ));
             } catch (Exception e) {
-                errorMessage.postValue("Error al cargar perfil: " + e.getMessage());
+                errorMessage.postValue("No se pudo cargar el perfil.");
             }
         });
+    }
+
+    @Override
+    protected void onCleared() {
+        super.onCleared();
+        executor.shutdown();
     }
 }

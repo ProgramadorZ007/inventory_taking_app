@@ -118,6 +118,13 @@ public class TakeInventoryViewModel extends ViewModel {
                 Usuario usuario = getActiveUserUseCase.execute();
                 String idSucursal = sucRepo.getActiveSucursalId();
                 Almacen almacen = almRepo.getActiveAlmacen();
+
+                if (idSucursal == null || almacen == null) {
+                    errorMessage.postValue("Debes seleccionar una sucursal y almacén primero");
+                    isRegistrando.postValue(false);
+                    return;
+                }
+
                 String fechaActual = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
                         .format(new Date());
 
@@ -262,5 +269,11 @@ public class TakeInventoryViewModel extends ViewModel {
                 || msg.contains("network is unreachable")
                 || msg.contains("connection refused")
                 || msg.contains("no internet");
+    }
+
+    @Override
+    protected void onCleared() {
+        super.onCleared();
+        executor.shutdown();
     }
 }

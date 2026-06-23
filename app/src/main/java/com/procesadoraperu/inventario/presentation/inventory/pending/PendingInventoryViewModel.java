@@ -50,7 +50,7 @@ public class PendingInventoryViewModel extends ViewModel {
                 List<Inventario> lista = getPendientesUseCase.execute(usuario.getUsername());
                 pendientes.postValue(lista);
             } catch (Exception e) {
-                errorMessage.postValue("Error al cargar pendientes: " + e.getMessage());
+                errorMessage.postValue("No se pudieron cargar los registros pendientes.");
             } finally {
                 isLoading.postValue(false);
             }
@@ -75,10 +75,16 @@ public class PendingInventoryViewModel extends ViewModel {
                 pendientes.postValue(lista);
 
             } catch (Exception e) {
-                errorMessage.postValue("Error durante la sincronización: " + e.getMessage());
+                errorMessage.postValue("No se pudo sincronizar. Verifica tu conexión a internet.");
             } finally {
                 isSincronizando.postValue(false);
             }
         });
+    }
+
+    @Override
+    protected void onCleared() {
+        super.onCleared();
+        executor.shutdown();
     }
 }

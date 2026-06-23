@@ -84,10 +84,16 @@ public class InventoryHistoryViewModel extends ViewModel {
                 historial.postValue(resultado);
 
             } catch (Exception e) {
-                errorMessage.postValue("Error al cargar historial: " + e.getMessage());
+                errorMessage.postValue("No se pudo cargar el historial. Verifica tu conexión.");
             } finally {
                 isLoading.postValue(false);
             }
         });
+    }
+
+    @Override
+    protected void onCleared() {
+        super.onCleared();
+        executor.shutdown();
     }
 }

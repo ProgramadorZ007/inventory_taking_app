@@ -83,15 +83,6 @@
             android:exported="false"
             android:screenOrientation="portrait" />
 
-        <!-- Receiver para sincronización automática al recuperar internet -->
-        <receiver
-            android:name=".core.sync.NetworkConnectivityReceiver"
-            android:exported="false">
-            <intent-filter>
-                <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
-            </intent-filter>
-        </receiver>
-
     </application>
 
 </manifest>

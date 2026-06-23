@@ -9,13 +9,15 @@
     </style>
 
     <style name="Theme.Inventario.Splash" parent="Theme.SplashScreen">
-        <!-- Fondo del splash del sistema: usa el mismo drawable que tu animación -->
-        <item name="windowSplashScreenBackground">@color/pp_splash_bg_light</item>
-        <!-- Sin ícono animado del sistema (eliminamos el ic_launcher acercándose) -->
+        <!-- Usar el mismo fondo que el splash personalizado para eliminar cualquier flash -->
+        <item name="windowSplashScreenBackground">@color/pp_splash_text_green</item>
+        <!-- Sin ícono animado del sistema -->
         <item name="windowSplashScreenAnimatedIcon">@android:color/transparent</item>
         <item name="windowSplashScreenAnimationDuration">0</item>
         <!-- Transición inmediata al contenido de tu SplashActivity -->
         <item name="postSplashScreenTheme">@style/Theme.Inventario</item>
+        <!-- La ventana usa directamente el fondo del splash para cero transición visible -->
+        <item name="android:windowBackground">@drawable/fondo</item>
     </style>
 
     <style name="Widget.Inventario.Button" parent="Widget.Material3.Button">

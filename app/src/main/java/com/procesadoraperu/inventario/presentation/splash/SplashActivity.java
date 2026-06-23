@@ -12,6 +12,7 @@ import android.view.animation.OvershootInterpolator;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.splashscreen.SplashScreen;
 
 import com.procesadoraperu.inventario.R;
 import com.procesadoraperu.inventario.presentation.auth.LoginActivity;
@@ -24,6 +25,11 @@ public class SplashActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        // Instalar el splash screen del sistema e inmediatamente descartarlo
+        // para que tu animación personalizada sea lo único visible
+        SplashScreen splashScreen = SplashScreen.installSplashScreen(this);
+        splashScreen.setKeepOnScreenCondition(() -> false);
+
         EdgeToEdge.enable(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash);

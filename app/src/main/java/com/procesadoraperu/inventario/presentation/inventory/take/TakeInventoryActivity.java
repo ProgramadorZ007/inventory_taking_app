@@ -4,6 +4,9 @@ import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.LocationManager;
+import android.net.ConnectivityManager;
+import android.net.Network;
+import android.net.NetworkRequest;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.view.inputmethod.EditorInfo;
@@ -49,6 +52,9 @@ public class TakeInventoryActivity extends AppCompatActivity {
     private MaterialCardView cardProducto;
     private MaterialCardView cardOfflineBanner;
     private View llHeroBackground;
+
+    private ConnectivityManager connectivityManager;
+    private ConnectivityManager.NetworkCallback networkCallback;
     private TextView tvNombreProducto, tvIdProducto, tvStockSistema;
     private com.google.android.material.textfield.TextInputLayout tilCantidadContada;
     private TextInputEditText etCantidadContada;
@@ -116,6 +122,7 @@ public class TakeInventoryActivity extends AppCompatActivity {
 
         initViews();
         setupViewModel();
+        registrarMonitorDeRed();
     }
 
     private void initViews() {
@@ -400,6 +407,34 @@ public class TakeInventoryActivity extends AppCompatActivity {
             llHeroBackground.setBackgroundColor(getColor(R.color.pp_splash_orange));
         } else {
             llHeroBackground.setBackgroundColor(getColor(R.color.pp_splash_text_green));
+        }
+    }
+
+    private void registrarMonitorDeRed() {
+        connectivityManager = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
+        if (connectivityManager == null) return;
+
+        networkCallback = new ConnectivityManager.NetworkCallback() {
+            @Override
+            public void onAvailable(@androidx.annotation.NonNull Network network) {
+                runOnUiThread(() -> actualizarEstadoConexion());
+            }
+
+            @Override
+            public void onLost(@androidx.annotation.NonNull Network network) {
+                runOnUiThread(() -> actualizarEstadoConexion());
+            }
+        };
+
+        NetworkRequest request = new NetworkRequest.Builder().build();
+        connectivityManager.registerNetworkCallback(request, networkCallback);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (connectivityManager != null && networkCallback != null) {
+            connectivityManager.unregisterNetworkCallback(networkCallback);
         }
     }
 }

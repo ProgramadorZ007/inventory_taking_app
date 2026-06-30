@@ -1,6 +1,9 @@
 package com.procesadoraperu.inventario.presentation.home;
 
 import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.Network;
+import android.net.NetworkRequest;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
@@ -46,6 +49,10 @@ public class HomeActivity extends AppCompatActivity
     private TextView tvCatalogCount;
     private MaterialButton btnClearCatalog;
     private com.google.android.material.card.MaterialCardView cardHomeBannerOffline;
+    private View clHeroHomeBackground;
+
+    private ConnectivityManager connectivityManager;
+    private ConnectivityManager.NetworkCallback networkCallback;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -92,9 +99,9 @@ public class HomeActivity extends AppCompatActivity
         setupUI();
         setupViewModel();
         
-        if (!InternetUtil.hayInternet(this)) {
-            cardHomeBannerOffline.setVisibility(View.VISIBLE);
-        }
+        // Monitoreo en tiempo real del estado de conexión
+        registrarMonitorDeRed();
+        actualizarEstadoConexion();
 
         getOnBackPressedDispatcher().addCallback(this,
                 new androidx.activity.OnBackPressedCallback(true) {
@@ -119,6 +126,7 @@ public class HomeActivity extends AppCompatActivity
         tvCatalogCount  = findViewById(R.id.tvCatalogCount);
         btnClearCatalog = findViewById(R.id.btnClearCatalog);
         cardHomeBannerOffline = findViewById(R.id.cardHomeBannerOffline);
+        clHeroHomeBackground = findViewById(R.id.clHeroHomeBackground);
 
         findViewById(R.id.btnRealizarToma).setOnClickListener(v ->
                 startActivity(new Intent(this, TakeInventoryActivity.class)));
@@ -227,5 +235,44 @@ public class HomeActivity extends AppCompatActivity
     private void actualizarEstadoConexion() {
         boolean sinInternet = !InternetUtil.hayInternet(this);
         cardHomeBannerOffline.setVisibility(sinInternet ? View.VISIBLE : View.GONE);
+
+        // Cambiar color del hero card según conexión
+        if (sinInternet) {
+            clHeroHomeBackground.setBackgroundColor(getColor(R.color.pp_splash_orange));
+        } else {
+            clHeroHomeBackground.setBackgroundColor(getColor(R.color.pp_splash_text_green));
+        }
+    }
+
+    /**
+     * Registra un callback que detecta cambios de conectividad en tiempo real.
+     * Así el banner y el color del hero card se actualizan sin salir de la pantalla.
+     */
+    private void registrarMonitorDeRed() {
+        connectivityManager = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
+        if (connectivityManager == null) return;
+
+        networkCallback = new ConnectivityManager.NetworkCallback() {
+            @Override
+            public void onAvailable(@NonNull Network network) {
+                runOnUiThread(() -> actualizarEstadoConexion());
+            }
+
+            @Override
+            public void onLost(@NonNull Network network) {
+                runOnUiThread(() -> actualizarEstadoConexion());
+            }
+        };
+
+        NetworkRequest request = new NetworkRequest.Builder().build();
+        connectivityManager.registerNetworkCallback(request, networkCallback);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (connectivityManager != null && networkCallback != null) {
+            connectivityManager.unregisterNetworkCallback(networkCallback);
+        }
     }
 }

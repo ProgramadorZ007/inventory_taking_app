@@ -64,6 +64,10 @@ public class TakeInventoryViewModel extends ViewModel {
     public LiveData<RegistroResult> getRegistroResult() { return registroResult; }
 
     public void buscarProducto(String idProducto) {
+        buscarProducto(idProducto, true);
+    }
+
+    public void buscarProducto(String idProducto, boolean hayInternet) {
         if (idProducto == null || idProducto.trim().isEmpty()) {
             errorMessage.postValue("Ingresa un código de producto válido");
             return;
@@ -78,7 +82,15 @@ public class TakeInventoryViewModel extends ViewModel {
                 Producto productoLocal = lookupProductoLocalUseCase.execute(idProducto.trim());
                 productoEncontrado.postValue(productoLocal);
             } catch (Exception localEx) {
-                // Producto no encontrado localmente, intentar búsqueda online
+                // Producto no encontrado localmente
+                if (!hayInternet) {
+                    // Sin internet: no intentar la API, informar al usuario directamente
+                    errorMessage.postValue("Producto no encontrado en el catálogo offline. Descarga el catálogo cuando tengas conexión.");
+                    isLoadingProducto.postValue(false);
+                    return;
+                }
+
+                // Con internet: intentar búsqueda online
                 try {
                     String idSucursal = sucRepo.getActiveSucursalId();
                     Almacen almacen = almRepo.getActiveAlmacen();

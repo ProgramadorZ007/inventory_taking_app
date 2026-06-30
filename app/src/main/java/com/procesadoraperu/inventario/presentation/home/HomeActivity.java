@@ -1,9 +1,6 @@
 package com.procesadoraperu.inventario.presentation.home;
 
-import android.content.Context;
 import android.content.Intent;
-import android.net.ConnectivityManager;
-import android.net.NetworkCapabilities;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
@@ -26,8 +23,8 @@ import androidx.lifecycle.ViewModelProvider;
 
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.navigation.NavigationView;
-import com.google.android.material.snackbar.Snackbar;
 import com.procesadoraperu.inventario.R;
+import com.procesadoraperu.inventario.core.network.InternetUtil;
 import com.procesadoraperu.inventario.core.sync.SyncScheduler;
 import com.procesadoraperu.inventario.presentation.ViewModelFactory;
 import com.procesadoraperu.inventario.presentation.auth.LoginActivity;
@@ -48,6 +45,7 @@ public class HomeActivity extends AppCompatActivity
     private TextView tvToolbarSubtitle;
     private TextView tvCatalogCount;
     private MaterialButton btnClearCatalog;
+    private com.google.android.material.card.MaterialCardView cardHomeBannerOffline;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -94,7 +92,9 @@ public class HomeActivity extends AppCompatActivity
         setupUI();
         setupViewModel();
         
-        if (!hayConexion()) mostrarSnackbarOffline();
+        if (!InternetUtil.hayInternet(this)) {
+            cardHomeBannerOffline.setVisibility(View.VISIBLE);
+        }
 
         getOnBackPressedDispatcher().addCallback(this,
                 new androidx.activity.OnBackPressedCallback(true) {
@@ -118,6 +118,7 @@ public class HomeActivity extends AppCompatActivity
 
         tvCatalogCount  = findViewById(R.id.tvCatalogCount);
         btnClearCatalog = findViewById(R.id.btnClearCatalog);
+        cardHomeBannerOffline = findViewById(R.id.cardHomeBannerOffline);
 
         findViewById(R.id.btnRealizarToma).setOnClickListener(v ->
                 startActivity(new Intent(this, TakeInventoryActivity.class)));
@@ -180,22 +181,6 @@ public class HomeActivity extends AppCompatActivity
         viewModel.cargarDatosCabecera();
     }
 
-    private void mostrarSnackbarOffline() {
-        Snackbar snack = Snackbar.make(rootView, R.string.msg_guardado_local, Snackbar.LENGTH_INDEFINITE);
-        snack.setBackgroundTint(getColor(R.color.pp_warning));
-        snack.setTextColor(getColor(R.color.pp_white));
-        snack.setAction("Entendido", v -> snack.dismiss());
-        snack.show();
-    }
-
-    private boolean hayConexion() {
-        ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-        if (cm == null) return false;
-        NetworkCapabilities caps = cm.getNetworkCapabilities(cm.getActiveNetwork());
-        return caps != null && (caps.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)
-                || caps.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR));
-    }
-
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         int id = item.getItemId();
@@ -236,5 +221,11 @@ public class HomeActivity extends AppCompatActivity
         super.onResume();
         viewModel.cargarDatosCabecera();
         viewModel.loadCatalogCount();
+        actualizarEstadoConexion();
+    }
+
+    private void actualizarEstadoConexion() {
+        boolean sinInternet = !InternetUtil.hayInternet(this);
+        cardHomeBannerOffline.setVisibility(sinInternet ? View.VISIBLE : View.GONE);
     }
 }

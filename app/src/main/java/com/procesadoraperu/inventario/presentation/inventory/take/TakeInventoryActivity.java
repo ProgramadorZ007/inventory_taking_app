@@ -32,6 +32,7 @@ import com.google.android.material.textfield.TextInputEditText;
 import com.journeyapps.barcodescanner.ScanContract;
 import com.journeyapps.barcodescanner.ScanOptions;
 import com.procesadoraperu.inventario.R;
+import com.procesadoraperu.inventario.core.network.InternetUtil;
 import com.procesadoraperu.inventario.domain.model.producto.Producto;
 import com.procesadoraperu.inventario.presentation.ViewModelFactory;
 
@@ -46,6 +47,7 @@ public class TakeInventoryActivity extends AppCompatActivity {
     private ProgressBar progressBuscar;
 
     private MaterialCardView cardProducto;
+    private MaterialCardView cardOfflineBanner;
     private TextView tvNombreProducto, tvIdProducto, tvStockSistema;
     private com.google.android.material.textfield.TextInputLayout tilCantidadContada;
     private TextInputEditText etCantidadContada;
@@ -69,7 +71,7 @@ public class TakeInventoryActivity extends AppCompatActivity {
                 if (result.getContents() != null) {
                     String codigo = result.getContents().trim();
                     etCodigoManual.setText(codigo);
-                    viewModel.buscarProducto(codigo);
+                    viewModel.buscarProducto(codigo, InternetUtil.hayInternet(this));
                 } else {
                     // El usuario canceló el escaneo
                     mostrarSnackbar("Escaneo cancelado", false);
@@ -119,6 +121,7 @@ public class TakeInventoryActivity extends AppCompatActivity {
         etCodigoManual   = findViewById(R.id.etCodigoManual);
         progressBuscar   = findViewById(R.id.progressBuscar);
         cardProducto     = findViewById(R.id.cardProducto);
+        cardOfflineBanner = findViewById(R.id.cardOfflineBanner);
         tvNombreProducto = findViewById(R.id.tvNombreProducto);
         tvIdProducto     = findViewById(R.id.tvIdProducto);
         tvStockSistema   = findViewById(R.id.tvStockSistema);
@@ -153,7 +156,7 @@ public class TakeInventoryActivity extends AppCompatActivity {
             etCodigoManual.setError("Ingrese un código");
             return;
         }
-        viewModel.buscarProducto(codigo);
+        viewModel.buscarProducto(codigo, InternetUtil.hayInternet(this));
     }
 
     private void setupViewModel() {
@@ -378,5 +381,16 @@ public class TakeInventoryActivity extends AppCompatActivity {
                 ScanOptions.EAN_8
         );
         barcodeLauncher.launch(options);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        actualizarEstadoConexion();
+    }
+
+    private void actualizarEstadoConexion() {
+        boolean sinInternet = !InternetUtil.hayInternet(this);
+        cardOfflineBanner.setVisibility(sinInternet ? View.VISIBLE : View.GONE);
     }
 }

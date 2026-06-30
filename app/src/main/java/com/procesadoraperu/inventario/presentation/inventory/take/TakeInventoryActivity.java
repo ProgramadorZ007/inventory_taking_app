@@ -48,6 +48,7 @@ public class TakeInventoryActivity extends AppCompatActivity {
 
     private MaterialCardView cardProducto;
     private MaterialCardView cardOfflineBanner;
+    private View llHeroBackground;
     private TextView tvNombreProducto, tvIdProducto, tvStockSistema;
     private com.google.android.material.textfield.TextInputLayout tilCantidadContada;
     private TextInputEditText etCantidadContada;
@@ -122,6 +123,7 @@ public class TakeInventoryActivity extends AppCompatActivity {
         progressBuscar   = findViewById(R.id.progressBuscar);
         cardProducto     = findViewById(R.id.cardProducto);
         cardOfflineBanner = findViewById(R.id.cardOfflineBanner);
+        llHeroBackground = findViewById(R.id.llHeroBackground);
         tvNombreProducto = findViewById(R.id.tvNombreProducto);
         tvIdProducto     = findViewById(R.id.tvIdProducto);
         tvStockSistema   = findViewById(R.id.tvStockSistema);
@@ -392,5 +394,12 @@ public class TakeInventoryActivity extends AppCompatActivity {
     private void actualizarEstadoConexion() {
         boolean sinInternet = !InternetUtil.hayInternet(this);
         cardOfflineBanner.setVisibility(sinInternet ? View.VISIBLE : View.GONE);
+
+        // Cambiar color del hero card cuando no hay conexión
+        if (sinInternet) {
+            llHeroBackground.setBackgroundColor(getColor(R.color.pp_splash_orange));
+        } else {
+            llHeroBackground.setBackgroundColor(getColor(R.color.pp_splash_text_green));
+        }
     }
 }
